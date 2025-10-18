@@ -1,0 +1,90 @@
+{
+  "name": "fa-bridge",
+  "displayName": "FA Bridge",
+  "description": "Propojení Cursor/VS Code s editorem FormStudio (FA)",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.105.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onCommand:faBridge.aktivovatFormular",
+    "onCommand:faBridge.zkompilovatScript",
+    "onCommand:faBridge.vlozitNazevUdaje",
+    "onCommand:faBridge.sendC999",
+    "onCommand:faBridge.menu"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "faBridge.aktivovatFormular",
+        "title": "FA: Aktivovat formulář"
+      },
+      {
+        "command": "faBridge.zkompilovatScript",
+        "title": "FA: Zkompilovat script"
+      },
+      {
+        "command": "faBridge.vlozitNazevUdaje",
+        "title": "FA: Vložit název údajů"
+      },
+      {
+        "command": "faBridge.sendC999",
+        "title": "FA: c999"
+      },
+      {
+        "command": "faBridge.menu",
+        "title": "FA: Menu"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "faBridge.menu",
+        "key": "ctrl+alt+f",
+        "mac": "cmd+alt+f"
+      },
+      {
+        "command": "faBridge.aktivovatFormular",
+        "key": "ctrl+alt+1",
+        "mac": "cmd+alt+1"
+      },
+      {
+        "command": "faBridge.zkompilovatScript",
+        "key": "ctrl+alt+2",
+        "mac": "cmd+alt+2"
+      },
+      {
+        "command": "faBridge.vlozitNazevUdaje",
+        "key": "ctrl+alt+3",
+        "mac": "cmd+alt+3"
+      },
+      {
+        "command": "faBridge.sendC999",
+        "key": "ctrl+alt+9",
+        "mac": "cmd+alt+9"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src",
+    "test": "vscode-test"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.105.0",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "22.x",
+    "@typescript-eslint/eslint-plugin": "^8.45.0",
+    "@typescript-eslint/parser": "^8.45.0",
+    "eslint": "^9.36.0",
+    "typescript": "^5.9.3",
+    "@vscode/test-cli": "^0.0.11",
+    "@vscode/test-electron": "^2.5.2"
+  }
+}
