@@ -3,11 +3,13 @@
   "displayName": "FA Bridge",
   "publisher": "fa-dev",
   "description": "Propojení Cursor/VS Code s editorem FormStudio (FA)",
-  "version": "0.1.7",
+  "version": "0.3.1",
   "engines": {
     "vscode": "^1.85.0"
   },
   "categories": [
+    "Programming Languages",
+    "Themes",
     "Other"
   ],
   "icon": "images/icon.png",
@@ -16,6 +18,49 @@
   ],
   "main": "./out/extension.js",
   "contributes": {
+    "snippets": [
+      {
+        "language": "pascal",
+        "path": "./snippets/pascal-snippets.json"
+      }
+    ],
+    "commands": [
+      {
+        "command": "faBridge.setLightTheme",
+        "title": "FA Bridge: Přepnout na světlý motiv"
+      },
+      {
+        "command": "faBridge.setDarkTheme",
+        "title": "FA Bridge: Přepnout na tmavý motiv"
+      }
+    ],
+    "languages": [
+      {
+        "id": "pascal",
+        "aliases": ["Pascal", "Delphi", "Object Pascal"],
+        "extensions": [".pas", ".p", ".dfm", ".fmx", ".dpr", ".dpk", ".lfm", ".lpr"],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "pascal",
+        "scopeName": "source.pascal",
+        "path": "./syntaxes/pascal.tmLanguage"
+      }
+    ],
+    "themes": [
+      {
+        "label": "FA Pascal Light",
+        "uiTheme": "vs",
+        "path": "./themes/fa-pascal-light.json"
+      },
+      {
+        "label": "FA Pascal Dark",
+        "uiTheme": "vs-dark",
+        "path": "./themes/fa-pascal-dark.json"
+      }
+    ],
     "viewsContainers": {
       "activitybar": [
         {

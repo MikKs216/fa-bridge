@@ -3,7 +3,7 @@
     "activeCommit": 0,
     "commits": [
         {
-            "activePatchIndex": 4,
+            "activePatchIndex": 5,
             "patches": [
                 {
                     "date": 1760866181952,
@@ -24,6 +24,10 @@
                 {
                     "date": 1761656535504,
                     "content": "Index: \n===================================================================\n--- \n+++ \n@@ -28,37 +28,4 @@\n \n export function deactivate() {\n \tconsole.log('[FA Bridge] Extension deaktivována');\n }\n-// The module 'vscode' contains the VS Code extensibility API\n-// Import the module and reference it with the alias vscode in your code below\n-import * as vscode from 'vscode';\n-import {\n-\taktivovatFormular,\n-\tzkompilovatScript,\n-\tvlozitNazevUdaje,\n-\tkopirovatNazevUdaje,\n-\tnajitUdaj,\n-} from './commands/sendCommand';\n-import { registerFABridgePanel } from './views/FABridgePanel';\n-\n-export function activate(context: vscode.ExtensionContext) {\n-\tconsole.log('[FA Bridge] Extension aktivována');\n-\n-\t// Registruj sidebar panel\n-\tregisterFABridgePanel(context);\n-\n-\t// Registruj všechny příkazy\n-\tconst commands = [\n-\t\tvscode.commands.registerCommand('faBridge.aktivovatFormular', aktivovatFormular),\n-\t\tvscode.commands.registerCommand('faBridge.zkompilovatScript', zkompilovatScript),\n-\t\tvscode.commands.registerCommand('faBridge.vlozitNazevUdaje', vlozitNazevUdaje),\n-\t\tvscode.commands.registerCommand('faBridge.kopirovatNazevUdaje', kopirovatNazevUdaje),\n-\t\tvscode.commands.registerCommand('faBridge.najitUdaj', najitUdaj),\n-\t];\n-\n-\tcontext.subscriptions.push(...commands);\n-}\n-\n-export function deactivate() {\n-\tconsole.log('[FA Bridge] Extension deaktivována');\n-}\n"
+                },
+                {
+                    "date": 1761665818230,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -20,8 +20,26 @@\n \t\tvscode.commands.registerCommand('faBridge.aktivovatFormular', aktivovatFormular),\n \t\tvscode.commands.registerCommand('faBridge.vlozitNazevUdaje', vlozitNazevUdaje),\n \t\tvscode.commands.registerCommand('faBridge.kopirovatNazevUdaje', kopirovatNazevUdaje),\n \t\tvscode.commands.registerCommand('faBridge.najitUdaj', najitUdaj),\n+\t\t\n+\t\t// Commands pro přepínání color themes\n+\t\tvscode.commands.registerCommand('faBridge.setLightTheme', () => {\n+\t\t\tvscode.workspace.getConfiguration('workbench').update(\n+\t\t\t\t'colorTheme',\n+\t\t\t\t'FA Pascal Light',\n+\t\t\t\tvscode.ConfigurationTarget.Global\n+\t\t\t);\n+\t\t\tvscode.window.showInformationMessage('Přepnuto na FA Pascal Light theme');\n+\t\t}),\n+\t\tvscode.commands.registerCommand('faBridge.setDarkTheme', () => {\n+\t\t\tvscode.workspace.getConfiguration('workbench').update(\n+\t\t\t\t'colorTheme',\n+\t\t\t\t'FA Pascal Dark',\n+\t\t\t\tvscode.ConfigurationTarget.Global\n+\t\t\t);\n+\t\t\tvscode.window.showInformationMessage('Přepnuto na FA Pascal Dark theme');\n+\t\t}),\n \t];\n \n \tcontext.subscriptions.push(...commands);\n }\n"
                 }
             ],
             "date": 1760866181952,

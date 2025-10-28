@@ -2,6 +2,49 @@
 
 All notable changes to the "fa-bridge" extension will be documented in this file.
 
+## [0.3.1] - 2025-10-28
+
+### Added
+- **Pascal Snippety**: 11 užitečných snippetů pro rychlejší psaní Pascal kódu
+  - `function` - funkce vracející hodnotu
+  - `procedure` - procedura
+  - `if` - if-then-begin blok
+  - `for` - for cyklus
+  - `try` - try-finally blok
+  - `trye` - try-except s error handling
+  - `repeat` - repeat-until cyklus
+  - `while` - while cyklus
+  - `case` - case of struktura
+  - `var` - TStringList s kompletním try-finally a for cyklem
+  - `begin` - begin-end blok
+- **Theme přepínání**: Nové příkazy v Command Palette pro přepínání mezi FA Pascal Light a Dark themes
+  - "FA Bridge: Přepnout na světlý motiv"
+  - "FA Bridge: Přepnout na tmavý motiv"
+
+## [0.3.0] - 2025-10-28
+
+### Added
+- **Všechny FA funkce z HTML helpu**: Kompletní seznam 408 funkcí včetně:
+  - Helper funkce: `ini`, `chk`, `lst`
+  - Variant funkce: `VarToStr`, `VarToDateTime`, `VarToDouble`, `VarToInt`, `VarToBool`, `VarIsNE`
+  - String funkce: `StrLeft`, `StrRight`, `StrRepeat`, `StrPadLeft`, `StrPadRight`, `StrNPos`, `StrStrCount`
+  - Try funkce: `TryEditValuesRecord`, `TryPostValuesRecord`, `TryEncodeDateTimeEx`, `TryDeleteDirectory`
+  - Další: `WriteValue2Form`, `ValidValue`, `YearOf`, `Trunc`, `StringList` a mnoho dalších
+
+### Changed
+- Tmavší fialová barva pro FA funkce v dark theme (#D896FF)
+
+## [0.2.0] - 2025-10-28
+
+### Added
+- **Pascal Syntax Highlighting**: Plná podpora pro Pascal/Delphi soubory (.pas, .dpr, .dfm, atd.)
+- **FA Custom Functions**: Zvýraznění 200+ vlastních FA funkcí (CheckRodneCislo, NactiAdresuZARES, atd.)
+- **Form Field References**: Speciální highlighting pro `[.nazevUdaje.]` a `[:nazevUdaje:]` konstrukce
+- **Color Themes**: 
+  - FA Pascal Light - světlé téma podle FA editoru
+  - FA Pascal Dark - tmavé téma pro komfort
+- **Language Configuration**: Auto-closing závorek, komentářů, region folding pro Pascal
+
 ## [0.1.7] - 2025-10-28
 
 ### Changed

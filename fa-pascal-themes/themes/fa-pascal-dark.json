@@ -1,0 +1,149 @@
+{
+  "name": "FA Pascal Dark",
+  "type": "dark",
+  "colors": {
+    "editor.background": "#1E1E1E",
+    "editor.foreground": "#D4D4D4",
+    "editorLineNumber.foreground": "#858585",
+    "editorLineNumber.activeForeground": "#C6C6C6",
+    "editor.selectionBackground": "#264F78",
+    "editor.inactiveSelectionBackground": "#3A3D41",
+    "editor.lineHighlightBackground": "#2A2A2A",
+    "editorCursor.foreground": "#AEAFAD",
+    "editorWhitespace.foreground": "#404040"
+  },
+  "tokenColors": [
+    {
+      "name": "Comment",
+      "scope": [
+        "comment",
+        "punctuation.definition.comment"
+      ],
+      "settings": {
+        "foreground": "#6A9955",
+        "fontStyle": "italic"
+      }
+    },
+    {
+      "name": "Keyword",
+      "scope": [
+        "keyword.pascal",
+        "keyword.control.pascal",
+        "keyword.operator.pascal"
+      ],
+      "settings": {
+        "foreground": "#5C9EFF",
+        "fontStyle": "bold"
+      }
+    },
+    {
+      "name": "Storage Type (function, procedure, etc.)",
+      "scope": [
+        "storage.type.function.pascal",
+        "storage.type.prototype.pascal"
+      ],
+      "settings": {
+        "foreground": "#5C9EFF",
+        "fontStyle": "bold"
+      }
+    },
+    {
+      "name": "Function name declaration",
+      "scope": [
+        "entity.name.function.pascal",
+        "entity.name.function.prototype.pascal"
+      ],
+      "settings": {
+        "foreground": "#DCDCAA",
+        "fontStyle": ""
+      }
+    },
+    {
+      "name": "FA Custom Functions",
+      "scope": [
+        "support.function.fa.pascal"
+      ],
+      "settings": {
+        "foreground": "#FF00FF",
+        "fontStyle": ""
+      }
+    },
+    {
+      "name": "FA Form Field Reference",
+      "scope": [
+        "entity.name.field.fa.pascal",
+        "meta.field-reference.fa.pascal"
+      ],
+      "settings": {
+        "foreground": "#00C000",
+        "fontStyle": "bold"
+      }
+    },
+    {
+      "name": "Data Types",
+      "scope": [
+        "storage.support.type.pascal"
+      ],
+      "settings": {
+        "foreground": "#5C9EFF"
+      }
+    },
+    {
+      "name": "String",
+      "scope": [
+        "string.quoted.single.pascal",
+        "string.other.pascal"
+      ],
+      "settings": {
+        "foreground": "#6699FF"
+      }
+    },
+    {
+      "name": "Number",
+      "scope": [
+        "constant.numeric.pascal",
+        "constant.numeric.hex.pascal"
+      ],
+      "settings": {
+        "foreground": "#B5CEA8"
+      }
+    },
+    {
+      "name": "Constants (true, false, nil)",
+      "scope": [
+        "constant.language.pascal"
+      ],
+      "settings": {
+        "foreground": "#5C9EFF",
+        "fontStyle": "bold"
+      }
+    },
+    {
+      "name": "Compiler Directives",
+      "scope": [
+        "string.regexp"
+      ],
+      "settings": {
+        "foreground": "#C586C0",
+        "fontStyle": "bold"
+      }
+    },
+    {
+      "name": "Special Variables (self, result)",
+      "scope": [
+        "token.variable"
+      ],
+      "settings": {
+        "foreground": "#5C9EFF",
+        "fontStyle": "italic"
+      }
+    }
+  ]
+}
+
+
+
+
+
+
+

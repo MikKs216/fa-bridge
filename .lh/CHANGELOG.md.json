@@ -3,7 +3,7 @@
     "activeCommit": 0,
     "commits": [
         {
-            "activePatchIndex": 2,
+            "activePatchIndex": 5,
             "patches": [
                 {
                     "date": 1761654732519,
@@ -16,6 +16,18 @@
                 {
                     "date": 1761656234062,
                     "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,8 +1,18 @@\n # Change Log\n \n All notable changes to the \"fa-bridge\" extension will be documented in this file.\n \n+## [0.1.7] - 2025-10-28\n+\n+### Changed\n+- Aktualizovány názvy příkazů v sidebaru\n+- \"Uložit a aktivovat FA\" → \"Aktivovat FA\"\n+- \"Kopírovat název údaje\" → \"Název údaje do clipboardu\"\n+\n+### Removed\n+- Odstraněna funkce \"Zkompilovat script\" (Shift+Alt+D) - nebyla používána\n+\n ## [0.1.6] - 2025-10-28\n \n ### Removed\n - Odstraněna registrace příkazů v Command Palette (Ctrl+Shift+P)\n"
+                },
+                {
+                    "date": 1761662863424,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,8 +1,19 @@\n # Change Log\n \n All notable changes to the \"fa-bridge\" extension will be documented in this file.\n \n+## [0.2.0] - 2025-10-28\n+\n+### Added\n+- **Pascal Syntax Highlighting**: Plná podpora pro Pascal/Delphi soubory (.pas, .dpr, .dfm, atd.)\n+- **FA Custom Functions**: Zvýraznění 200+ vlastních FA funkcí (CheckRodneCislo, NactiAdresuZARES, atd.)\n+- **Form Field References**: Speciální highlighting pro `[.nazevUdaje.]` a `[:nazevUdaje:]` konstrukce\n+- **Color Themes**: \n+  - FA Pascal Light - světlé téma podle FA editoru\n+  - FA Pascal Dark - tmavé téma pro komfort\n+- **Language Configuration**: Auto-closing závorek, komentářů, region folding pro Pascal\n+\n ## [0.1.7] - 2025-10-28\n \n ### Changed\n - Aktualizovány názvy příkazů v sidebaru\n"
+                },
+                {
+                    "date": 1761665385763,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,8 +1,21 @@\n # Change Log\n \n All notable changes to the \"fa-bridge\" extension will be documented in this file.\n \n+## [0.3.0] - 2025-10-28\n+\n+### Added\n+- **Všechny FA funkce z HTML helpu**: Kompletní seznam 408 funkcí včetně:\n+  - Helper funkce: `ini`, `chk`, `lst`\n+  - Variant funkce: `VarToStr`, `VarToDateTime`, `VarToDouble`, `VarToInt`, `VarToBool`, `VarIsNE`\n+  - String funkce: `StrLeft`, `StrRight`, `StrRepeat`, `StrPadLeft`, `StrPadRight`, `StrNPos`, `StrStrCount`\n+  - Try funkce: `TryEditValuesRecord`, `TryPostValuesRecord`, `TryEncodeDateTimeEx`, `TryDeleteDirectory`\n+  - Další: `WriteValue2Form`, `ValidValue`, `YearOf`, `Trunc`, `StringList` a mnoho dalších\n+\n+### Changed\n+- Tmavší fialová barva pro FA funkce v dark theme (#D896FF)\n+\n ## [0.2.0] - 2025-10-28\n \n ### Added\n - **Pascal Syntax Highlighting**: Plná podpora pro Pascal/Delphi soubory (.pas, .dpr, .dfm, atd.)\n"
+                },
+                {
+                    "date": 1761667697244,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,8 +1,27 @@\n # Change Log\n \n All notable changes to the \"fa-bridge\" extension will be documented in this file.\n \n+## [0.3.1] - 2025-10-28\n+\n+### Added\n+- **Pascal Snippety**: 11 užitečných snippetů pro rychlejší psaní Pascal kódu\n+  - `function` - funkce vracející hodnotu\n+  - `procedure` - procedura\n+  - `if` - if-then-begin blok\n+  - `for` - for cyklus\n+  - `try` - try-finally blok\n+  - `trye` - try-except s error handling\n+  - `repeat` - repeat-until cyklus\n+  - `while` - while cyklus\n+  - `case` - case of struktura\n+  - `var` - TStringList s kompletním try-finally a for cyklem\n+  - `begin` - begin-end blok\n+- **Theme přepínání**: Nové příkazy v Command Palette pro přepínání mezi FA Pascal Light a Dark themes\n+  - \"FA Bridge: Přepnout na světlý motiv\"\n+  - \"FA Bridge: Přepnout na tmavý motiv\"\n+\n ## [0.3.0] - 2025-10-28\n \n ### Added\n - **Všechny FA funkce z HTML helpu**: Kompletní seznam 408 funkcí včetně:\n"
                 }
             ],
             "date": 1761654732519,

@@ -1,0 +1,29 @@
+{
+  "name": "fa-pascal-themes",
+  "displayName": "FA Pascal Themes",
+  "publisher": "fa-dev",
+  "description": "Barevná schémata pro Pascal/Delphi FA",
+  "version": "1.0.1",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Themes"
+  ],
+  "contributes": {
+    "themes": [
+      {
+        "label": "FA Pascal Light",
+        "uiTheme": "vs",
+        "path": "./themes/fa-pascal-light.json"
+      },
+      {
+        "label": "FA Pascal Dark",
+        "uiTheme": "vs-dark",
+        "path": "./themes/fa-pascal-dark.json"
+      }
+    ]
+  }
+}
+
+

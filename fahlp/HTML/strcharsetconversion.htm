@@ -1,0 +1,182 @@
+﻿<!DOCTYPE HTML>
+<html>
+<head>
+   <title>Textové funkce &gt; StrCharsetConversion</title>
+   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />   
+   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+   <meta name="generator" content="Help &amp; Manual" />
+   <meta name="keywords" content="StrCharsetConversion" />
+   <meta name="description" content="Provede konverzi řetězce mezi znakovými sadami. &nbsp;Syntaxe: function StrCharsetConversion(const AStr: string; ACodePageFrom: integer; ACodePageTo: integer): string; &nbsp;Parametry:" />
+   <link type="text/css" href="default.css" rel="stylesheet" />
+   <link type="text/css" href="custom.css" rel="stylesheet">
+
+   <style TYPE="text/css" media="screen"> 
+      html, body { margin:0; 
+             padding:0; 
+             overflow: hidden;
+             background: #ffffff; 
+       } 
+
+      div#printheader { display: none; }
+      #idheader { width:100%; 
+                  height:auto; 
+                  padding: 0; 
+                  margin: 0; 
+       } 
+      #callout-table, #overview-table {display:block; position:relative; top:0; left:0;}
+      #callout-icon {display:block; position:absolute; top:-11px; left:-11px;}
+      #callout-icon-flag {display:block; position:absolute; top:-11px; left:-8px;}
+      #callout-table a {text-decoration: none; color: blue;}
+      #callout-table a:visited {text-decoration: none; color: blue;}
+      #overview-table a {text-decoration: none; color: black;}
+      #overview-table a:visited {text-decoration: none; color: black;}
+      #callout-table a:hover, #overview-table a:hover {text-decoration: underline;}       
+      p.help-url { margin: 20px 0 5px 0; text-align: center; font-size: 80%; text-decoration: none }      
+      #switchtoggles { text-align: right; padding: 0 2px 0 0; font-size: 90%; } 
+      .sync-toc { color: #ffffff; font-size: 8pt; font-weight: bold; display: none; }
+      .sync-toc a { color: #ffffff; text-decoration: none; font-weight: bold;}
+      .sync-toc a:visited { color: #ffffff; }
+      .sync-toc a:hover { text-decoration: underline; }
+  </style>
+   <noscript>
+   <style type="text/css">
+   html, body { overflow: auto; }
+   </style> 
+   </noscript>
+   <style type="text/css" media="print">
+      span.f_Heading1 { color: black; }
+      #idheader, #printheader img { display:none; }
+      #printheader { display: block; margin-top: 20px; }
+      #idcontent { margin-top: 10px; }
+   </style>   
+
+   <script type="text/javascript" src="jquery.js"></script>
+   <script type="text/javascript" src="helpman_settings.js"></script>
+   <script type="text/javascript" src="helpman_topicinit.js"></script>
+   <script type="text/javascript" src="nsh.js"></script>
+
+   <script type="text/javascript">
+     HMSyncTOC("index.html", "strcharsetconversion.htm");
+   </script>
+</head>
+<body>
+
+
+<div id="printheader"><h1 class="p_Heading1"><span class="f_Heading1">StrCharsetConversion</span></h1>
+</div>
+<div id="idheader">
+<div id="idheaderbg">
+<table style="width:100%;border:none;margin:0px;background:url(topic_header_background.jpg)" cellspacing="0" cellpadding="0"> 
+  <tr valign="bottom">
+    <td align="left" valign="bottom" class="topichead">
+   <p class="sync-toc">&lt;&lt; <a rel="nofollow" href="index.html?strcharsetconversion.htm" target="_top">Click to Display Table of Contents</a> &gt;&gt;</p>
+   <p class="crumbs" id="idnav"><b>Navigation:</b>&nbsp;
+   
+   <a href="string_functions.htm">Textové funkce</a>&nbsp;&gt;</p>
+   <h1 class="p_Heading1"><span class="f_Heading1">StrCharsetConversion</span></h1>
+
+    </td>
+    <td align="right" width="120" valign="middle" class="topichead" id="idnav">
+    
+     <a href="xmlstrtowindows1250.htm"
+        onmouseover="document.images.prev.src='hm_btn_navigate_prev_orange.png'" 
+        onmouseout="document.images.prev.src='hm_btn_navigate_prev.png'"
+        ><img name="prev" src="hm_btn_navigate_prev.png" border=0 alt="Previous page"
+        ></a><a href="string_functions.htm"
+        onmouseover="document.images.main.src='hm_btn_navigate_top_orange.png'" 
+        onmouseout="document.images.main.src='hm_btn_navigate_top.png'"><img name=main src="hm_btn_navigate_top.png" border=0 alt="Return to chapter overview"
+        ></a><a href="trimchars.htm"
+        onmouseover="document.images.next.src='hm_btn_navigate_next_orange.png'" 
+        onmouseout="document.images.next.src='hm_btn_navigate_next.png'"><img name=next src="hm_btn_navigate_next.png" border=0 alt="Next page"
+        ></a>
+    </td>
+  </tr>  
+</table>
+<!-- The following code displays Expand All/Collapse All links  below the header in topics containing toggles -->
+  
+</div>
+</div>  
+
+<div id="idcontent"><div id="innerdiv">
+<!-- Ask Internet Explorer 6.users to update their obsolete and dangerous browser --> 
+<!--[if lt IE 7]><div style=' clear: both; height: 59px; padding:0 0 0 15px; position: relative;'><a href="http://windows.microsoft.com/en-US/internet-explorer/products/ie/home?ocid=ie6_countdown_bannercode"><img src="http://storage.ie6countdown.com/assets/100/images/banners/warning_bar_0000_us.jpg" border="0" height="42" width="820" alt="You are using an outdated browser. For a faster, safer browsing experience, upgrade for free today." /></a></div><![endif]-->
+
+<!--ZOOMRESTART-->
+<p>Provede konverzi řetězce mezi znakovými sadami.</p>
+<p>&nbsp;</p>
+<p class="p_Nadpisodstavce"><span class="f_Nadpisodstavce">Syntaxe:</span></p>
+<p class="p_Nazevfunkce"><span class="f_Parametryfunkce">function</span><span class="f_Nazevfunkce"> StrCharsetConversion(</span><span class="f_Parametryfunkce">const</span><span class="f_Nazevfunkce"> AStr: </span><span class="f_Parametryfunkce">string</span><span class="f_Nazevfunkce">; ACodePageFrom: </span><span class="f_Parametryfunkce">integer</span><span class="f_Nazevfunkce">; ACodePageTo: </span><span class="f_Parametryfunkce">integer</span><span class="f_Nazevfunkce">): </span><span class="f_Parametryfunkce">string</span><span class="f_Nazevfunkce">;</span></p>
+<p>&nbsp;</p>
+<p class="p_Nadpisodstavce"><span class="f_Nadpisodstavce">Parametry:</span></p>
+<p>AStr - text, který chceme převést</p>
+<p class="p_Notes"><span class="f_Notes">ACodePageFrom - číslo kódové sady (viz. níže), ze které chceme převádět</span></p>
+<p class="p_Notes"><span class="f_Notes">ACodePageTo - číslo kódové sady (viz. níže), na kterou chceme převádět</span></p>
+<p>&nbsp;</p>
+<p class="p_Nadpisodstavce"><span class="f_Nadpisodstavce">Result:</span></p>
+<p>Vrací převedený text z jedné znakové sady na druhou.</p>
+<p>&nbsp;</p>
+<p class="p_Nadpisodstavce"><span class="f_Nadpisodstavce">Popis kódových sad:</span></p>
+<p class="p_Nazevfunkce"><span class="f_Nazevfunkce"> &nbsp; 0:ISO_8859_1</span></p>
+<p class="p_Nazevfunkce"><span class="f_Nazevfunkce"> &nbsp; 1:ISO_8859_2</span></p>
+<p class="p_Nazevfunkce"><span class="f_Nazevfunkce"> &nbsp; 2:ISO_8859_3</span></p>
+<p class="p_Nazevfunkce"><span class="f_Nazevfunkce"> &nbsp; 3:ISO_8859_4</span></p>
+<p class="p_Nazevfunkce"><span class="f_Nazevfunkce"> &nbsp; 4:ISO_8859_5</span></p>
+<p class="p_Nazevfunkce"><span class="f_Nazevfunkce"> &nbsp; 5:ISO_8859_6</span></p>
+<p class="p_Nazevfunkce"><span class="f_Nazevfunkce"> &nbsp; 6:ISO_8859_7</span></p>
+<p class="p_Nazevfunkce"><span class="f_Nazevfunkce"> &nbsp; 7:ISO_8859_8</span></p>
+<p class="p_Nazevfunkce"><span class="f_Nazevfunkce"> &nbsp; 8:ISO_8859_9</span></p>
+<p class="p_Nazevfunkce"><span class="f_Nazevfunkce"> &nbsp; 9:ISO_8859_10</span></p>
+<p class="p_Nazevfunkce"><span class="f_Nazevfunkce"> &nbsp; 10:ISO_8859_13</span></p>
+<p class="p_Nazevfunkce"><span class="f_Nazevfunkce"> &nbsp; 11:ISO_8859_14</span></p>
+<p class="p_Nazevfunkce"><span class="f_Nazevfunkce"> &nbsp; 12:ISO_8859_15</span></p>
+<p class="p_Nazevfunkce"><span class="f_Nazevfunkce"> &nbsp; 13:CP1250</span></p>
+<p class="p_Nazevfunkce"><span class="f_Nazevfunkce"> &nbsp; 14:CP1251</span></p>
+<p class="p_Nazevfunkce"><span class="f_Nazevfunkce"> &nbsp; 15:CP1252</span></p>
+<p class="p_Nazevfunkce"><span class="f_Nazevfunkce"> &nbsp; 16:CP1253</span></p>
+<p class="p_Nazevfunkce"><span class="f_Nazevfunkce"> &nbsp; 17:CP1254</span></p>
+<p class="p_Nazevfunkce"><span class="f_Nazevfunkce"> &nbsp; 18:CP1255</span></p>
+<p class="p_Nazevfunkce"><span class="f_Nazevfunkce"> &nbsp; 19:CP1256</span></p>
+<p class="p_Nazevfunkce"><span class="f_Nazevfunkce"> &nbsp; 20:CP1257</span></p>
+<p class="p_Nazevfunkce"><span class="f_Nazevfunkce"> &nbsp; 21:CP1258</span></p>
+<p class="p_Nazevfunkce"><span class="f_Nazevfunkce"> &nbsp; 22:KOI8_R</span></p>
+<p class="p_Nazevfunkce"><span class="f_Nazevfunkce"> &nbsp; 23:CP895</span></p>
+<p class="p_Nazevfunkce"><span class="f_Nazevfunkce"> &nbsp; 24:CP852</span></p>
+<p class="p_Nazevfunkce"><span class="f_Nazevfunkce"> &nbsp; 25:UCS_2</span></p>
+<p class="p_Nazevfunkce"><span class="f_Nazevfunkce"> &nbsp; 26:UCS_4</span></p>
+<p class="p_Nazevfunkce"><span class="f_Nazevfunkce"> &nbsp; 27:UTF_8</span></p>
+<p class="p_Nazevfunkce"><span class="f_Nazevfunkce"> &nbsp; 28:UTF_7</span></p>
+<p class="p_Nazevfunkce"><span class="f_Nazevfunkce"> &nbsp; 29:UTF_7mod</span></p>
+<p class="p_Nazevfunkce"><span class="f_Nazevfunkce"> &nbsp; 30:UCS_2LE</span></p>
+<p class="p_Nazevfunkce"><span class="f_Nazevfunkce"> &nbsp; 31:UCS_4LE</span></p>
+<p class="p_Nazevfunkce"><span class="f_Nazevfunkce"> &nbsp; &nbsp;//a dalsi exoticke dal v poradi</span></p>
+<p class="p_Nazevfunkce"><span class="f_Nazevfunkce"> &nbsp; &nbsp;UTF_16, UTF_16LE, UTF_32, UTF_32LE, C99, JAVA, ISO_8859_16, KOI8_U, KOI8_RU,</span></p>
+<p class="p_Nazevfunkce"><span class="f_Nazevfunkce"> &nbsp; &nbsp;CP862, CP866, MAC, MACCE, MACICE, MACCRO, MACRO, MACCYR, MACUK, MACGR, MACTU,</span></p>
+<p class="p_Nazevfunkce"><span class="f_Nazevfunkce"> &nbsp; &nbsp;MACHEB, MACAR, MACTH, ROMAN8, NEXTSTEP, ARMASCII, GEORGIAN_AC, GEORGIAN_PS,</span></p>
+<p class="p_Nazevfunkce"><span class="f_Nazevfunkce"> &nbsp; &nbsp;KOI8_T, MULELAO, CP1133, TIS620, CP874, VISCII, TCVN, ISO_IR_14, JIS_X0201,</span></p>
+<p class="p_Nazevfunkce"><span class="f_Nazevfunkce"> &nbsp; &nbsp;JIS_X0208, JIS_X0212, GB1988_80, GB2312_80, ISO_IR_165, ISO_IR_149, EUC_JP,</span></p>
+<p class="p_Nazevfunkce"><span class="f_Nazevfunkce"> &nbsp; &nbsp;SHIFT_JIS, CP932, ISO_2022_JP, ISO_2022_JP1, ISO_2022_JP2, GB2312, CP936,</span></p>
+<p class="p_Nazevfunkce"><span class="f_Nazevfunkce"> &nbsp; &nbsp;GB18030, ISO_2022_CN, ISO_2022_CNE, HZ, EUC_TW, BIG5, CP950, BIG5_HKSCS,</span></p>
+<p class="p_Nazevfunkce"><span class="f_Nazevfunkce"> &nbsp; &nbsp;EUC_KR, CP949, CP1361, ISO_2022_KR, CP737, CP775, CP853, CP855, CP857,</span></p>
+<p class="p_Nazevfunkce"><span class="f_Nazevfunkce"> &nbsp; &nbsp;CP858, CP860, CP861, CP863, CP864, CP865, CP869, CP1125}</span></p>
+<p>&nbsp;</p>
+<p class="p_Nadpisodstavce"><span class="f_Nadpisodstavce">Unit</span></p>
+<p>FCommonUtils</p>
+<p><span style="color: #000000;">&nbsp;</span></p>
+<p><span style="font-weight: bold;"><a href="TextSearch" class="filelink">Zobrazit příklad v externím programu</a></span></p>
+
+<!--ZOOMSTOP-->
+</div></div>
+<script type="text/javascript">
+
+var lastSlashPos = document.URL.lastIndexOf("/") > document.URL.lastIndexOf("\\") ? document.URL.lastIndexOf("/") : document.URL.lastIndexOf("\\");
+if( document.URL.substring(lastSlashPos + 1, lastSlashPos + 4).toLowerCase() != "~hh" )
+{
+ if (document.all) setTimeout(function() {nsrInit();},20); 
+    else nsrInit();
+ } 
+
+if ((!parent.hmNavigationFrame) && (parent.location) && (parent.location.href)) { $('.sync-toc').show();$('p.crumbs').hide();}
+
+</script>
+</body>
+</html>

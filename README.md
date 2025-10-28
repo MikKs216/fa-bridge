@@ -4,7 +4,9 @@ Propojení **Cursor/VS Code** s editorem **FormStudio (FA)** pomocí FA Bridge.
 
 ## Funkčnost
 
-Tato extension umožňuje komunikovat s FormStudio přes příkazy, které se zapisují do souboru `.fsbridge/facmd.txt`.
+Tato extension poskytuje:
+1. **Komunikaci s FormStudio** přes příkazy do souboru `.fsbridge/facmd.txt`
+2. **Pascal Syntax Highlighting** s podporou FA vlastních funkcí a formulářových odkazů
 
 ### 🎯 Sidebar Panel
 
@@ -22,6 +24,63 @@ Extension přidává vlastní panel do Activity Bar (levý panel). Kliknutím na
 | **Najít údaj ve formuláři** | <kbd>Shift</kbd>+<kbd>Alt</kbd>+<kbd>L</kbd> | Najde údaj podle slova pod kurzorem |
 
 > **Tip na macOS:** Nahraď <kbd>Ctrl</kbd> za <kbd>Cmd</kbd>
+
+### 🎨 Pascal Syntax Highlighting
+
+Extension poskytuje **plnou podporu Pascal/Delphi** s vlastními vylepšeními pro FA:
+
+#### Podporované soubory
+- `.pas` - Pascal source files
+- `.dpr` - Delphi project files
+- `.dfm` - Delphi form files
+- `.fmx` - FireMonkey form files
+- `.lfm` - Lazarus form files
+- `.lpr` - Lazarus project files
+
+#### FA Vlastní funkce
+Extension zvýrazňuje **200+ FA vlastních funkcí**:
+- Kontroly: `CheckRodneCislo`, `CheckICO`, `CheckDIC`, `CheckIBAN`
+- Web integrace: `NactiAdresuZARES`, `CheckVAT`, `SendEmail`
+- Data: `GetFormField`, `SetFormData`, `LoadStringFromFile`
+- UI: `MsgBoxAsk`, `ShowMessage`, `AskStr`, `DisplayCheck`
+- ...a mnoho dalších
+
+#### Formulářové odkazy
+Speciální zvýraznění pro odkazy na pole formuláře:
+- `[.nazevUdaje.]` - reference na údaj s tečkami
+- `[:nazevUdaje:]` - reference na údaj s dvojtečkami
+
+#### Barevná schémata
+Extension obsahuje 2 optimalizovaná témata:
+
+| Téma | Popis | Aktivace |
+|------|-------|----------|
+| **FA Pascal Light** | Světlé téma podle FA editoru | <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>P</kbd> → "FA Bridge: Přepnout na světlý motiv" |
+| **FA Pascal Dark** | Tmavé téma pro pohodlí | <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>P</kbd> → "FA Bridge: Přepnout na tmavý motiv" |
+
+Nebo použij standardní výběr themes: <kbd>Ctrl</kbd>+<kbd>K</kbd> <kbd>Ctrl</kbd>+<kbd>T</kbd> → "FA Pascal Light/Dark"
+
+> **Tip:** Témata lze aplikovat jen na Pascal soubory nebo nastavit jako globální téma pro celý editor.
+
+### ⚡ Pascal Snippety
+
+Extension obsahuje **11 užitečných snippetů** pro rychlejší psaní kódu:
+
+| Zkratka | Co vytvoří | Popis |
+|---------|-----------|-------|
+| `function` | Funkce | Funkce vracející hodnotu s Result |
+| `procedure` | Procedura | Základní procedura |
+| `if` | If-then-begin | If podmínka s begin-end blokem |
+| `for` | For cyklus | For cyklus s begin-end |
+| `try` | Try-finally | Try-finally blok pro cleanup |
+| `trye` | Try-except | Try-except s error handlingem |
+| `repeat` | Repeat-until | Repeat-until cyklus |
+| `while` | While cyklus | While cyklus s begin-end |
+| `case` | Case of | Case of struktura s else |
+| `var` | TStringList | TStringList s try-finally a for cyklem |
+| `begin` | Begin-end | Jednoduchý begin-end blok |
+
+**Použití:** Napiš zkratku (např. `function`) a stiskni <kbd>Tab</kbd> nebo <kbd>Enter</kbd>. Kurzor se automaticky přesune na místa, která je potřeba vyplnit.
 
 ## Instalace
 
@@ -71,6 +130,22 @@ npm run watch        # Watch mode
 npm run lint         # ESLint check
 ```
 
+### Vytvoření VSIX balíčku
+
+Pro vytvoření instalačního balíčku:
+
+```bash
+# 1. Zkompiluj TypeScript
+npm run compile
+
+# 2. Vytvoř VSIX balíček
+npx @vscode/vsce package
+```
+
+Vytvoří se soubor např. `fa-bridge-0.3.1.vsix`, který můžeš nainstalovat přes:
+- **Cursor/VS Code:** Ctrl+Shift+P → "Extensions: Install from VSIX..."
+- **Příkazová řádka:** `code --install-extension fa-bridge-0.3.1.vsix`
+
 ## Jak to funguje
 
 1. **Uživatel stiskne zkratku** (např. <kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>1</kbd>)
@@ -91,6 +166,15 @@ npm run test
 ```
 
 ## Release Notes
+
+### 0.3.1
+
+- ⚡ **Pascal Snippety:**
+  - Přidáno 11 snippetů pro rychlejší psaní kódu
+  - function, procedure, if, for, try, repeat, while, case, var, begin
+- 🎨 **Theme přepínání:**
+  - Nové příkazy v Command Palette pro rychlé přepnutí mezi FA Pascal Light a Dark
+  - "FA Bridge: Přepnout na světlý/tmavý motiv"
 
 ### 0.1.7
 

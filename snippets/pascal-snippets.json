@@ -1,0 +1,133 @@
+{
+  "Function": {
+    "prefix": "function",
+    "body": [
+      "function ${1:MyFunction}(): ${2:string};",
+      "begin",
+      "  Result := ${3:''};",
+      "end;"
+    ],
+    "description": "Vytvoří funkci"
+  },
+  "Procedure": {
+    "prefix": "procedure",
+    "body": [
+      "procedure ${1:MyProcedure}();",
+      "begin",
+      "  ${2:// code}",
+      "end;"
+    ],
+    "description": "Vytvoří proceduru"
+  },
+  "If Then Begin": {
+    "prefix": "if",
+    "body": [
+      "if ${1:TRUE} then",
+      "begin",
+      "  ${2:// code}",
+      "end;"
+    ],
+    "description": "If-then-begin blok"
+  },
+  "Var TStringList": {
+    "prefix": "var",
+    "body": [
+      "${1:sl}: TStringList;",
+      "begin",
+      "  ${1:sl} := TStringList.Create;",
+      "  try",
+      "    ${2:// use stringlist}",
+      "    for ${3:i} := 0 to ${1:sl}.Count - 1 do",
+      "    begin",
+      "      ${4:// process items}",
+      "    end;",
+      "  finally",
+      "    ${1:sl}.Free;",
+      "  end;",
+      "end;"
+    ],
+    "description": "TStringList proměnná s for cyklem"
+  },
+  "For Loop": {
+    "prefix": "for",
+    "body": [
+      "for ${1:i} := ${2:0} to ${3:Count} - 1 do",
+      "begin",
+      "  ${4:// code}",
+      "end;"
+    ],
+    "description": "For cyklus"
+  },
+  "Try Finally": {
+    "prefix": "try",
+    "body": [
+      "try",
+      "  ${1:// code}",
+      "finally",
+      "  ${2:// cleanup}",
+      "end;"
+    ],
+    "description": "Try-finally blok"
+  },
+  "Try Except": {
+    "prefix": "trye",
+    "body": [
+      "try",
+      "  ${1:// code}",
+      "except",
+      "  on E: ${2:Exception} do",
+      "  begin",
+      "    ${3:// error handling}",
+      "  end;",
+      "end;"
+    ],
+    "description": "Try-except blok"
+  },
+  "Repeat Until": {
+    "prefix": "repeat",
+    "body": [
+      "repeat",
+      "  ${1:// code}",
+      "until ${2:condition};"
+    ],
+    "description": "Repeat-until cyklus"
+  },
+  "While Do": {
+    "prefix": "while",
+    "body": [
+      "while ${1:condition} do",
+      "begin",
+      "  ${2:// code}",
+      "end;"
+    ],
+    "description": "While cyklus"
+  },
+  "Case Of": {
+    "prefix": "case",
+    "body": [
+      "case ${1:variable} of",
+      "  ${2:0}: begin",
+      "    ${3:Result := 0;}",
+      "  end;",
+      "  ${4:1}: begin",
+      "    ${5:Result := 1;}",
+      "  end;",
+      "else",
+      "  ${6:// default case}",
+      "end;"
+    ],
+    "description": "Case of blok"
+  },
+  "Begin End": {
+    "prefix": "begin",
+    "body": [
+      "begin",
+      "  ${1:// code}",
+      "end;"
+    ],
+    "description": "Begin-end blok"
+  }
+}
+
+
+

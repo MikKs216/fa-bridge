@@ -57,6 +57,14 @@ fa-bridge/
 │ │ └── fsBridge.ts # Komunikace s FA
 │ └── views/
 │   └── FABridgePanel.ts # Sidebar TreeView
+├── snippets/
+│ └── pascal-snippets.json # Pascal code snippety
+├── syntaxes/
+│ └── pascal.tmLanguage # Pascal grammar (TextMate)
+├── themes/
+│ ├── fa-pascal-light.json # Světlý color theme
+│ └── fa-pascal-dark.json # Tmavý color theme
+├── language-configuration.json # Pascal language config
 ├── package.json
 ├── tsconfig.json
 ├── README.md
@@ -86,6 +94,43 @@ fa-bridge/
   - Atomický zápis do `.fsbridge/facmd.txt`
   - Použít UTF-8 s BOM
   - Bez trailing newline
+
+## Pascal Podpora (v0.2.0 a výš)
+
+### Syntax Highlighting
+- **Soubor:** `syntaxes/pascal.tmLanguage` (TextMate Grammar)
+- **Původ:** Převzato z `alefragnani.pascal-9.9.0` extension
+- **Vlastní úpravy:**
+  - FA Form Field References: `[.field.]` a `[:field:]`
+  - 408 FA vlastních funkcí (CheckRodneCislo, NactiAdresuZARES, ini, chk, lst, atd.)
+
+### Language Configuration
+- **Soubor:** `language-configuration.json`
+- **Funkce:** Auto-closing závorek, komentářů, region folding
+- **Podporované soubory:** .pas, .dpr, .dfm, .fmx, .lfm, .lpr
+
+### Color Themes
+- **FA Pascal Light:** Světlý theme podle FA editoru
+  - Klíčová slova: #000080 (tmavě modrá)
+  - FA funkce: #C000C0 (červenofialová)
+  - Fieldy: #008000 (zelená)
+  - Řetězce: #0000FF (modrá)
+- **FA Pascal Dark:** Tmavý theme pro pohodlí
+  - Klíčová slova: #5C9EFF (světle modrá)
+  - FA funkce: #D896FF (tmavší fialová)
+  - Fieldy: #00C000 (zelená)
+  - Řetězce: #6699FF (modrá)
+
+### Pascal Snippety (v0.3.1)
+- **Soubor:** `snippets/pascal-snippets.json`
+- **Počet:** 11 snippetů
+- **Příklady:** function, procedure, if, for, try, trye, repeat, while, case, var, begin
+- **Použití:** Napiš zkratku (např. `function`) a stiskni Tab
+
+### Commands pro Themes (v0.3.1)
+- `faBridge.setLightTheme` - Přepne na FA Pascal Light
+- `faBridge.setDarkTheme` - Přepne na FA Pascal Dark
+- **Použití:** Ctrl+Shift+P → "FA Bridge: Přepnout na světlý/tmavý motiv"
 
 ## Budoucí Rozšíření
 
@@ -211,9 +256,19 @@ Když AI začne pracovat na extension:
 
 **Vytvořeno:** Říjen 2025  
 **Status:** ✅ Implementováno a funkční  
-**Verze:** 0.1.7
+**Verze:** 0.3.1
 
 ## Changelog
+
+### v0.3.1 (28.10.2025)
+- ⚡ **Pascal Snippety:** 11 užitečných snippetů pro rychlejší psaní kódu
+  - Snippety: function, procedure, if, for, try, trye, repeat, while, case, var, begin
+  - Použití: Napiš zkratku a stiskni Tab
+  - Soubor: `snippets/pascal-snippets.json`
+- 🎨 **Theme přepínání přes Command Palette:**
+  - Příkazy: `faBridge.setLightTheme`, `faBridge.setDarkTheme`
+  - Command Palette: Ctrl+Shift+P → "FA Bridge: Přepnout na světlý/tmavý motiv"
+  - Okamžité přepnutí mezi FA Pascal Light a Dark themes
 
 ### v0.1.7 (28.10.2025)
 - ✏️ **Aktualizace názvů:**
