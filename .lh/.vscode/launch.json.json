@@ -1,0 +1,34 @@
+{
+    "sourceFile": ".vscode/launch.json",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 4,
+            "patches": [
+                {
+                    "date": 1760864189019,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1760864280732,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -4,9 +4,9 @@\n \t\t{\r\n \t\t\t\"name\": \"Run Extension\",\r\n \t\t\t\"type\": \"extensionHost\",\r\n \t\t\t\"request\": \"launch\",\r\n-\t\t\t\"runtimeExecutable\": \"${execPath}\",\r\n+\t\t\t\"runtimeExecutable\": \"C:\\\\Users\\\\Kastner\\\\AppData\\\\Local\\\\Programs\\\\Microsoft VS Code\\\\bin\\\\code\",\r\n \t\t\t\"args\": [\r\n \t\t\t\t\"--extensionDevelopmentPath=${workspaceFolder}\"\r\n \t\t\t],\r\n \t\t\t\"outFiles\": [\r\n@@ -15,4 +15,5 @@\n \t\t\t\"preLaunchTask\": \"${defaultBuildTask}\"\r\n \t\t}\r\n \t]\r\n }\r\n+\r\n"
+                },
+                {
+                    "date": 1760864397344,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -4,16 +4,20 @@\n \t\t{\r\n \t\t\t\"name\": \"Run Extension\",\r\n \t\t\t\"type\": \"extensionHost\",\r\n \t\t\t\"request\": \"launch\",\r\n-\t\t\t\"runtimeExecutable\": \"C:\\\\Users\\\\Kastner\\\\AppData\\\\Local\\\\Programs\\\\Microsoft VS Code\\\\bin\\\\code\",\r\n-\t\t\t\"args\": [\r\n-\t\t\t\t\"--extensionDevelopmentPath=${workspaceFolder}\"\r\n+\t\t\t\"runtimeExecutable\": \"C:\\\\Users\\\\Kastner\\\\AppData\\\\Local\\\\Programs\\\\Microsoft VS Code\\\\bin\\\\code.cmd\",\r\n+\t\t\t\"runtimeArgs\": [\r\n+\t\t\t\t\"--extensionDevelopmentPath=${workspaceFolder}\",\r\n+\t\t\t\t\"${workspaceFolder}\"\r\n \t\t\t],\r\n \t\t\t\"outFiles\": [\r\n \t\t\t\t\"${workspaceFolder}/out/**/*.js\"\r\n \t\t\t],\r\n-\t\t\t\"preLaunchTask\": \"${defaultBuildTask}\"\r\n+\t\t\t\"preLaunchTask\": \"${defaultBuildTask}\",\r\n+\t\t\t\"env\": {\r\n+\t\t\t\t\"VSCODE_PATH\": \"C:\\\\Users\\\\Kastner\\\\AppData\\\\Local\\\\Programs\\\\Microsoft VS Code\"\r\n+\t\t\t}\r\n \t\t}\r\n \t]\r\n }\r\n \r\n"
+                },
+                {
+                    "date": 1760865296508,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,23 +1,19 @@\n-{\r\n-\t\"version\": \"0.2.0\",\r\n-\t\"configurations\": [\r\n-\t\t{\r\n-\t\t\t\"name\": \"Run Extension\",\r\n-\t\t\t\"type\": \"extensionHost\",\r\n-\t\t\t\"request\": \"launch\",\r\n-\t\t\t\"runtimeExecutable\": \"C:\\\\Users\\\\Kastner\\\\AppData\\\\Local\\\\Programs\\\\Microsoft VS Code\\\\bin\\\\code.cmd\",\r\n-\t\t\t\"runtimeArgs\": [\r\n-\t\t\t\t\"--extensionDevelopmentPath=${workspaceFolder}\",\r\n-\t\t\t\t\"${workspaceFolder}\"\r\n-\t\t\t],\r\n-\t\t\t\"outFiles\": [\r\n-\t\t\t\t\"${workspaceFolder}/out/**/*.js\"\r\n-\t\t\t],\r\n-\t\t\t\"preLaunchTask\": \"${defaultBuildTask}\",\r\n-\t\t\t\"env\": {\r\n-\t\t\t\t\"VSCODE_PATH\": \"C:\\\\Users\\\\Kastner\\\\AppData\\\\Local\\\\Programs\\\\Microsoft VS Code\"\r\n-\t\t\t}\r\n-\t\t}\r\n-\t]\r\n-}\r\n-\r\n+{\n+\t\"version\": \"0.2.0\",\n+\t\"configurations\": [\n+\t\t{\n+\t\t\t\"name\": \"Run Extension\",\n+\t\t\t\"type\": \"extensionHost\",\n+\t\t\t\"request\": \"launch\",\n+\t\t\t\"runtimeExecutable\": \"C:\\\\Users\\\\Kastner\\\\AppData\\\\Local\\\\Programs\\\\Microsoft VS Code\\\\bin\\\\code.cmd\",\n+\t\t\t\"args\": [\n+\t\t\t\t\"--extensionDevelopmentPath=${workspaceFolder}\"\n+\t\t\t],\n+\t\t\t\"outFiles\": [\n+\t\t\t\t\"${workspaceFolder}/out/**/*.js\"\n+\t\t\t],\n+\t\t\t\"preLaunchTask\": \"${defaultBuildTask}\"\n+\t\t}\n+\t]\n+}\n+\n"
+                },
+                {
+                    "date": 1760865864410,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -4,16 +4,15 @@\n \t\t{\n \t\t\t\"name\": \"Run Extension\",\n \t\t\t\"type\": \"extensionHost\",\n \t\t\t\"request\": \"launch\",\n-\t\t\t\"runtimeExecutable\": \"C:\\\\Users\\\\Kastner\\\\AppData\\\\Local\\\\Programs\\\\Microsoft VS Code\\\\bin\\\\code.cmd\",\n \t\t\t\"args\": [\n \t\t\t\t\"--extensionDevelopmentPath=${workspaceFolder}\"\n \t\t\t],\n \t\t\t\"outFiles\": [\n \t\t\t\t\"${workspaceFolder}/out/**/*.js\"\n \t\t\t],\n-\t\t\t\"preLaunchTask\": \"${defaultBuildTask}\"\n+\t\t\t\"preLaunchTask\": \"compile\"\n \t\t}\n \t]\n }\n \n"
+                }
+            ],
+            "date": 1760864189019,
+            "name": "Commit-0",
+            "content": "{\r\n\t\"version\": \"0.2.0\",\r\n\t\"configurations\": [\r\n\t\t{\r\n\t\t\t\"name\": \"Run Extension\",\r\n\t\t\t\"type\": \"extensionHost\",\r\n\t\t\t\"request\": \"launch\",\r\n\t\t\t\"runtimeExecutable\": \"${execPath}\",\r\n\t\t\t\"args\": [\r\n\t\t\t\t\"--extensionDevelopmentPath=${workspaceFolder}\"\r\n\t\t\t],\r\n\t\t\t\"outFiles\": [\r\n\t\t\t\t\"${workspaceFolder}/out/**/*.js\"\r\n\t\t\t],\r\n\t\t\t\"preLaunchTask\": \"${defaultBuildTask}\"\r\n\t\t}\r\n\t]\r\n}\r\n"
+        }
+    ]
+}

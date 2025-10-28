@@ -1,0 +1,26 @@
+{
+    "sourceFile": "CHANGELOG.md",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 2,
+            "patches": [
+                {
+                    "date": 1761654732519,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1761655835618,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,8 +1,14 @@\n # Change Log\n \n All notable changes to the \"fa-bridge\" extension will be documented in this file.\n \n+## [0.1.6] - 2025-10-28\n+\n+### Removed\n+- Odstraněna registrace příkazů v Command Palette (Ctrl+Shift+P)\n+- Všechny funkce jsou nyní dostupné pouze v sidebaru FA Bridge pro čistší UI\n+\n ## [0.1.5] - 2025-10-28\n \n ### Changed\n - Alt+Q nyní volá Save (Ctrl+S) místo aktivace FA\n"
+                },
+                {
+                    "date": 1761656234062,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,8 +1,18 @@\n # Change Log\n \n All notable changes to the \"fa-bridge\" extension will be documented in this file.\n \n+## [0.1.7] - 2025-10-28\n+\n+### Changed\n+- Aktualizovány názvy příkazů v sidebaru\n+- \"Uložit a aktivovat FA\" → \"Aktivovat FA\"\n+- \"Kopírovat název údaje\" → \"Název údaje do clipboardu\"\n+\n+### Removed\n+- Odstraněna funkce \"Zkompilovat script\" (Shift+Alt+D) - nebyla používána\n+\n ## [0.1.6] - 2025-10-28\n \n ### Removed\n - Odstraněna registrace příkazů v Command Palette (Ctrl+Shift+P)\n"
+                }
+            ],
+            "date": 1761654732519,
+            "name": "Commit-0",
+            "content": "# Change Log\n\nAll notable changes to the \"fa-bridge\" extension will be documented in this file.\n\n## [0.1.5] - 2025-10-28\n\n### Changed\n- Alt+Q nyní volá Save (Ctrl+S) místo aktivace FA\n- Zachováno pro rychlé uložení jednou rukou\n\n### Removed\n- Odstraněno \"Uložit vše\" (Alt+S) - kolidovalo s menu Selection v Cursoru\n\n## [0.1.4] - 2025-10-28\n\n### Fixed\n- Lepší error handling - chybové hlášky zobrazují skutečnou příčinu problému\n\n## [0.1.3] - 2025-10-28\n\n### Added\n- Vlastní ikona extension vytvořená na základě FScode ikony s písmenem \"F\"\n\n## [0.1.2] - 2025-10-28\n\n### Added\n- Přidány standardní příkazy do sidebaru (Uložit soubor, Uložit vše)\n\n## [0.1.1] - 2025-10-28\n\n### Changed\n- Jednotné zkratky - všechny příkazy nyní používají Shift+Alt\n- Otevřít sidebar: Ctrl+Alt+F → Shift+Alt+F\n- Vložit název: Ctrl+Alt+V → Shift+Alt+V\n\n### Removed\n- Odstraněn testovací příkaz `faBridge.test`\n\n## [0.1.0] - 2025-10-28\n\n### Added\n- Nová funkce: Kopírovat název údaje do schránky (Shift+Alt+C)\n- Nová funkce: Najít údaj ve formuláři podle slova pod kurzorem (Shift+Alt+L)\n\n### Changed\n- Změna zkratky \"Aktivovat formulář\" z Ctrl+Alt+1 na Alt+Q\n- Změna zkratky \"Zkompilovat script\" z Ctrl+Alt+2 na Shift+Alt+D\n\n### Removed\n- Odstraněn testovací příkaz c999\n\n## [0.0.3] - 2025-10-28\n\n### Added\n- Klávesová zkratka Ctrl+Alt+F pro otevření sidebaru\n\n### Fixed\n- Kompatibilita s Cursor (snížena minimální verze na 1.85.0)\n\n## [0.0.2] - 2025-10-28\n\n### Added\n- Přidán sidebar panel v Activity Bar\n- TreeView s příkazy a klávesovými zkratkami\n\n### Changed\n- Změna zkratky pro \"Vložit název\" z Ctrl+Alt+3 na Ctrl+Alt+V\n\n### Removed\n- Odstraněno Quick Pick menu\n\n## [0.0.1] - 2025-10-23\n\n### Added\n- Základní implementace\n- Příkazy přes Quick Pick menu"
+        }
+    ]
+}

@@ -1,0 +1,18 @@
+{
+    "sourceFile": "dev-run.ps1",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1760864600804,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1760864600804,
+            "name": "Commit-0",
+            "content": "# FA Bridge - Spuštění VS Code s Extension Development Mode\r\n# Spusť: .\\dev-run.ps1\r\n\r\n$vscodePath = \"C:\\Users\\Kastner\\AppData\\Local\\Programs\\Microsoft VS Code\\bin\\code.cmd\"\r\n$projectPath = Split-Path -Parent $MyInvocation.MyCommand.Path\r\n\r\nWrite-Host \"🚀 Spouštím VS Code s FA Bridge extension...\" -ForegroundColor Green\r\nWrite-Host \"Projekt: $projectPath\" -ForegroundColor Cyan\r\n\r\n& $vscodePath --extensionDevelopmentPath=$projectPath $projectPath\r\n\r\nWrite-Host \"✓ VS Code spuštěn!\" -ForegroundColor Green\r\n"
+        }
+    ]
+}

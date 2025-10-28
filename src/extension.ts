@@ -3,22 +3,24 @@
 import * as vscode from 'vscode';
 import {
 	aktivovatFormular,
-	zkompilovatScript,
 	vlozitNazevUdaje,
-	sendC999,
-	showMenu,
+	kopirovatNazevUdaje,
+	najitUdaj,
 } from './commands/sendCommand';
+import { registerFABridgePanel } from './views/FABridgePanel';
 
 export function activate(context: vscode.ExtensionContext) {
 	console.log('[FA Bridge] Extension aktivována');
 
+	// Registruj sidebar panel
+	registerFABridgePanel(context);
+
 	// Registruj všechny příkazy
 	const commands = [
 		vscode.commands.registerCommand('faBridge.aktivovatFormular', aktivovatFormular),
-		vscode.commands.registerCommand('faBridge.zkompilovatScript', zkompilovatScript),
 		vscode.commands.registerCommand('faBridge.vlozitNazevUdaje', vlozitNazevUdaje),
-		vscode.commands.registerCommand('faBridge.sendC999', sendC999),
-		vscode.commands.registerCommand('faBridge.menu', showMenu),
+		vscode.commands.registerCommand('faBridge.kopirovatNazevUdaje', kopirovatNazevUdaje),
+		vscode.commands.registerCommand('faBridge.najitUdaj', najitUdaj),
 	];
 
 	context.subscriptions.push(...commands);

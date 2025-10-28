@@ -1,70 +1,63 @@
 {
   "name": "fa-bridge",
   "displayName": "FA Bridge",
+  "publisher": "fa-dev",
   "description": "Propojení Cursor/VS Code s editorem FormStudio (FA)",
-  "version": "0.0.1",
+  "version": "0.1.7",
   "engines": {
-    "vscode": "^1.105.0"
+    "vscode": "^1.85.0"
   },
   "categories": [
     "Other"
   ],
+  "icon": "images/icon.png",
   "activationEvents": [
-    "onCommand:faBridge.aktivovatFormular",
-    "onCommand:faBridge.zkompilovatScript",
-    "onCommand:faBridge.vlozitNazevUdaje",
-    "onCommand:faBridge.sendC999",
-    "onCommand:faBridge.menu"
+    "*"
   ],
   "main": "./out/extension.js",
   "contributes": {
-    "commands": [
-      {
-        "command": "faBridge.aktivovatFormular",
-        "title": "FA: Aktivovat formulář"
-      },
-      {
-        "command": "faBridge.zkompilovatScript",
-        "title": "FA: Zkompilovat script"
-      },
-      {
-        "command": "faBridge.vlozitNazevUdaje",
-        "title": "FA: Vložit název údajů"
-      },
-      {
-        "command": "faBridge.sendC999",
-        "title": "FA: c999"
-      },
-      {
-        "command": "faBridge.menu",
-        "title": "FA: Menu"
-      }
-    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "faBridgeContainer",
+          "title": "FA Bridge",
+          "icon": "images/icon.png"
+        }
+      ]
+    },
+    "views": {
+      "faBridgeContainer": [
+        {
+          "id": "faBridgePanel",
+          "name": "Příkazy"
+        }
+      ]
+    },
     "keybindings": [
       {
-        "command": "faBridge.menu",
-        "key": "ctrl+alt+f",
-        "mac": "cmd+alt+f"
+        "command": "workbench.view.extension.faBridgeContainer",
+        "key": "shift+alt+f",
+        "mac": "shift+alt+f"
       },
       {
-        "command": "faBridge.aktivovatFormular",
-        "key": "ctrl+alt+1",
-        "mac": "cmd+alt+1"
-      },
-      {
-        "command": "faBridge.zkompilovatScript",
-        "key": "ctrl+alt+2",
-        "mac": "cmd+alt+2"
+        "command": "workbench.action.files.save",
+        "key": "alt+q",
+        "mac": "alt+q"
       },
       {
         "command": "faBridge.vlozitNazevUdaje",
-        "key": "ctrl+alt+3",
-        "mac": "cmd+alt+3"
+        "key": "shift+alt+v",
+        "mac": "shift+alt+v"
       },
       {
-        "command": "faBridge.sendC999",
-        "key": "ctrl+alt+9",
-        "mac": "cmd+alt+9"
+        "command": "faBridge.kopirovatNazevUdaje",
+        "key": "shift+alt+c",
+        "mac": "shift+alt+c"
+      },
+      {
+        "command": "faBridge.najitUdaj",
+        "key": "shift+alt+l",
+        "mac": "shift+alt+l"
       }
     ]
   },
@@ -77,7 +70,7 @@
     "test": "vscode-test"
   },
   "devDependencies": {
-    "@types/vscode": "^1.105.0",
+    "@types/vscode": "^1.85.0",
     "@types/mocha": "^10.0.10",
     "@types/node": "22.x",
     "@typescript-eslint/eslint-plugin": "^8.45.0",

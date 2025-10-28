@@ -1,0 +1,22 @@
+{
+    "sourceFile": ".vscode/tasks.json",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 1,
+            "patches": [
+                {
+                    "date": 1760864189009,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1760865864406,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,17 +1,24 @@\n {\r\n \t\"version\": \"2.0.0\",\r\n \t\"tasks\": [\r\n \t\t{\r\n-\t\t\t\"label\": \"npm: compile\",\r\n-\t\t\t\"detail\": \"tsc -p ./\",\r\n-\t\t\t\"type\": \"npm\",\r\n-\t\t\t\"script\": \"compile\",\r\n+\t\t\t\"label\": \"compile\",\r\n+\t\t\t\"type\": \"shell\",\r\n+\t\t\t\"command\": \"npm\",\r\n+\t\t\t\"args\": [\r\n+\t\t\t\t\"run\",\r\n+\t\t\t\t\"compile\"\r\n+\t\t\t],\r\n \t\t\t\"problemMatcher\": \"$tsc\",\r\n \t\t\t\"group\": {\r\n \t\t\t\t\"kind\": \"build\",\r\n \t\t\t\t\"isDefault\": true\r\n-\t\t\t},\r\n-\t\t\t\"isBackground\": false\r\n+\t\t\t}\r\n \t\t}\r\n \t]\r\n }\r\n+\r\n+\r\n+\r\n+\r\n+\r\n"
+                }
+            ],
+            "date": 1760864189009,
+            "name": "Commit-0",
+            "content": "{\r\n\t\"version\": \"2.0.0\",\r\n\t\"tasks\": [\r\n\t\t{\r\n\t\t\t\"label\": \"npm: compile\",\r\n\t\t\t\"detail\": \"tsc -p ./\",\r\n\t\t\t\"type\": \"npm\",\r\n\t\t\t\"script\": \"compile\",\r\n\t\t\t\"problemMatcher\": \"$tsc\",\r\n\t\t\t\"group\": {\r\n\t\t\t\t\"kind\": \"build\",\r\n\t\t\t\t\"isDefault\": true\r\n\t\t\t},\r\n\t\t\t\"isBackground\": false\r\n\t\t}\r\n\t]\r\n}\r\n"
+        }
+    ]
+}
