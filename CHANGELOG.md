@@ -2,6 +2,26 @@
 
 All notable changes to the "fa-bridge" extension will be documented in this file.
 
+## [0.4.0] - 2025-10-29
+
+### Added
+- **Nastavení pro zapnutí/vypnutí snippetů**: V nastavení rozšíření (File > Preferences > Settings > FA Bridge) je nyní možné vypnout Pascal snippety
+  - Nastavení `faBridge.enableSnippets` (výchozí: zapnuto)
+  - Snippety jsou nyní poskytovány programově místo statické registrace
+  - Umožňuje uživatelům deaktivovat snippety pokud používají vlastní
+
+### Changed
+- Snippety jsou nyní poskytovány přes `CompletionItemProvider` místo statické registrace v `package.json`
+- To umožňuje dynamické zapínání/vypínání bez nutnosti reinstalace rozšíření
+
+## [0.3.9] - 2025-10-29
+
+### Changed
+- **Syntax Highlighting - barva číselných konstant**: Změněna barva čísel na tmavě modrou
+  - Light theme: `#000080` (tmavě modrá, stejná jako klíčová slova)
+  - Dark theme: `#5C9EFF` (světle modrá, stejná jako klíčová slova)
+  - Předchozí zelená barva (#098658 / #B5CEA8) nahrazena
+
 ## [0.3.8] - 2025-10-29
 
 ### Changed

@@ -8,12 +8,16 @@ import {
 	najitUdaj,
 } from './commands/sendCommand';
 import { registerFABridgePanel } from './views/FABridgePanel';
+import { registerSnippetProvider } from './providers/SnippetProvider';
 
 export function activate(context: vscode.ExtensionContext) {
 	console.log('[FA Bridge] Extension aktivována');
 
 	// Registruj sidebar panel
 	registerFABridgePanel(context);
+
+	// Registruj Pascal snippet provider (s nastavením zapnout/vypnout)
+	context.subscriptions.push(registerSnippetProvider(context));
 
 	// Registruj všechny příkazy
 	const commands = [

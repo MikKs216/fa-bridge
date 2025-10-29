@@ -3,7 +3,7 @@
     "activeCommit": 0,
     "commits": [
         {
-            "activePatchIndex": 13,
+            "activePatchIndex": 14,
             "patches": [
                 {
                     "date": 1760864600788,
@@ -60,6 +60,10 @@
                 {
                     "date": 1761668031750,
                     "content": "Index: \n===================================================================\n--- \n+++ \n@@ -129,8 +129,24 @@\n npm run watch        # Watch mode\n npm run lint         # ESLint check\n ```\n \n+### Vytvoření VSIX balíčku\n+\n+Pro vytvoření instalačního balíčku:\n+\n+```bash\n+# 1. Zkompiluj TypeScript\n+npm run compile\n+\n+# 2. Vytvoř VSIX balíček\n+npx @vscode/vsce package\n+```\n+\n+Vytvoří se soubor např. `fa-bridge-0.3.1.vsix`, který můžeš nainstalovat přes:\n+- **Cursor/VS Code:** Ctrl+Shift+P → \"Extensions: Install from VSIX...\"\n+- **Příkazová řádka:** `code --install-extension fa-bridge-0.3.1.vsix`\n+\n ## Jak to funguje\n \n 1. **Uživatel stiskne zkratku** (např. <kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>1</kbd>)\n 2. **Extension napíše příkaz** do souboru `.fsbridge/facmd.txt` (UTF-8 s BOM, bez trailing newline)\n"
+                },
+                {
+                    "date": 1761737914208,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -81,8 +81,23 @@\n | `begin` | Begin-end | Jednoduchý begin-end blok |\n \n **Použití:** Napiš zkratku (např. `function`) a stiskni <kbd>Tab</kbd> nebo <kbd>Enter</kbd>. Kurzor se automaticky přesune na místa, která je potřeba vyplnit.\n \n+#### Vypnutí snippetů\n+\n+Pokud preferuješ vlastní snippety nebo jiné rozšíření, můžeš naše snippety vypnout:\n+\n+1. Otevři nastavení: <kbd>Ctrl</kbd>+<kbd>,</kbd> (nebo File > Preferences > Settings)\n+2. Vyhledej: `FA Bridge`\n+3. Odškrtni: **Enable Snippets**\n+\n+Nebo přímo v `settings.json`:\n+```json\n+{\n+  \"faBridge.enableSnippets\": false\n+}\n+```\n+\n ## Instalace\n \n 1. Klonuj tento repo\n 2. Spusť `npm install` v kořenovém adresáři\n"
                 }
             ],
             "date": 1760864600788,

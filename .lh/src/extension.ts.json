@@ -3,7 +3,7 @@
     "activeCommit": 0,
     "commits": [
         {
-            "activePatchIndex": 5,
+            "activePatchIndex": 6,
             "patches": [
                 {
                     "date": 1760866181952,
@@ -28,6 +28,10 @@
                 {
                     "date": 1761665818230,
                     "content": "Index: \n===================================================================\n--- \n+++ \n@@ -20,8 +20,26 @@\n \t\tvscode.commands.registerCommand('faBridge.aktivovatFormular', aktivovatFormular),\n \t\tvscode.commands.registerCommand('faBridge.vlozitNazevUdaje', vlozitNazevUdaje),\n \t\tvscode.commands.registerCommand('faBridge.kopirovatNazevUdaje', kopirovatNazevUdaje),\n \t\tvscode.commands.registerCommand('faBridge.najitUdaj', najitUdaj),\n+\t\t\n+\t\t// Commands pro přepínání color themes\n+\t\tvscode.commands.registerCommand('faBridge.setLightTheme', () => {\n+\t\t\tvscode.workspace.getConfiguration('workbench').update(\n+\t\t\t\t'colorTheme',\n+\t\t\t\t'FA Pascal Light',\n+\t\t\t\tvscode.ConfigurationTarget.Global\n+\t\t\t);\n+\t\t\tvscode.window.showInformationMessage('Přepnuto na FA Pascal Light theme');\n+\t\t}),\n+\t\tvscode.commands.registerCommand('faBridge.setDarkTheme', () => {\n+\t\t\tvscode.workspace.getConfiguration('workbench').update(\n+\t\t\t\t'colorTheme',\n+\t\t\t\t'FA Pascal Dark',\n+\t\t\t\tvscode.ConfigurationTarget.Global\n+\t\t\t);\n+\t\t\tvscode.window.showInformationMessage('Přepnuto na FA Pascal Dark theme');\n+\t\t}),\n \t];\n \n \tcontext.subscriptions.push(...commands);\n }\n"
+                },
+                {
+                    "date": 1761737914201,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -7,15 +7,19 @@\n \tkopirovatNazevUdaje,\n \tnajitUdaj,\n } from './commands/sendCommand';\n import { registerFABridgePanel } from './views/FABridgePanel';\n+import { registerSnippetProvider } from './providers/SnippetProvider';\n \n export function activate(context: vscode.ExtensionContext) {\n \tconsole.log('[FA Bridge] Extension aktivována');\n \n \t// Registruj sidebar panel\n \tregisterFABridgePanel(context);\n \n+\t// Registruj Pascal snippet provider (s nastavením zapnout/vypnout)\n+\tcontext.subscriptions.push(registerSnippetProvider(context));\n+\n \t// Registruj všechny příkazy\n \tconst commands = [\n \t\tvscode.commands.registerCommand('faBridge.aktivovatFormular', aktivovatFormular),\n \t\tvscode.commands.registerCommand('faBridge.vlozitNazevUdaje', vlozitNazevUdaje),\n"
                 }
             ],
             "date": 1760866181952,

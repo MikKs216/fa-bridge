@@ -82,6 +82,21 @@ Extension obsahuje **11 užitečných snippetů** pro rychlejší psaní kódu:
 
 **Použití:** Napiš zkratku (např. `function`) a stiskni <kbd>Tab</kbd> nebo <kbd>Enter</kbd>. Kurzor se automaticky přesune na místa, která je potřeba vyplnit.
 
+#### Vypnutí snippetů
+
+Pokud preferuješ vlastní snippety nebo jiné rozšíření, můžeš naše snippety vypnout:
+
+1. Otevři nastavení: <kbd>Ctrl</kbd>+<kbd>,</kbd> (nebo File > Preferences > Settings)
+2. Vyhledej: `FA Bridge`
+3. Odškrtni: **Enable Snippets**
+
+Nebo přímo v `settings.json`:
+```json
+{
+  "faBridge.enableSnippets": false
+}
+```
+
 ## Instalace
 
 1. Klonuj tento repo

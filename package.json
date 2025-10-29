@@ -3,7 +3,7 @@
   "displayName": "FA Bridge",
   "publisher": "fa-dev",
   "description": "Propojení Cursor/VS Code s editorem FormStudio (FA)",
-  "version": "0.3.8",
+  "version": "0.4.0",
   "engines": {
     "vscode": "^1.85.0"
   },
@@ -18,12 +18,16 @@
   ],
   "main": "./out/extension.js",
   "contributes": {
-    "snippets": [
-      {
-        "language": "pascal",
-        "path": "./snippets/pascal-snippets.json"
+    "configuration": {
+      "title": "FA Bridge",
+      "properties": {
+        "faBridge.enableSnippets": {
+          "type": "boolean",
+          "default": true,
+          "description": "Povolit Pascal snippety (function, procedure, if, for, try, atd.)"
+        }
       }
-    ],
+    },
     "commands": [
       {
         "command": "faBridge.setLightTheme",

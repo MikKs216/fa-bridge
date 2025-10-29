@@ -3,7 +3,7 @@
     "activeCommit": 0,
     "commits": [
         {
-            "activePatchIndex": 12,
+            "activePatchIndex": 14,
             "patches": [
                 {
                     "date": 1761654732519,
@@ -56,6 +56,14 @@
                 {
                     "date": 1761732306523,
                     "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,8 +1,18 @@\n # Change Log\n \n All notable changes to the \"fa-bridge\" extension will be documented in this file.\n \n+## [0.3.8] - 2025-10-29\n+\n+### Changed\n+- **Syntax Highlighting pro FA Form Field References - finální verze**: Závorky ponechány na standardním chování\n+  - Hranaté závorky `[` `]` se řídí standardním Bracket Pair Colorization editoru\n+  - Barevné odlišení vnořených závorek zůstává funkční (je to feature editoru)\n+  - Barvíme pouze obsah: `.nazevUdaje.` nebo `:nazevUdaje:` zeleně\n+  - Použit lookbehind/lookahead regex: `(?<=\\[)(\\.|\\:)[A-Za-z_]\\w*(\\.|\\:)(?=\\])`\n+  - Jednoduchý scope: `entity.name.field.fa.pascal`\n+\n ## [0.3.7] - 2025-10-29\n \n ### Fixed\n - **Syntax Highlighting pro FA Form Field References - oprava barvení závorek**: Explicitní nastavení barvy závorek\n"
+                },
+                {
+                    "date": 1761734560492,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,8 +1,16 @@\n # Change Log\n \n All notable changes to the \"fa-bridge\" extension will be documented in this file.\n \n+## [0.3.9] - 2025-10-29\n+\n+### Changed\n+- **Syntax Highlighting - barva číselných konstant**: Změněna barva čísel na tmavě modrou\n+  - Light theme: `#000080` (tmavě modrá, stejná jako klíčová slova)\n+  - Dark theme: `#5C9EFF` (světle modrá, stejná jako klíčová slova)\n+  - Předchozí zelená barva (#098658 / #B5CEA8) nahrazena\n+\n ## [0.3.8] - 2025-10-29\n \n ### Changed\n - **Syntax Highlighting pro FA Form Field References - finální verze**: Závorky ponechány na standardním chování\n"
+                },
+                {
+                    "date": 1761737914207,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,8 +1,20 @@\n # Change Log\n \n All notable changes to the \"fa-bridge\" extension will be documented in this file.\n \n+## [0.4.0] - 2025-10-29\n+\n+### Added\n+- **Nastavení pro zapnutí/vypnutí snippetů**: V nastavení rozšíření (File > Preferences > Settings > FA Bridge) je nyní možné vypnout Pascal snippety\n+  - Nastavení `faBridge.enableSnippets` (výchozí: zapnuto)\n+  - Snippety jsou nyní poskytovány programově místo statické registrace\n+  - Umožňuje uživatelům deaktivovat snippety pokud používají vlastní\n+\n+### Changed\n+- Snippety jsou nyní poskytovány přes `CompletionItemProvider` místo statické registrace v `package.json`\n+- To umožňuje dynamické zapínání/vypínání bez nutnosti reinstalace rozšíření\n+\n ## [0.3.9] - 2025-10-29\n \n ### Changed\n - **Syntax Highlighting - barva číselných konstant**: Změněna barva čísel na tmavě modrou\n"
                 }
             ],
             "date": 1761654732519,

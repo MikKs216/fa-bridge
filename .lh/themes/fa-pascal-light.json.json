@@ -3,7 +3,7 @@
     "activeCommit": 0,
     "commits": [
         {
-            "activePatchIndex": 5,
+            "activePatchIndex": 6,
             "patches": [
                 {
                     "date": 1761662863413,
@@ -28,6 +28,10 @@
                 {
                     "date": 1761732306519,
                     "content": "Index: \n===================================================================\n--- \n+++ \n@@ -68,20 +68,10 @@\n         \"fontStyle\": \"\"\n       }\n     },\n     {\n-      \"name\": \"FA Form Field Reference - Brackets\",\n+      \"name\": \"FA Form Field Reference\",\n       \"scope\": [\n-        \"punctuation.bracket.square.fa.pascal\"\n-      ],\n-      \"settings\": {\n-        \"foreground\": \"#000000\",\n-        \"fontStyle\": \"\"\n-      }\n-    },\n-    {\n-      \"name\": \"FA Form Field Reference - Content\",\n-      \"scope\": [\n         \"entity.name.field.fa.pascal\"\n       ],\n       \"settings\": {\n         \"foreground\": \"#008000\",\n"
+                },
+                {
+                    "date": 1761734560483,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -103,9 +103,9 @@\n         \"constant.numeric.pascal\",\n         \"constant.numeric.hex.pascal\"\n       ],\n       \"settings\": {\n-        \"foreground\": \"#098658\"\n+        \"foreground\": \"#000080\"\n       }\n     },\n     {\n       \"name\": \"Constants (true, false, nil)\",\n"
                 }
             ],
             "date": 1761662863413,

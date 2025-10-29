@@ -240,6 +240,13 @@ begin
   end;
 end;
 
+function Test(i: integer): string;
+begin
+  
+  
+  
+end;
+
 {-----------------------------------------------------------------------------
 IncEPOPril_PrilExists
 - Vraci TRUE, pokud v prilohach existuje alespon jedna priloha s kodem APrilKodEPO
@@ -3327,6 +3334,7 @@ const
   coSH01 = 'SH (B. Oddíl, Kódy plnění 0 a 1): %s';
   coSH2 = 'SH (B. Oddíl, Kód plnění 2): %s';
   coSH3 = 'SH (B. Oddíl, Kód plnění 3): %s';   
+  a = 25;
 begin
   //--- inicializace vlozena automaticky pri prevodu do TMS ---
   data:=''; guid:=''; 
