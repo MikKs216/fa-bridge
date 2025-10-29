@@ -3,7 +3,7 @@
     "activeCommit": 0,
     "commits": [
         {
-            "activePatchIndex": 25,
+            "activePatchIndex": 32,
             "patches": [
                 {
                     "date": 1760812594281,
@@ -108,6 +108,34 @@
                 {
                     "date": 1761667697260,
                     "content": "Index: \n===================================================================\n--- \n+++ \n@@ -2,9 +2,9 @@\n   \"name\": \"fa-bridge\",\n   \"displayName\": \"FA Bridge\",\n   \"publisher\": \"fa-dev\",\n   \"description\": \"Propojení Cursor/VS Code s editorem FormStudio (FA)\",\n-  \"version\": \"0.3.0\",\n+  \"version\": \"0.3.1\",\n   \"engines\": {\n     \"vscode\": \"^1.85.0\"\n   },\n   \"categories\": [\n"
+                },
+                {
+                    "date": 1761725857519,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -2,9 +2,9 @@\n   \"name\": \"fa-bridge\",\n   \"displayName\": \"FA Bridge\",\n   \"publisher\": \"fa-dev\",\n   \"description\": \"Propojení Cursor/VS Code s editorem FormStudio (FA)\",\n-  \"version\": \"0.3.1\",\n+  \"version\": \"0.3.2\",\n   \"engines\": {\n     \"vscode\": \"^1.85.0\"\n   },\n   \"categories\": [\n"
+                },
+                {
+                    "date": 1761726721928,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -2,9 +2,9 @@\n   \"name\": \"fa-bridge\",\n   \"displayName\": \"FA Bridge\",\n   \"publisher\": \"fa-dev\",\n   \"description\": \"Propojení Cursor/VS Code s editorem FormStudio (FA)\",\n-  \"version\": \"0.3.2\",\n+  \"version\": \"0.3.3\",\n   \"engines\": {\n     \"vscode\": \"^1.85.0\"\n   },\n   \"categories\": [\n"
+                },
+                {
+                    "date": 1761727081539,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -2,9 +2,9 @@\n   \"name\": \"fa-bridge\",\n   \"displayName\": \"FA Bridge\",\n   \"publisher\": \"fa-dev\",\n   \"description\": \"Propojení Cursor/VS Code s editorem FormStudio (FA)\",\n-  \"version\": \"0.3.3\",\n+  \"version\": \"0.3.4\",\n   \"engines\": {\n     \"vscode\": \"^1.85.0\"\n   },\n   \"categories\": [\n"
+                },
+                {
+                    "date": 1761728468383,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -2,9 +2,9 @@\n   \"name\": \"fa-bridge\",\n   \"displayName\": \"FA Bridge\",\n   \"publisher\": \"fa-dev\",\n   \"description\": \"Propojení Cursor/VS Code s editorem FormStudio (FA)\",\n-  \"version\": \"0.3.4\",\n+  \"version\": \"0.3.5\",\n   \"engines\": {\n     \"vscode\": \"^1.85.0\"\n   },\n   \"categories\": [\n"
+                },
+                {
+                    "date": 1761731033571,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -2,9 +2,9 @@\n   \"name\": \"fa-bridge\",\n   \"displayName\": \"FA Bridge\",\n   \"publisher\": \"fa-dev\",\n   \"description\": \"Propojení Cursor/VS Code s editorem FormStudio (FA)\",\n-  \"version\": \"0.3.5\",\n+  \"version\": \"0.3.6\",\n   \"engines\": {\n     \"vscode\": \"^1.85.0\"\n   },\n   \"categories\": [\n"
+                },
+                {
+                    "date": 1761731616662,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -2,9 +2,9 @@\n   \"name\": \"fa-bridge\",\n   \"displayName\": \"FA Bridge\",\n   \"publisher\": \"fa-dev\",\n   \"description\": \"Propojení Cursor/VS Code s editorem FormStudio (FA)\",\n-  \"version\": \"0.3.6\",\n+  \"version\": \"0.3.7\",\n   \"engines\": {\n     \"vscode\": \"^1.85.0\"\n   },\n   \"categories\": [\n"
+                },
+                {
+                    "date": 1761732306520,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -2,9 +2,9 @@\n   \"name\": \"fa-bridge\",\n   \"displayName\": \"FA Bridge\",\n   \"publisher\": \"fa-dev\",\n   \"description\": \"Propojení Cursor/VS Code s editorem FormStudio (FA)\",\n-  \"version\": \"0.3.7\",\n+  \"version\": \"0.3.8\",\n   \"engines\": {\n     \"vscode\": \"^1.85.0\"\n   },\n   \"categories\": [\n"
                 }
             ],
             "date": 1760812594281,

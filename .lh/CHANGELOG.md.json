@@ -3,7 +3,7 @@
     "activeCommit": 0,
     "commits": [
         {
-            "activePatchIndex": 5,
+            "activePatchIndex": 12,
             "patches": [
                 {
                     "date": 1761654732519,
@@ -28,6 +28,34 @@
                 {
                     "date": 1761667697244,
                     "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,8 +1,27 @@\n # Change Log\n \n All notable changes to the \"fa-bridge\" extension will be documented in this file.\n \n+## [0.3.1] - 2025-10-28\n+\n+### Added\n+- **Pascal Snippety**: 11 užitečných snippetů pro rychlejší psaní Pascal kódu\n+  - `function` - funkce vracející hodnotu\n+  - `procedure` - procedura\n+  - `if` - if-then-begin blok\n+  - `for` - for cyklus\n+  - `try` - try-finally blok\n+  - `trye` - try-except s error handling\n+  - `repeat` - repeat-until cyklus\n+  - `while` - while cyklus\n+  - `case` - case of struktura\n+  - `var` - TStringList s kompletním try-finally a for cyklem\n+  - `begin` - begin-end blok\n+- **Theme přepínání**: Nové příkazy v Command Palette pro přepínání mezi FA Pascal Light a Dark themes\n+  - \"FA Bridge: Přepnout na světlý motiv\"\n+  - \"FA Bridge: Přepnout na tmavý motiv\"\n+\n ## [0.3.0] - 2025-10-28\n \n ### Added\n - **Všechny FA funkce z HTML helpu**: Kompletní seznam 408 funkcí včetně:\n"
+                },
+                {
+                    "date": 1761725857488,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,8 +1,17 @@\n # Change Log\n \n All notable changes to the \"fa-bridge\" extension will be documented in this file.\n \n+## [0.3.2] - 2025-10-29\n+\n+### Fixed\n+- **Syntax Highlighting pro FA Form Field References**: Opraveno zvýrazňování konstrukcí `[:nazevUdaje:]` a `[.nazevUdaje.]`\n+  - Vylepšený regex pattern pro lepší rozpoznávání\n+  - Explicitní captures pro všechny části konstrukce (závorky, tečky/dvojtečky, jméno fieldu)\n+  - Aktualizované color themes pro použití všech nových scope names\n+  - Všechny field references by nyní měly být konzistentně zelené\n+\n ## [0.3.1] - 2025-10-28\n \n ### Added\n - **Pascal Snippety**: 11 užitečných snippetů pro rychlejší psaní Pascal kódu\n"
+                },
+                {
+                    "date": 1761726721953,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,8 +1,17 @@\n # Change Log\n \n All notable changes to the \"fa-bridge\" extension will be documented in this file.\n \n+## [0.3.3] - 2025-10-29\n+\n+### Fixed\n+- **Syntax Highlighting pro FA Form Field References - oprava konzistence**: Rozděleno pravidlo na dvě samostatná\n+  - Jedno specifické pravidlo pro `[:nazevUdaje:]` konstrukce\n+  - Druhé specifické pravidlo pro `[.nazevUdaje.]` konstrukce\n+  - Eliminovány kolize s normálním array accessem (např. `Fields[15]`)\n+  - Všechny field references by nyní měly být konzistentně zelené ve všech kontextech\n+\n ## [0.3.2] - 2025-10-29\n \n ### Fixed\n - **Syntax Highlighting pro FA Form Field References**: Opraveno zvýrazňování konstrukcí `[:nazevUdaje:]` a `[.nazevUdaje.]`\n"
+                },
+                {
+                    "date": 1761727081530,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,8 +1,18 @@\n # Change Log\n \n All notable changes to the \"fa-bridge\" extension will be documented in this file.\n \n+## [0.3.4] - 2025-10-29\n+\n+### Fixed\n+- **Syntax Highlighting pro FA Form Field References - scope region s vyšší prioritou**: Změněn přístup z `match` na `begin`/`end`\n+  - Vytváří scope region, který má vyšší prioritu než jiná pravidla\n+  - Mělo by eliminovat všechny konflikty s jinými pravidly (stringy, funkce, operátory)\n+  - Field references budou zelené i uvnitř složitých výrazů a volání funkcí\n+  - Konstrukce `[:nazevUdaje:]` má pattern: `\\[:` ... `:\\]`\n+  - Konstrukce `[.nazevUdaje.]` má pattern: `\\[\\.` ... `\\.\\]`\n+\n ## [0.3.3] - 2025-10-29\n \n ### Fixed\n - **Syntax Highlighting pro FA Form Field References - oprava konzistence**: Rozděleno pravidlo na dvě samostatná\n"
+                },
+                {
+                    "date": 1761728468393,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,8 +1,17 @@\n # Change Log\n \n All notable changes to the \"fa-bridge\" extension will be documented in this file.\n \n+## [0.3.5] - 2025-10-29\n+\n+### Fixed\n+- **Syntax Highlighting pro FA Form Field References - návrat k jednoduchému řešení**: Vráceno zpět na jednodušší match pattern\n+  - Použit jednoduchý regex: `\\[(\\.|\\:)[A-Za-z_]\\w*(\\.|\\:)\\]`\n+  - Zjednodušené theme scope pouze na `entity.name.field.fa.pascal`\n+  - Eliminovány kolize s normálním array accessem\n+  - Verze 0.3.2, 0.3.3 a 0.3.4 měly problémy s příliš složitými pravidly\n+\n ## [0.3.4] - 2025-10-29\n \n ### Fixed\n - **Syntax Highlighting pro FA Form Field References - scope region s vyšší prioritou**: Změněn přístup z `match` na `begin`/`end`\n"
+                },
+                {
+                    "date": 1761731033557,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,8 +1,18 @@\n # Change Log\n \n All notable changes to the \"fa-bridge\" extension will be documented in this file.\n \n+## [0.3.6] - 2025-10-29\n+\n+### Fixed\n+- **Syntax Highlighting pro FA Form Field References - finální řešení**: Barvení jen obsahu bez závorek\n+  - Hranaté závorky `[` a `]` zůstávají standardní (černé/podle tématu)\n+  - Barvíme pouze obsah: `.nazevUdaje.` nebo `:nazevUdaje:` (včetně teček/dvojteček)\n+  - Použit lookbehind/lookahead regex: `(?<=\\[)(\\.|\\:)[A-Za-z_]\\w*(\\.|\\:)(?=\\])`\n+  - Eliminovány všechny konflikty s párováním závorek a jinými pravidly\n+  - Jednoduché a spolehlivé řešení\n+\n ## [0.3.5] - 2025-10-29\n \n ### Fixed\n - **Syntax Highlighting pro FA Form Field References - návrat k jednoduchému řešení**: Vráceno zpět na jednodušší match pattern\n"
+                },
+                {
+                    "date": 1761731616663,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,8 +1,19 @@\n # Change Log\n \n All notable changes to the \"fa-bridge\" extension will be documented in this file.\n \n+## [0.3.7] - 2025-10-29\n+\n+### Fixed\n+- **Syntax Highlighting pro FA Form Field References - oprava barvení závorek**: Explicitní nastavení barvy závorek\n+  - Hranaté závorky `[` a `]` mají explicitně nastavenou standardní barvu textu (černá/šedá)\n+  - Obsah `.nazevUdaje.` nebo `:nazevUdaje:` je zelený\n+  - Použit begin/end pattern s explicitními captures pro závorky\n+  - Eliminováno automatické párování barev závorek editorem\n+  - Light theme: závorky #000000 (černá), obsah #008000 (zelená)\n+  - Dark theme: závorky #D4D4D4 (šedá), obsah #00C000 (zelená)\n+\n ## [0.3.6] - 2025-10-29\n \n ### Fixed\n - **Syntax Highlighting pro FA Form Field References - finální řešení**: Barvení jen obsahu bez závorek\n"
+                },
+                {
+                    "date": 1761732306523,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,8 +1,18 @@\n # Change Log\n \n All notable changes to the \"fa-bridge\" extension will be documented in this file.\n \n+## [0.3.8] - 2025-10-29\n+\n+### Changed\n+- **Syntax Highlighting pro FA Form Field References - finální verze**: Závorky ponechány na standardním chování\n+  - Hranaté závorky `[` `]` se řídí standardním Bracket Pair Colorization editoru\n+  - Barevné odlišení vnořených závorek zůstává funkční (je to feature editoru)\n+  - Barvíme pouze obsah: `.nazevUdaje.` nebo `:nazevUdaje:` zeleně\n+  - Použit lookbehind/lookahead regex: `(?<=\\[)(\\.|\\:)[A-Za-z_]\\w*(\\.|\\:)(?=\\])`\n+  - Jednoduchý scope: `entity.name.field.fa.pascal`\n+\n ## [0.3.7] - 2025-10-29\n \n ### Fixed\n - **Syntax Highlighting pro FA Form Field References - oprava barvení závorek**: Explicitní nastavení barvy závorek\n"
                 }
             ],
             "date": 1761654732519,

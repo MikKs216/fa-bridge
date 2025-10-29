@@ -20,21 +20,13 @@
 	<string>Pascal (FA)</string>
 	<key>patterns</key>
 	<array>
-		<!-- FA Form Field References [.field.] and [:field:] -->
-		<dict>
-			<key>match</key>
-			<string>\[(\.|:)(\w+)(\.|:)\]</string>
-			<key>captures</key>
-			<dict>
-				<key>0</key>
-				<dict>
-					<key>name</key>
-					<string>entity.name.field.fa.pascal</string>
-				</dict>
-			</dict>
-			<key>name</key>
-			<string>meta.field-reference.fa.pascal</string>
-		</dict>
+	<!-- FA Form Field References - obsah mezi . nebo : (závorky standardní) -->
+	<dict>
+		<key>match</key>
+		<string>(?&lt;=\[)(\.|\:)[A-Za-z_]\w*(\.|\:)(?=\])</string>
+		<key>name</key>
+		<string>entity.name.field.fa.pascal</string>
+	</dict>
 		
 		<!-- FA Custom Functions -->
 		<dict>

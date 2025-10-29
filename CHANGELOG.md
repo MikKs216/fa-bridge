@@ -2,6 +2,74 @@
 
 All notable changes to the "fa-bridge" extension will be documented in this file.
 
+## [0.3.8] - 2025-10-29
+
+### Changed
+- **Syntax Highlighting pro FA Form Field References - finální verze**: Závorky ponechány na standardním chování
+  - Hranaté závorky `[` `]` se řídí standardním Bracket Pair Colorization editoru
+  - Barevné odlišení vnořených závorek zůstává funkční (je to feature editoru)
+  - Barvíme pouze obsah: `.nazevUdaje.` nebo `:nazevUdaje:` zeleně
+  - Použit lookbehind/lookahead regex: `(?<=\[)(\.|\:)[A-Za-z_]\w*(\.|\:)(?=\])`
+  - Jednoduchý scope: `entity.name.field.fa.pascal`
+
+## [0.3.7] - 2025-10-29
+
+### Fixed
+- **Syntax Highlighting pro FA Form Field References - oprava barvení závorek**: Explicitní nastavení barvy závorek
+  - Hranaté závorky `[` a `]` mají explicitně nastavenou standardní barvu textu (černá/šedá)
+  - Obsah `.nazevUdaje.` nebo `:nazevUdaje:` je zelený
+  - Použit begin/end pattern s explicitními captures pro závorky
+  - Eliminováno automatické párování barev závorek editorem
+  - Light theme: závorky #000000 (černá), obsah #008000 (zelená)
+  - Dark theme: závorky #D4D4D4 (šedá), obsah #00C000 (zelená)
+
+## [0.3.6] - 2025-10-29
+
+### Fixed
+- **Syntax Highlighting pro FA Form Field References - finální řešení**: Barvení jen obsahu bez závorek
+  - Hranaté závorky `[` a `]` zůstávají standardní (černé/podle tématu)
+  - Barvíme pouze obsah: `.nazevUdaje.` nebo `:nazevUdaje:` (včetně teček/dvojteček)
+  - Použit lookbehind/lookahead regex: `(?<=\[)(\.|\:)[A-Za-z_]\w*(\.|\:)(?=\])`
+  - Eliminovány všechny konflikty s párováním závorek a jinými pravidly
+  - Jednoduché a spolehlivé řešení
+
+## [0.3.5] - 2025-10-29
+
+### Fixed
+- **Syntax Highlighting pro FA Form Field References - návrat k jednoduchému řešení**: Vráceno zpět na jednodušší match pattern
+  - Použit jednoduchý regex: `\[(\.|\:)[A-Za-z_]\w*(\.|\:)\]`
+  - Zjednodušené theme scope pouze na `entity.name.field.fa.pascal`
+  - Eliminovány kolize s normálním array accessem
+  - Verze 0.3.2, 0.3.3 a 0.3.4 měly problémy s příliš složitými pravidly
+
+## [0.3.4] - 2025-10-29
+
+### Fixed
+- **Syntax Highlighting pro FA Form Field References - scope region s vyšší prioritou**: Změněn přístup z `match` na `begin`/`end`
+  - Vytváří scope region, který má vyšší prioritu než jiná pravidla
+  - Mělo by eliminovat všechny konflikty s jinými pravidly (stringy, funkce, operátory)
+  - Field references budou zelené i uvnitř složitých výrazů a volání funkcí
+  - Konstrukce `[:nazevUdaje:]` má pattern: `\[:` ... `:\]`
+  - Konstrukce `[.nazevUdaje.]` má pattern: `\[\.` ... `\.\]`
+
+## [0.3.3] - 2025-10-29
+
+### Fixed
+- **Syntax Highlighting pro FA Form Field References - oprava konzistence**: Rozděleno pravidlo na dvě samostatná
+  - Jedno specifické pravidlo pro `[:nazevUdaje:]` konstrukce
+  - Druhé specifické pravidlo pro `[.nazevUdaje.]` konstrukce
+  - Eliminovány kolize s normálním array accessem (např. `Fields[15]`)
+  - Všechny field references by nyní měly být konzistentně zelené ve všech kontextech
+
+## [0.3.2] - 2025-10-29
+
+### Fixed
+- **Syntax Highlighting pro FA Form Field References**: Opraveno zvýrazňování konstrukcí `[:nazevUdaje:]` a `[.nazevUdaje.]`
+  - Vylepšený regex pattern pro lepší rozpoznávání
+  - Explicitní captures pro všechny části konstrukce (závorky, tečky/dvojtečky, jméno fieldu)
+  - Aktualizované color themes pro použití všech nových scope names
+  - Všechny field references by nyní měly být konzistentně zelené
+
 ## [0.3.1] - 2025-10-28
 
 ### Added

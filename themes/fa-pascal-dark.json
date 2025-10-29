@@ -71,8 +71,7 @@
     {
       "name": "FA Form Field Reference",
       "scope": [
-        "entity.name.field.fa.pascal",
-        "meta.field-reference.fa.pascal"
+        "entity.name.field.fa.pascal"
       ],
       "settings": {
         "foreground": "#00C000",
