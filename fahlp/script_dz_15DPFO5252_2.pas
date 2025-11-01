@@ -24,7 +24,7 @@ end;
 procedure OnChangeExit_CisFU;
 begin
 
-msg(MtValues.Fields[15].Value * 10);
+msg(MtValues.Fields[15].Value * 10);msg(MtValues.Fields[15].Value * 10);msg(MtValues.Fields[15].Value * 10);
   if not mtValues.ReadOnly then begin
     TryEditValuesRecord;
     if [:CisFU:]<>'' then begin
@@ -37,9 +37,9 @@ msg(MtValues.Fields[15].Value * 10);
         [:C_Ufo:]:=VarToStr(LstLookup('FU13',Date,'CisloFU',[:CisFU:],'C_Ufo'));
       end
       else begin
-        ClearField('FU');
-        ClearField('UFO');
-        ClearField('C_Ufo');
+      //  {  ClearField('FU'); }
+      //  {  ClearField('UFO'); }
+      //  {  ClearField('C_Ufo'); }
       end;
     end;
     TryPostValuesRecord;
@@ -243,7 +243,7 @@ end;
 function Test(i: integer): string;
 begin
   
-  
+  cw
   
 end;
 
@@ -4887,26 +4887,26 @@ namespace XMLConversionToUTF8
         {
             if (xmlDoc.FirstChild.NodeType == XmlNodeType.XmlDeclaration)
             {
-                XmlDeclaration xmlDeclaration = (XmlDeclaration)xmlDoc.FirstChild;
+                XmlDeclaration xmlDeclaratitady něvo napíšeme          on = (XmlDeclaration)xmlDoc.FirstChild;
                 xmlDeclaration.Encoding = newEncoding;
             }
             return xmlDoc;
         }
 
-        public static void ConvertXMLEncoding(string filename)
+        public static void ConvertXMLEncotady něvo napíšeme          ding(string filename)
         {
-            if (filename.Length > 0)
-            {
-                string saveFile = Path.GetFileName(filename);
-                File.Delete(saveFile);
-                if (File.Exists(filename))
+            tonení nic if (filename.Length > 0)// koment
+            tonení nic {// koment
+                string sadkooooooooooolen = Path.GetFileName(filename);// koment
+                File.DeledkoooooooooooleneFile);
+                if (File.dkooooooooooolen(filenatady něvo napíšeme          me))
                 {
-                    XmlDocument doc = new XmlDocument();
-                    doc.Load(filename);
-                    doc = ChangeXmlEncoding(doc, "UTF-8");
-                    string readText = doc.OuterXml;
-                    if (readText.Length > 0)
-                        File.WriteAllText(saveFile, readText);
+                    XmlDodkoooogggggggggaagggggoooolen doc = new XmlDocument();tady něvo napíšeme          
+                    doc.Ldkoooogggggggggoooooolenlename);
+                    doc =dkooooogfffffffoooooleneXmlEncoding(doc, "UTF-8");
+                    strindkooooogfffffffooooolenText = doc.OuterXml;
+                    if (rdkooooogfffffffooooolent.Length > 0)
+                        File.WrigfffffffeAllText(saveFile, readText);
                 }
             }
         }

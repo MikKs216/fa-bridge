@@ -1,6 +1,21 @@
 import * as vscode from 'vscode';
 
 /**
+ * TreeItem pro kategorii příkazů (rozbalitelná sekce)
+ */
+class CategoryTreeItem extends vscode.TreeItem {
+	constructor(
+		public readonly label: string,
+		public readonly tooltip: string,
+		public readonly children: CommandTreeItem[]
+	) {
+		super(label, vscode.TreeItemCollapsibleState.Expanded);
+		this.tooltip = tooltip;
+		this.iconPath = new vscode.ThemeIcon('folder');
+	}
+}
+
+/**
  * TreeItem pro příkaz v sidebaru
  */
 class CommandTreeItem extends vscode.TreeItem {
@@ -20,27 +35,33 @@ class CommandTreeItem extends vscode.TreeItem {
 /**
  * Provider pro TreeView s příkazy FA Bridge
  */
-export class FABridgeTreeProvider implements vscode.TreeDataProvider<CommandTreeItem> {
-	private _onDidChangeTreeData: vscode.EventEmitter<CommandTreeItem | undefined | null | void> = 
-		new vscode.EventEmitter<CommandTreeItem | undefined | null | void>();
-	readonly onDidChangeTreeData: vscode.Event<CommandTreeItem | undefined | null | void> = 
+export class FABridgeTreeProvider implements vscode.TreeDataProvider<CategoryTreeItem | CommandTreeItem> {
+	private _onDidChangeTreeData: vscode.EventEmitter<CategoryTreeItem | CommandTreeItem | undefined | null | void> = 
+		new vscode.EventEmitter<CategoryTreeItem | CommandTreeItem | undefined | null | void>();
+	readonly onDidChangeTreeData: vscode.Event<CategoryTreeItem | CommandTreeItem | undefined | null | void> = 
 		this._onDidChangeTreeData.event;
 
 	refresh(): void {
 		this._onDidChangeTreeData.fire();
 	}
 
-	getTreeItem(element: CommandTreeItem): vscode.TreeItem {
+	getTreeItem(element: CategoryTreeItem | CommandTreeItem): vscode.TreeItem {
 		return element;
 	}
 
-	getChildren(element?: CommandTreeItem): Thenable<CommandTreeItem[]> {
-		if (element) {
+	getChildren(element?: CategoryTreeItem | CommandTreeItem): Thenable<(CategoryTreeItem | CommandTreeItem)[]> {
+		// Pokud je element kategorie, vrať její děti
+		if (element instanceof CategoryTreeItem) {
+			return Promise.resolve(element.children);
+		}
+		
+		// Pokud je element příkaz, nemá děti
+		if (element instanceof CommandTreeItem) {
 			return Promise.resolve([]);
 		}
 
-		// Hlavní příkazy
-		const commands: CommandTreeItem[] = [
+		// Root level - vrať kategorie
+		const faCommands: CommandTreeItem[] = [
 			new CommandTreeItem(
 				'Uložit soubor (Ctrl+S)',
 				{
@@ -50,16 +71,16 @@ export class FABridgeTreeProvider implements vscode.TreeDataProvider<CommandTree
 				new vscode.ThemeIcon('save'),
 				'Uloží aktuální soubor'
 			),
-		new CommandTreeItem(
-			'Aktivovat FA (Alt+Q)',
-			{
-				command: 'workbench.action.files.save',
-				title: 'Uložit soubor',
-			},
-			new vscode.ThemeIcon('save'),
-			'Uloží aktuální soubor (jako Ctrl+S)'
-		),
-		new CommandTreeItem(
+			new CommandTreeItem(
+				'Aktivovat FA (Alt+Q)',
+				{
+					command: 'workbench.action.files.save',
+					title: 'Uložit soubor',
+				},
+				new vscode.ThemeIcon('save'),
+				'Uloží aktuální soubor (jako Ctrl+S)'
+			),
+			new CommandTreeItem(
 				'Vložit název údaje (Shift+Alt+V)',
 				{
 					command: 'faBridge.vlozitNazevUdaje',
@@ -88,7 +109,112 @@ export class FABridgeTreeProvider implements vscode.TreeDataProvider<CommandTree
 			),
 		];
 
-		return Promise.resolve(commands);
+		// Návrh příkazy
+		const navrhCommands: CommandTreeItem[] = [
+			new CommandTreeItem(
+				'Provést Init (Shift+Alt+I)',
+				{
+					command: 'faBridge.provestInit',
+					title: 'Provést Init',
+				},
+				new vscode.ThemeIcon('symbol-method'),
+				'Spustí funkci Init v návrhu formuláře'
+			),
+			new CommandTreeItem(
+				'Provést Calculate (Shift+Alt+E)',
+				{
+					command: 'faBridge.provestCalculate',
+					title: 'Provést Calculate',
+				},
+				new vscode.ThemeIcon('calculator'),
+				'Spustí funkci Calculate v návrhu formuláře'
+			),
+			new CommandTreeItem(
+				'Provést Enable (Shift+Alt+N)',
+				{
+					command: 'faBridge.provestEnable',
+					title: 'Provést Enable',
+				},
+				new vscode.ThemeIcon('check'),
+				'Spustí funkci Enable v návrhu formuláře'
+			),
+			new CommandTreeItem(
+				'Zobrazit Info (Shift+Alt+B)',
+				{
+					command: 'faBridge.zobrazitInfo',
+					title: 'Zobrazit Info',
+				},
+				new vscode.ThemeIcon('info'),
+				'Zobrazí informace o formuláři'
+			),
+			new CommandTreeItem(
+				'Zobrazit Platební informace (Shift+Alt+P)',
+				{
+					command: 'faBridge.zobrazitPlatebniInformace',
+					title: 'Zobrazit Platební informace',
+				},
+				new vscode.ThemeIcon('credit-card'),
+				'Zobrazí platební informace'
+			),
+			new CommandTreeItem(
+				'Zobrazit Period (Shift+Alt+R)',
+				{
+					command: 'faBridge.zobrazitPeriod',
+					title: 'Zobrazit Period',
+				},
+				new vscode.ThemeIcon('calendar'),
+				'Zobrazí aktuální období'
+			),
+		];
+
+		// Debug příkazy
+		const debugCommands: CommandTreeItem[] = [
+			new CommandTreeItem(
+				'Pokračovat (F5)',
+				{
+					command: 'faBridge.debugContinue',
+					title: 'Pokračovat v běhu scriptu',
+				},
+				new vscode.ThemeIcon('debug-continue'),
+				'Pokračovat v běhu scriptu do dalšího breakpointu'
+			),
+			new CommandTreeItem(
+				'Krokovat (F10)',
+				{
+					command: 'faBridge.debugStepOver',
+					title: 'Krok přes',
+				},
+				new vscode.ThemeIcon('debug-step-over'),
+				'Provést aktuální řádek a zastavit na dalším'
+			),
+			new CommandTreeItem(
+				'Přepnout breakpoint (F9)',
+				{
+					command: 'faBridge.toggleBreakpoint',
+					title: 'Přepnout breakpoint',
+				},
+				new vscode.ThemeIcon('debug-breakpoint'),
+				'Nastavit/zrušit breakpoint na aktuálním řádku'
+			),
+			new CommandTreeItem(
+				'Zastavit debug',
+				{
+					command: 'faBridge.debugStop',
+					title: 'Zastavit debugování',
+				},
+				new vscode.ThemeIcon('debug-stop'),
+				'Ukončit běh scriptu'
+			),
+		];
+
+		// Vytvoř kategorie
+		const categories = [
+			new CategoryTreeItem('FA Příkazy', 'Příkazy pro práci s FA', faCommands),
+			new CategoryTreeItem('Návrh Příkazy', 'Příkazy pro testování návrhu formuláře', navrhCommands),
+			new CategoryTreeItem('Debug Příkazy', 'Příkazy pro ladění scriptů', debugCommands),
+		];
+
+		return Promise.resolve(categories);
 	}
 }
 

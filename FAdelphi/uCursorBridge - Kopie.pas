@@ -8,28 +8,18 @@ Features:
 - Skok na soubor:řádek[:sloupec] (-g)
 - Aktivace existujícího okna editoru (Cursor.exe / Code.exe)
 - Polling pro detekci externích uložených změn (Ctrl+S v editoru) a callback OnExternalSave
-- Polling pro čtení příkazů z .fsbridge/facmd.txt a callback OnCommand
-- Soubor facmd.txt se maže OKAMŽITĚ po přečtení (před voláním callbacku) aby se předešlo nekonečné smyčce
-- Čtení dat z .fsbridge/fafield.txt pomocí ReadFieldText() (obsah fieldu z Cursor extension)
-- Zápis dat do .fsbridge/fafield.txt pomocí WriteFieldText() (atomicky s UTF-8 BOM)
 
 Novinky:
 - Workspace se vždy nastavuje na složku ExportFolder (relativní k EXE je podporováno)
 - Každý formulář má vlastní podsložku pojmenovanou podle FormId
   (např. ...\DataPrg\Scripts\dz_15DPFO5252_2\script_dz_15DPFO5252_2.pas)
 - Spouštění VS Code / Cursor bez blikajícího CMD okna na Win 11 (resolver EXE + ShellExecuteEx bez konzole)
-- Zpracování příkazů z Cursor extension přes .fsbridge/facmd.txt
 
 Integrace v aplikaci:
   Bridge.ExportFolder := 'DataPrg\FormsProject'; // relativně k adresáři EXE
   Bridge.CursorCmdOrPath := 'code';              // 'cursor' / 'code' / plná cesta
-  Bridge.OnCommand := ProcessFACommand;          // callback pro příkazy
   Bridge.StartEditing(FormId, Code, JumpLine, JumpCol);
-  Bridge.PollTick; // z Timeru (kontroluje změny souboru + příkazy)
-  
-  // Komunikace s Cursor extension přes fafield.txt:
-  FieldName := Bridge.ReadFieldText;             // načti název fieldu z Cursor extension
-  Bridge.WriteFieldText('MyFieldName');          // pošli název fieldu do Cursor extension
+  Bridge.PollTick; // z Timeru
 }
 
 interface
@@ -43,9 +33,6 @@ const
 type
   // Předá aktuální text při zjištění externího uložení
   TExternalSaveEvent = procedure(const Text: AnsiString) of object;
-  
-  // Předá příkaz z Cursor extension
-  TCommandEvent = procedure(const Command: string) of object;
 
   TCursorBridge = class
   private
@@ -57,7 +44,6 @@ type
     FLastWrite: TDateTime;
 
     FOnExternalSave: TExternalSaveEvent;
-    FOnCommand: TCommandEvent;
 
     function SettingsFilePath: string;
     function LoadEditorFromSettings: string; // '' = nenačteno / nenalezeno
@@ -76,13 +62,6 @@ type
     // Nové pomocné metody pro spouštění editoru bez konzole
     function ResolveEditorCommand: string;
     function ShellExecNoConsole(const FileName, Params, WorkDir: string; ShowCmd: Integer): Boolean;
-    
-    // Zpracování příkazů z Cursor extension
-    function GetCommandFilePath: string;
-    procedure ProcessCommandFile;
-    
-    // Čtení field.txt ze Cursor extension
-    function GetFieldFilePath: string;
   public
     constructor Create;
 
@@ -96,16 +75,11 @@ type
 
     // Události
     property OnExternalSave: TExternalSaveEvent read FOnExternalSave write FOnExternalSave;
-    property OnCommand: TCommandEvent read FOnCommand write FOnCommand;
 
     // Hlavní API
     function StartEditing(const FormId: string; const Code: AnsiString; JumpLine, JumpCol: Integer): Boolean;
     function BringToCursor(const Code: AnsiString; JumpLine, JumpCol: Integer): Boolean;
     procedure PollTick;
-    
-    // Čtení a zápis dat z/do Cursor extension
-    function ReadFieldText: string; // Přečte obsah fafield.txt
-    procedure WriteFieldText(const FieldName: string); // Zapíše název fieldu do fafield.txt
   end;
 
 implementation
@@ -285,22 +259,6 @@ begin
           + DEFAULT_FILE_PREFIX + FormId + '.pas';
 end;
 
-function TCursorBridge.GetCommandFilePath: string;
-begin
-  // Příkazy z Cursor extension: <workspace>/.fsbridge/facmd.txt
-  Result := IncludeTrailingPathDelimiter(EffectiveExportFolder)
-          + '.fsbridge' + PathDelim
-          + 'facmd.txt';
-end;
-
-function TCursorBridge.GetFieldFilePath: string;
-begin
-  // Field data z Cursor extension: <workspace>/.fsbridge/fafield.txt
-  Result := IncludeTrailingPathDelimiter(EffectiveExportFolder)
-          + '.fsbridge' + PathDelim
-          + 'fafield.txt';
-end;
-
 procedure TCursorBridge.AtomicWriteAllText(const FileName: string; const Text: AnsiString);
 var
   Tmp: string;
@@ -353,84 +311,6 @@ begin
     end;
   finally
     FS.Free;
-  end;
-end;
-
-procedure TCursorBridge.ProcessCommandFile;
-var
-  CmdFilePath: string;
-  Commands: TStringList;
-  Command: string;
-  BOM: array[0..2] of Byte;
-  FS: TFileStream;
-  HasBOM: Boolean;
-begin
-  CmdFilePath := GetCommandFilePath;
-  
-  // Pokud soubor neexistuje, nic nedělej
-  if not FileExists(CmdFilePath) then
-    Exit;
-    
-  Commands := TStringList.Create;
-  try
-    try
-      // Krátký sleep pro případ že právě probíhá zápis
-      Sleep(10);
-      
-      // Načti příkaz(y) - kontrola BOM
-      FS := TFileStream.Create(CmdFilePath, fmOpenRead or fmShareDenyNone);
-      try
-        HasBOM := False;
-        if FS.Size >= 3 then
-        begin
-          FS.Read(BOM, 3);
-          HasBOM := (BOM[0] = $EF) and (BOM[1] = $BB) and (BOM[2] = $BF);
-          
-          // Pokud nemá BOM, vrať se na začátek
-          if not HasBOM then
-            FS.Position := 0;
-        end;
-        
-        Commands.LoadFromStream(FS);
-      finally
-        FS.Free;
-      end;
-      
-      if Commands.Count > 0 then
-      begin
-        Command := Trim(Commands[0]); // První řádek = příkaz
-        
-        // Pokud je příkaz prázdný, jen smaž soubor
-        if Command = '' then
-        begin
-          DeleteFile(CmdFilePath);
-          Exit;
-        end;
-        
-        // NEJDŘÍV smaž soubor (před voláním callbacku!)
-        DeleteFile(CmdFilePath);
-        
-        // PAK teprve zavolej callback pro zpracování příkazu
-        if Assigned(FOnCommand) then
-          FOnCommand(Command);
-      end
-      else
-      begin
-        // Pokud není žádný příkaz, smaž prázdný soubor
-        DeleteFile(CmdFilePath);
-      end;
-      
-    except
-      // Při chybě zkus soubor smazat, aby se neblokoval
-      try
-        DeleteFile(CmdFilePath);
-      except
-        // Tiše ignoruj chybu při mazání
-      end;
-    end;
-    
-  finally
-    Commands.Free;
   end;
 end;
 
@@ -685,119 +565,22 @@ var
   T: TDateTime;
   Txt: AnsiString;
 begin
-  // 1) Kontrola změn v editovaném souboru (Ctrl+S v editoru)
-  if (FCurrentFile <> '') then
+  if (FCurrentFile = '') then Exit;
+
+  T := GetFileWriteTime(FCurrentFile);
+  if (T > 0) and (T > FLastWrite) then
   begin
-    T := GetFileWriteTime(FCurrentFile);
-    if (T > 0) and (T > FLastWrite) then
-    begin
-      FLastWrite := T;
-      try
-        Txt := ReadAllText(FCurrentFile);
-      except
-        // best-effort (soubor může být krátce zamčený)
-        Txt := '';
-      end;
-
-      if (Txt <> '') and Assigned(FOnExternalSave) then
-        FOnExternalSave(Txt);
-    end;
-  end;
-  
-  // 2) Kontrola příkazů z Cursor extension
-  ProcessCommandFile;
-end;
-
-function TCursorBridge.ReadFieldText: string;
-var
-  FieldFilePath: string;
-  Fields: TStringList;
-  BOM: array[0..2] of Byte;
-  FS: TFileStream;
-  HasBOM: Boolean;
-begin
-  Result := '';
-  FieldFilePath := GetFieldFilePath;
-  
-  // Pokud soubor neexistuje, vrať prázdný řetězec
-  if not FileExists(FieldFilePath) then
-    Exit;
-    
-  Fields := TStringList.Create;
-  try
+    FLastWrite := T;
     try
-      // Načti obsah - kontrola BOM
-      FS := TFileStream.Create(FieldFilePath, fmOpenRead or fmShareDenyNone);
-      try
-        HasBOM := False;
-        if FS.Size >= 3 then
-        begin
-          FS.Read(BOM, 3);
-          HasBOM := (BOM[0] = $EF) and (BOM[1] = $BB) and (BOM[2] = $BF);
-          
-          // Pokud nemá BOM, vrať se na začátek
-          if not HasBOM then
-            FS.Position := 0;
-        end;
-        
-        Fields.LoadFromStream(FS);
-      finally
-        FS.Free;
-      end;
-      
-      // Vrať první řádek (nebo celý obsah pokud je to jen jeden řádek)
-      if Fields.Count > 0 then
-        Result := Trim(Fields[0])
-      else
-        Result := '';
-        
+      Txt := ReadAllText(FCurrentFile);
     except
-      // Při chybě čtení vrať prázdný řetězec
-      Result := '';
+      Exit; // best-effort (soubor může být krátce zamčený)
     end;
-    
-  finally
-    Fields.Free;
-  end;
-end;
 
-procedure TCursorBridge.WriteFieldText(const FieldName: string);
-var
-  FieldFilePath: string;
-  TmpPath: string;
-  FS: TFileStream;
-  BOM: array[0..2] of Byte;
-  Content: AnsiString;
-begin
-  FieldFilePath := GetFieldFilePath;
-  
-  // Zajisti že .fsbridge složka existuje
-  EnsureDir(ExtractFilePath(FieldFilePath));
-  
-  // Atomický zápis přes tmp soubor
-  TmpPath := FieldFilePath + '.tmp';
-  
-  FS := TFileStream.Create(TmpPath, fmCreate or fmShareDenyWrite);
-  try
-    // Zapiš UTF-8 BOM (EF BB BF)
-    BOM[0] := $EF;
-    BOM[1] := $BB;
-    BOM[2] := $BF;
-    FS.WriteBuffer(BOM, 3);
-    
-    // Zapiš obsah jako UTF-8 (bez trailing newline)
-    if FieldName <> '' then
-    begin
-      Content := UTF8Encode(FieldName);
-      FS.WriteBuffer(Content[1], Length(Content));
-    end;
-  finally
-    FS.Free;
+    if Assigned(FOnExternalSave) then
+      FOnExternalSave(Txt);
   end;
-  
-  // Atomická výměna
-  MoveFileEx(PChar(TmpPath), PChar(FieldFilePath), 
-             MOVEFILE_REPLACE_EXISTING or MOVEFILE_WRITE_THROUGH);
 end;
 
 end.
+

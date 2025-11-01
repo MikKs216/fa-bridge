@@ -25,6 +25,77 @@ Extension přidává vlastní panel do Activity Bar (levý panel). Kliknutím na
 
 > **Tip na macOS:** Nahraď <kbd>Ctrl</kbd> za <kbd>Cmd</kbd>
 
+### 🐛 Debugování TMS Scripter
+
+Extension poskytuje integrovaný debugger pro TMS Scripter v FA aplikaci. Debugger funguje automaticky - sleduje stav běžícího skriptu v FA a zobrazuje ho v Cursoru.
+
+#### Jak spustit debugování
+
+1. **Otevři Pascal soubor** v Cursoru (např. `.pas` soubor se skriptem)
+2. **Nastav breakpointy** kliknutím na levý okraj editoru nebo stiskem <kbd>F9</kbd>
+3. **Spusť skript v FA** - běžným způsobem (např. vyplnění formuláře, které spustí skript)
+4. **Debugger se automaticky aktivuje** - když skript dorazí na breakpoint nebo se pozastaví
+
+#### Debugger příkazy
+
+| Příkaz | Klávesová zkratka | Popis |
+|--------|-------------------|-------|
+| **Pokračovat** | <kbd>F5</kbd> | Pokračuje v běhu skriptu (nebo spustí skript pokud je zastaven) |
+| **Krok přes** | <kbd>F10</kbd> | Provede aktuální řádek a pozastaví na dalším |
+| **Pozastavit/Zastavit** | <kbd>Shift</kbd>+<kbd>F5</kbd> | Pozastaví běžící skript nebo zastaví debugování |
+| **Přepnout breakpoint** | <kbd>F9</kbd> | Nastaví/zruší breakpoint na aktuálním řádku |
+
+> **Poznámka:** Všechny klávesové zkratky fungují pouze když je otevřený Pascal soubor (`.pas`).
+
+#### Debugger rozhraní
+
+**Status Bar:**
+- V dolní části Cursoru vidíš stav debuggeru:
+  - `Debug: běží` - skript běží
+  - `Debug: pozastaveno (řádek X)` - skript je pozastaven na řádku X
+  - `Debug: zastaveno` - skript není spuštěn
+
+**Zvýraznění aktuálního řádku:**
+- Když je skript pozastaven, aktuální řádek je zvýrazněn v editoru
+- Editor automaticky přejede na pozastavený řádek
+
+**Debug Proměnné panel:**
+- V sidebaru FA Bridge → "Debug Proměnné" vidíš aktuální proměnné při debugování
+- Panel se automaticky aktualizuje při změně stavu
+
+#### Workflow debugování
+
+1. **Připrav skript v FA:**
+   - Otevři formulář v FA
+   - Nastav breakpointy v Cursoru (F9) nebo v FA
+
+2. **Spusť skript v FA:**
+   - Proveď akci, která spustí skript (např. změna hodnoty pole)
+   - Skript se automaticky pozastaví na prvním breakpointu
+
+3. **Ovládej debugování v Cursoru:**
+   - Použij F5 (pokračovat), F10 (krok přes), F9 (přepnout breakpoint)
+   - Sleduj stav v status baru a aktuální řádek v editoru
+
+4. **Sleduj proměnné:**
+   - Otevři panel "Debug Proměnné" v sidebaru FA Bridge
+   - Proměnné se automaticky aktualizují při změně stavu
+
+#### Důležité poznámky
+
+- **Debugger je aktivní pouze když není otevřen původní debugger v EScriptEditor**
+  - Pokud máš otevřený původní editor skriptu v debug módu, použije se jeho debugger
+  - Jinak se použije debugger z Cursor extension
+
+- **Komunikace probíhá přes soubory:**
+  - Příkazy z Cursoru → `.fsbridge/fadebug.txt`
+  - Stav z FA → `.fsbridge/fadebugstate.json`
+  - Aktualizace probíhá každou sekundu automaticky
+
+- **Breakpointy:**
+  - Breakpointy nastavené v Cursoru se synchronizují s FA
+  - Breakpointy nastavené v FA se zobrazují v Cursoru
+
 ### 🎨 Pascal Syntax Highlighting
 
 Extension poskytuje **plnou podporu Pascal/Delphi** s vlastními vylepšeními pro FA:
@@ -95,6 +166,44 @@ Nebo přímo v `settings.json`:
 {
   "faBridge.enableSnippets": false
 }
+```
+
+## ⚙️ Nastavení
+
+### Cesta k `.fsbridge` složce
+
+**DŮLEŽITÉ:** Extension komunikuje s FA přes `.fsbridge` složku. Tato cesta **MUSÍ** být nastavena správně, aby debugger a ostatní funkce fungovali i pro soubory otevřené **MIMO workspace** (např. soubory otevřené přímo z FA).
+
+#### Jak nastavit cestu:
+
+1. Otevři nastavení: <kbd>Ctrl</kbd>+<kbd>,</kbd> (nebo File > Preferences > Settings)
+2. Vyhledej: `faBridge.fsbridgePath`
+3. Nastav cestu k `.fsbridge` složce (výchozí: `D:\FA DESIGN\DataPrg\Scripts\.fsbridge`)
+
+Nebo přímo v `settings.json`:
+```json
+{
+  "faBridge.fsbridgePath": "D:\\FA DESIGN\\DataPrg\\Scripts\\.fsbridge"
+}
+```
+
+**Poznámka:** Cesta **MUSÍ** odpovídat cestě nastavené v FA aplikaci (`FBridge.ExportFolder`). Pokud máš FA v jiném adresáři, uprav cestu odpovídajícím způsobem.
+
+#### Jak zjistit správnou cestu?
+
+Ve FA aplikaci je nastaveno:
+```pascal
+FBridge.ExportFolder := 'DataPrg\Scripts';
+```
+
+To znamená že `.fsbridge` složka je:
+```
+<adresář_kde_běží_FA.exe>\DataPrg\Scripts\.fsbridge\
+```
+
+Např. pokud je FA v `D:\FA DESIGN\`, pak cesta je:
+```
+D:\FA DESIGN\DataPrg\Scripts\.fsbridge
 ```
 
 ## Instalace
@@ -271,4 +380,11 @@ npm run test
 
 ---
 
-**Vytvořeno:** Říjen 2025 | **Status:** Funkční ✓
+## 📋 Dokumentace
+
+- **Verzování FA Bridge integrace** - viz VERZOVÁNÍ.md - Jak verzovat FA Bridge extension a FA aplikaci
+- **Debugger dokumentace** - viz DEBUGGER_DOCS.md - Podrobná dokumentace debuggeru TMS Scripter
+
+---
+
+**Vytvořeno:** Říjen 2025 | **Status:** Funkční ✓ | **Verze:** 0.4.5

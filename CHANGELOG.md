@@ -2,6 +2,157 @@
 
 All notable changes to the "fa-bridge" extension will be documented in this file.
 
+## [0.4.9] - 2025-10-31
+
+### Fixed
+- **✅ OPRAVENO: Off-by-one error v číslu aktuálního řádku**
+  - **Problém:** Zvýrazněný řádek byl o jeden řádek výše než skutečný aktuální řádek
+  - **Příklad:** Debugger zastavený na řádku 31 (`ini('OdesPSC',...)`) zvýrazňoval řádek 30 (prázdný)
+  - **Řešení:** FA posílá **0-based čísla řádků** (stejně jako VS Code), odstraněna zbytečná konverze `-1`
+  - Nyní žluté pozadí přesně označuje správný řádek, na kterém je debugger zastavený 🎯
+
+- **✅ OPRAVENO: F10 (Step Over) nefungovala nebo fungovala jen občas**
+  - **Problém:** F10 je ve Windows a VS Code zachycována pro aktivaci menu baru
+  - **Řešení:** Přidána podmínka `editorTextFocus` ke všem debugger klávesovým zkratkám (F5, F9, F10, Shift+F5)
+  - Nyní mají debugger příkazy **vyšší prioritu** než systémové zkratky
+  - F10 by nyní měla fungovat spolehlivě při krokování kódu 🎯
+
+## [0.4.8] - 2025-10-30 (STABILNÍ VERZE)
+
+### Fixed
+- **⚠️ VRÁCENO NA STABILNÍ STAV: Odstraněna žlutá šipka v gutteru**
+  - **Důvod:** Žlutá šipka zůstávala zobrazená i po ukončení debugování a objevovala se v jiných projektech
+  - **Řešení:** Vráceno na jednoduché **žluté pozadí aktuálního řádku** (bez šipky v gutteru)
+  - Decoration se nyní správně čistí po ukončení debugování
+  - Červené tečky breakpointů zůstávají zachovány a fungují správně 🔴
+  - Verze 0.5.1 byla **ZRUŠENA** kvůli problému s persistentní žlutou šipkou
+
+## [0.5.1] - 2025-10-30 (ZRUŠENO - mělo problém s persistentní šipkou)
+
+**⚠️ DŮLEŽITÉ:** Verze 0.4.9 a 0.5.0 byly **VRÁCENY ZPĚT** na 0.4.8 z důvodu nefunkčních změn.
+
+**Problém:**
+- Žlutá šipka a žlutá tečka pro indikaci aktuálního řádku nefungovaly správně
+- Indexování řádků nebylo správné (označení bylo o řádek výše než mělo být)
+- Kombinované zobrazení breakpointů a aktuálního řádku způsobovalo problémy
+
+**Aktuální stav (0.4.8):**
+- ✅ Základní debugování funguje (Continue, Pause, Step Over, Stop)
+- ✅ Breakpointy se zobrazují červenými tečkami v gutteru
+- ✅ Aktuální řádek má jemné žluté pozadí (bez ikony v gutteru)
+- ✅ Návrh Příkazy fungují s hotkeys
+- ✅ Automatické zastavení debuggeru při zavírání FA
+
+---
+
+## ~~[0.5.0]~~ - 2025-10-30 (ZRUŠENO)
+
+### Fixed
+- **KRITICKÁ OPRAVA: Indexování řádků**: Označení aktuálního řádku nyní ukazuje na správný řádek (ne o jeden řádek výše)
+  - Odstraněna konverze `line - 1` - FA posílá 0-based čísla řádků (z `LineNumberFromInstruction`)
+  - VS Code `.lineAt()` také používá 0-based indexy, takže se číslo řádku použije přímo
+  - Aktualizovány komentáře: breakpointy a currentLine jsou 0-based (ne 1-based)
+  - Opraveno v `highlightCurrentLine()` i `updateBreakpoints()`
+  - Žlutá šipka/tečka nyní správně označuje aktuální řádek při debugování
+
+## ~~[0.4.9]~~ - 2025-10-30 (ZRUŠENO)
+
+### Fixed
+- **Oprava zvýrazňování aktuálního řádku**: Žlutá šipka se nyní správně přesouvá a nezdvojuje
+  - `highlightCurrentLine()` nejdříve maže předchozí decoration před nastavením nové
+  - Opraveno indexování: FA posílá 1-based čísla řádků, VS Code používá 0-based (konverze `line - 1`)
+  - Přidána validace čísla řádku před aplikací decoration
+- **Žlutá tečka na breakpointu**: Když je debugger zastaven na breakpointu, zobrazuje se žlutá tečka místo červené
+  - `combinedDecorationType` změněn z kombinované ikony na jednoduchou žlutou tečku
+  - `updateBreakpoints()` přeskakuje aktuální řádek (nezobrazuje červenou tečku tam, kde je žlutá tečka)
+  - Po krokování se žlutá tečka vrací na červenou a žlutá šipka se zobrazí na novém aktuálním řádku
+
+## [0.4.8] - 2025-10-30
+
+### Fixed
+- **Kombinovaná ikona pro breakpoint + aktuální řádek**: Když je aktuální řádek při debugování na řádku s breakpointem, zobrazuje se kombinovaná ikona s červenou tečkou (breakpoint) a žlutou šipkou (aktuální řádek), aby bylo vidět obě indikace najednou
+- Přidán nový decoration type `combinedDecorationType` pro zobrazení obou ikon současně
+- Upravena logika `highlightCurrentLine()` pro detekci breakpointu na aktuálním řádku
+
+## [0.4.7] - 2025-10-30
+
+### Changed
+- **Ukazatel aktuálního řádku**: Žlutá šipka v gutteru označující aktuální řádek při debugování je nyní otočená o 180° (šipka směřuje opačným směrem)
+
+## [0.4.6] - 2025-10-30
+
+### Added
+- **Příkazy pro testování návrhu formuláře**: Přidána nová kategorie "Návrh Příkazy" v FA Bridge panelu
+  - Provést Init (Shift+Alt+I) - spustí funkci DoInit v návrhu formuláře
+  - Provést Calculate (Shift+Alt+E) - spustí funkci DoCalculate v návrhu formuláře
+  - Provést Enable (Shift+Alt+N) - spustí funkci DoEnable v návrhu formuláře
+  - Zobrazit Info (Shift+Alt+B) - zobrazí informace o formuláři
+  - Zobrazit Platební informace (Shift+Alt+P) - zobrazí platební informace
+  - Zobrazit Period (Shift+Alt+R) - zobrazí aktuální období
+- Všechny příkazy mají odpovídající ikony, tooltips a hotkeys
+- Příkazy jsou zpracovávány v FA jak přes facmd.txt (ProcessFACommand) tak přes fadebug.txt (ProcessDebugCommand)
+
+### Changed
+- `writeFACommand` nyní používá konfigurovanou cestu `faBridge.fsbridgePath` místo workspace root
+
+## [0.4.5] - 2025-10-30
+
+### Added
+- **Debug příkazy v FA Bridge panelu**: Přidány debugger příkazy do sidebaru panelu FA Bridge
+  - Panel nyní obsahuje dvě kategorie: "FA Příkazy" a "Debug Příkazy"
+  - Debug příkazy: Pokračovat (F5), Krokovat (F10), Přepnout breakpoint (F9), Zastavit debug
+  - Každý příkaz má odpovídající ikonu a tooltip
+  - F11 (Step Into) a Shift+F11 (Step Out) nejsou zatím implementovány v FA - debugování se provádí pomocí breakpointů
+
+### Fixed
+- **Oprava označení aktuálního řádku**: Žlutá šipka nyní ukazuje na správný řádek (opravena konverze čísla řádku)
+
+## [0.4.4] - 2025-10-30
+
+### Fixed
+- **Oprava zvýraznění aktuálního řádku**: Nyní se zvýrazní pouze jeden řádek (ne dva)
+  - Range pro decoration nyní používá `lineAt().range` místo `translate(1, 0)`
+  - Žlutá šipka a pozadí se zobrazí přesně na aktuálním řádku
+
+## [0.4.3] - 2025-10-30
+
+### Added
+- **Výrazná žlutá šipka v gutteru pro aktuální řádek**: Při pozastavení debuggeru na breakpointu se nyní zobrazí výrazná žlutá šipka vlevo v gutteru
+  - Žlutá šipka ukazuje přesný řádek, kde je script pozastavený
+  - Jemné žluté pozadí pro lepší viditelnost
+  - Žlutý indikátor v overview ruleru pro snadnou navigaci
+
+### Fixed
+- **FA lze nyní zavřít i když je pozastavená na breakpointu**: Při zavírání FA se automaticky zastaví debugger, takže aplikace nejde zamrznout
+  - Přidána automatická kontrola v `FormCloseQuery`
+  - Není už potřeba ukončovat FA přes Task Manager
+
+### Changed
+- **Verzování**: Aktualizována verze na `0.4.3-FA` v `Main.pas` a `uCursorBridge.pas`
+
+## [0.4.2] - 2025-10-30
+
+### Fixed
+- **Breakpointy nyní zůstávají viditelné při přepnutí záložky**: Extension nyní sleduje změnu aktivního editoru a automaticky obnovuje zobrazení breakpointů a zvýraznění aktuálního řádku
+  - Přidán listener `onDidChangeActiveTextEditor` který volá `refreshDecorations()`
+  - Breakpointy již nemizí při přepnutí mezi záložkami v Cursoru
+
+## [0.4.1] - 2025-10-30
+
+### Fixed
+- **Debugger funguje nyní i pro soubory otevřené MIMO workspace**: Extension se nyní aktivuje i když otevřeš `.pas` soubor přímo z FA (např. `D:\FA DESIGN\DataPrg\Scripts\...`)
+  - Přidána konfigurace `faBridge.fsbridgePath` pro nastavení cesty k `.fsbridge` složce
+  - Debugger již nevyžaduje otevřený workspace Cursoru
+  - Výchozí cesta: `D:\FA DESIGN\DataPrg\Scripts\.fsbridge`
+
+### Changed
+- **Extension používá fixní cestu k `.fsbridge` místo relativní cesty k workspace**
+  - Umožňuje komunikaci s FA i když otevřeš soubor mimo workspace
+  - Cesta je konfigurovatelná v nastavení (`faBridge.fsbridgePath`)
+
+### Added
+- **Nová sekce v README**: ⚙️ Nastavení - vysvětlení jak nastavit cestu k `.fsbridge` složce
+
 ## [0.4.0] - 2025-10-29
 
 ### Added

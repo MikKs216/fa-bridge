@@ -8,12 +8,13 @@ import * as vscode from 'vscode';
  */
 export async function writeFACommand(command: string): Promise<void> {
 	try {
-		const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
-		if (!workspaceRoot) {
-			throw new Error('Žádný workspace otevřen');
+		// Použij konfigurovanou cestu k .fsbridge
+		const fsbridgePath = vscode.workspace.getConfiguration('faBridge').get<string>('fsbridgePath');
+		if (!fsbridgePath) {
+			throw new Error('Nastavte cestu k .fsbridge složce v nastavení (faBridge.fsbridgePath)');
 		}
 
-		const fsbridgeDir = path.join(workspaceRoot, '.fsbridge');
+		const fsbridgeDir = fsbridgePath;
 		const facmdPath = path.join(fsbridgeDir, 'facmd.txt');
 
 		// Vytvoř .fsbridge složku pokud neexistuje

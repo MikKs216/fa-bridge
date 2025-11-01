@@ -1,0 +1,965 @@
+﻿{ 28.10.2025 15:12:45 (GMT+1:00) > [mik on WIN-48QDB6JAV23] checked in Propojeni na Cursor / VS code  }
+unit uCursorBridge;
+(*
+  Delphi 2007 helper for "FA ⇄ Cursor/VS Code" (file-based + polling + reuse-window)
+
+Features:
+- Atomické uložení skriptu z FA do pracovní složky (raw AnsiString, bez BOM/konverzí)
+- Otevření nebo reuse existujícího okna Cursor/VS Code pro daný workspace
+- Skok na soubor:řádek[:sloupec] (-g)
+- Aktivace existujícího okna editoru (Cursor.exe / Code.exe)
+- Polling pro detekci externích uložených změn (Ctrl+S v editoru) a callback OnExternalSave
+- Polling pro čtení příkazů z .fsbridge/facmd.txt a callback OnCommand
+- Soubor facmd.txt se maže OKAMŽITĚ po přečtení (před voláním callbacku) aby se předešlo nekonečné smyčce
+- Čtení dat z .fsbridge/fafield.txt pomocí ReadFieldText() (obsah fieldu z Cursor extension)
+- Zápis dat do .fsbridge/fafield.txt pomocí WriteFieldText() (atomicky s UTF-8 BOM)
+- Debugger podpora: Polling pro čtení debugger příkazů z .fsbridge/fadebug.txt a callback OnDebuggerCommand
+- Debugger podpora: Zápis stavu debuggeru do .fsbridge/fadebugstate.json pomocí WriteDebugState()
+
+Novinky:
+- Workspace se vždy nastavuje na složku ExportFolder (relativní k EXE je podporováno)
+- Každý formulář má vlastní podsložku pojmenovanou podle FormId
+  (např. ...\DataPrg\Scripts\dz_15DPFO5252_2\script_dz_15DPFO5252_2.pas)
+- Spouštění VS Code / Cursor bez blikajícího CMD okna na Win 11 (resolver EXE + ShellExecuteEx bez konzole)
+- Zpracování příkazů z Cursor extension přes .fsbridge/facmd.txt
+
+Integrace v aplikaci:
+  Bridge.ExportFolder := 'DataPrg\FormsProject'; // relativně k adresáři EXE
+  Bridge.CursorCmdOrPath := 'code';              // 'cursor' / 'code' / plná cesta
+  Bridge.OnCommand := ProcessFACommand;          // callback pro příkazy
+  Bridge.OnDebuggerCommand := ProcessDebugCommand; // callback pro debugger příkazy
+  Bridge.StartEditing(FormId, Code, JumpLine, JumpCol);
+  Bridge.PollTick; // z Timeru (kontroluje změny souboru + příkazy + debugger příkazy)
+  
+  // Komunikace s Cursor extension přes fafield.txt:
+  FieldName := Bridge.ReadFieldText;             // načti název fieldu z Cursor extension
+  Bridge.WriteFieldText('MyFieldName');          // pošli název fieldu do Cursor extension
+  
+  // Debugger komunikace:
+  // Bridge.WriteDebugState('{"status":"paused","currentLine":42,"breakpoints":[12,25]}'); // aktualizuj stav debuggeru
+*)
+
+interface
+
+uses
+  Windows, ShellAPI, SysUtils, Classes, TlHelp32, Registry;
+
+const
+  DEFAULT_FILE_PREFIX = 'script_';
+  
+  // Verzování uCursorBridge - musí být kompatibilní s FA Bridge extension
+  // Formát: 'X.Y.Z-FA' kde X.Y.Z je verze extension (z package.json)
+  // Při každé změně v tomto souboru musí být verze aktualizována!
+  CURSOR_BRIDGE_VERSION = '0.4.3-FA';
+  CURSOR_BRIDGE_VERSION_DATE = '2025-10-30';
+
+type
+  // Předá aktuální text při zjištění externího uložení
+  TExternalSaveEvent = procedure(const Text: AnsiString) of object;
+  
+  // Předá příkaz z Cursor extension
+  TCommandEvent = procedure(const Command: string) of object;
+  
+  // Předá debugger příkaz z Cursor extension
+  TDebuggerCommandEvent = procedure(const Command: string) of object;
+
+  TCursorBridge = class
+  private
+    FExportFolder: string;       // uživatelsky nastaveno (může být relativní k EXE)
+    FCursorCmdOrPath: string;    // 'cursor' | 'code' | plná cesta k EXE
+
+    FCurrentFormId: string;
+    FCurrentFile: string;
+    FLastWrite: TDateTime;
+
+    FOnExternalSave: TExternalSaveEvent;
+    FOnCommand: TCommandEvent;
+    FOnDebuggerCommand: TDebuggerCommandEvent;
+
+    function SettingsFilePath: string;
+    function LoadEditorFromSettings: string; // '' = nenačteno / nenalezeno
+    function EnsureDir(const Dir: string): Boolean;
+    function IsAbsolutePath(const P: string): Boolean;
+    function EffectiveExportFolder: string;
+
+    function GetScriptFileName(const FormId: string): string;
+    procedure AtomicWriteAllText(const FileName, Text: AnsiString);
+    function GetFileWriteTime(const FileName: string): TDateTime;
+    function ReadAllText(const FileName: string): AnsiString;
+
+    function RunCursorReuse(const AFolder, AFile: string; ALine, ACol: Integer): Boolean;
+    procedure ActivateCursorWindow;
+
+    // Nové pomocné metody pro spouštění editoru bez konzole
+    function ResolveEditorCommand: string;
+    function ShellExecNoConsole(const FileName, Params, WorkDir: string; ShowCmd: Integer): Boolean;
+    
+    // Zpracování příkazů z Cursor extension
+    function GetCommandFilePath: string;
+    procedure ProcessCommandFile;
+    
+    // Debugger podpora
+    function GetDebugFilePath: string;
+    function GetDebugStatePath: string;
+    procedure ProcessDebugFile;
+    
+    // Čtení field.txt ze Cursor extension
+    function GetFieldFilePath: string;
+  public
+    constructor Create;
+
+    // Konfigurace před použitím
+    property ExportFolder: string read FExportFolder write FExportFolder;           // např. 'DataPrg\FormsProject'
+    property CursorCmdOrPath: string read FCursorCmdOrPath write FCursorCmdOrPath; // 'code' / 'cursor' / plná cesta
+
+    // Stav
+    property CurrentFormId: string read FCurrentFormId;
+    property CurrentFile: string read FCurrentFile;
+
+    // Události
+    property OnExternalSave: TExternalSaveEvent read FOnExternalSave write FOnExternalSave;
+    property OnCommand: TCommandEvent read FOnCommand write FOnCommand;
+    property OnDebuggerCommand: TDebuggerCommandEvent read FOnDebuggerCommand write FOnDebuggerCommand;
+
+    // Hlavní API
+    function StartEditing(const FormId: string; const Code: AnsiString; JumpLine, JumpCol: Integer): Boolean;
+    function BringToCursor(const Code: AnsiString; JumpLine, JumpCol: Integer): Boolean;
+    procedure PollTick;
+    
+    // Čtení a zápis dat z/do Cursor extension
+    function ReadFieldText: string; // Přečte obsah fafield.txt
+    procedure WriteFieldText(const FieldName: string); // Zapíše název fieldu do fafield.txt
+    
+    // Debugger podpora
+    procedure WriteDebugState(const StateJson: string); // Zapíše stav debuggeru do fadebugstate.json (UTF-8 s BOM)
+  end;
+
+implementation
+
+{ Pomocné funkce (mimo třídu) }
+
+function BaseName(const Path: string): string;
+var
+  S: string;
+begin
+  S := ExtractFileName(Path);
+  Result := UpperCase(ChangeFileExt(S, ''));
+end;
+
+function FindMainWindowOfProcess(const ExeName: string): HWND;
+var
+  Snap: THandle;
+  Pe32: TProcessEntry32;
+  TargetPID: DWORD;
+
+  function EnumWinProc(h: HWND; lParam: LPARAM): BOOL; stdcall;
+  var
+    PID: DWORD;
+  begin
+    GetWindowThreadProcessId(h, @PID);
+    if (PID = DWORD(lParam)) and IsWindowVisible(h) then
+    begin
+      Result := False; // stop
+      SetLastError(Cardinal(h));
+    end
+    else
+      Result := True; // continue
+  end;
+
+begin
+  Result := 0;
+  TargetPID := 0;
+
+  Snap := CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+  if Snap = INVALID_HANDLE_VALUE then Exit;
+  try
+    ZeroMemory(@Pe32, SizeOf(Pe32));
+    Pe32.dwSize := SizeOf(Pe32);
+    if Process32First(Snap, Pe32) then
+    repeat
+      if SameText(ExtractFileName(Pe32.szExeFile), ExeName) then
+      begin
+        TargetPID := Pe32.th32ProcessID;
+        Break;
+      end;
+    until not Process32Next(Snap, Pe32);
+  finally
+    CloseHandle(Snap);
+  end;
+
+  if TargetPID <> 0 then
+  begin
+    EnumWindows(@EnumWinProc, LPARAM(TargetPID));
+    Result := HWND(GetLastError);
+    SetLastError(0);
+  end;
+end;
+
+function ExpandEnv(const S: string): string;
+var
+  Buf: array[0..MAX_PATH * 4] of Char;
+  N: DWORD;
+begin
+  N := ExpandEnvironmentStrings(PChar(S), @Buf[0], Length(Buf));
+  if (N > 0) and (N <= DWORD(Length(Buf))) then
+    Result := string(Buf)
+  else
+    Result := S;
+end;
+
+function SearchExeOnPath(const BaseName: string): string;
+var
+  Buf: array[0..MAX_PATH] of Char;
+  FilePart: PChar;
+  Len: DWORD;
+begin
+  Result := '';
+  Len := SearchPath(nil, PChar(BaseName), '.exe', SizeOf(Buf), Buf, FilePart);
+  if Len > 0 then
+    Result := string(Buf);
+end;
+
+function SearchCmdOnPath(const BaseName: string): string;
+var
+  Buf: array[0..MAX_PATH] of Char;
+  FilePart: PChar;
+  Len: DWORD;
+begin
+  Result := '';
+  Len := SearchPath(nil, PChar(BaseName), '.cmd', SizeOf(Buf), Buf, FilePart);
+  if Len > 0 then
+    Result := string(Buf);
+end;
+
+function ReadAppPath(const ExeName: string): string;
+var
+  R: TRegistry;
+begin
+  Result := '';
+  R := TRegistry.Create(KEY_READ);
+  try
+    R.RootKey := HKEY_LOCAL_MACHINE;
+    if R.OpenKeyReadOnly('\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\' + ExeName) then
+    begin
+      Result := R.ReadString('');
+      Exit;
+    end;
+    R.CloseKey;
+    R.RootKey := HKEY_CURRENT_USER;
+    if R.OpenKeyReadOnly('\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\' + ExeName) then
+      Result := R.ReadString('');
+  finally
+    R.Free;
+  end;
+end;
+
+{ TCursorBridge }
+
+constructor TCursorBridge.Create;
+begin
+  inherited Create;
+  FExportFolder := '';          // default: prázdné → EffectiveExportFolder = adresář EXE
+  FCursorCmdOrPath := 'cursor'; // nebo 'code'
+  FCurrentFormId := '';
+  FCurrentFile := '';
+  FLastWrite := 0;
+end;
+
+function TCursorBridge.EnsureDir(const Dir: string): Boolean;
+begin
+  if (Dir <> '') and DirectoryExists(Dir) then
+  begin
+    Result := True;
+    Exit;
+  end;
+  Result := ForceDirectories(Dir);
+end;
+
+function TCursorBridge.IsAbsolutePath(const P: string): Boolean;
+begin
+  // Windows: "X:\..." nebo "\\server\share..." nebo "\root-relativní"
+  if (Length(P) >= 2) and (P[2] = ':') then
+    Result := True
+  else if (Length(P) >= 2) and (P[1] = '\') and (P[2] = '\') then
+    Result := True
+  else if (Length(P) >= 1) and (P[1] = '\') then
+    Result := True
+  else
+    Result := False;
+end;
+
+function TCursorBridge.EffectiveExportFolder: string;
+var
+  AppDir: string;
+begin
+  AppDir := ExtractFilePath(ParamStr(0)); // adresář volající aplikace
+  if FExportFolder = '' then
+    Result := ExcludeTrailingPathDelimiter(AppDir)
+  else if IsAbsolutePath(FExportFolder) then
+    Result := ExcludeTrailingPathDelimiter(ExpandFileName(FExportFolder))
+  else
+    Result := ExcludeTrailingPathDelimiter(
+                ExpandFileName(IncludeTrailingPathDelimiter(AppDir) + FExportFolder)
+              );
+end;
+
+function TCursorBridge.GetScriptFileName(const FormId: string): string;
+begin
+  // Ukládáme do podsložky pojmenované dle FormId, soubor ponechává původní jméno
+  Result := IncludeTrailingPathDelimiter(EffectiveExportFolder)
+          + FormId + PathDelim
+          + DEFAULT_FILE_PREFIX + FormId + '.pas';
+end;
+
+function TCursorBridge.GetCommandFilePath: string;
+begin
+  // Příkazy z Cursor extension: <workspace>/.fsbridge/facmd.txt
+  Result := IncludeTrailingPathDelimiter(EffectiveExportFolder)
+          + '.fsbridge' + PathDelim
+          + 'facmd.txt';
+end;
+
+function TCursorBridge.GetFieldFilePath: string;
+begin
+  // Field data z Cursor extension: <workspace>/.fsbridge/fafield.txt
+  Result := IncludeTrailingPathDelimiter(EffectiveExportFolder)
+          + '.fsbridge' + PathDelim
+          + 'fafield.txt';
+end;
+
+function TCursorBridge.GetDebugFilePath: string;
+begin
+  // Debugger příkazy z Cursor extension: <workspace>/.fsbridge/fadebug.txt
+  Result := IncludeTrailingPathDelimiter(EffectiveExportFolder)
+          + '.fsbridge' + PathDelim
+          + 'fadebug.txt';
+end;
+
+function TCursorBridge.GetDebugStatePath: string;
+begin
+  // Stav debuggeru pro Cursor extension: <workspace>/.fsbridge/fadebugstate.json
+  Result := IncludeTrailingPathDelimiter(EffectiveExportFolder)
+          + '.fsbridge' + PathDelim
+          + 'fadebugstate.json';
+end;
+
+procedure TCursorBridge.AtomicWriteAllText(const FileName: string; const Text: AnsiString);
+var
+  Tmp: string;
+  FS: TFileStream;
+  Len: Integer;
+begin
+  // Zajistit cílovou složku (včetně podsložky s FormId)
+  EnsureDir(ExtractFilePath(FileName));
+
+  Tmp := FileName + '.tmp';
+  FS := TFileStream.Create(Tmp, fmCreate or fmShareDenyWrite);
+  try
+    Len := Length(Text);
+    if Len > 0 then
+      FS.WriteBuffer(Text[1], Len);
+  finally
+    FS.Free;
+  end;
+
+  // Atomická výměna
+  MoveFileEx(PChar(Tmp), PChar(FileName), MOVEFILE_REPLACE_EXISTING or MOVEFILE_WRITE_THROUGH);
+end;
+
+function TCursorBridge.GetFileWriteTime(const FileName: string): TDateTime;
+var
+  SR: TSearchRec;
+begin
+  Result := 0;
+  if FindFirst(FileName, faAnyFile, SR) = 0 then
+  try
+    Result := FileDateToDateTime(SR.Time); // lokální čas
+  finally
+    FindClose(SR);
+  end;
+end;
+
+function TCursorBridge.ReadAllText(const FileName: string): AnsiString;
+var
+  FS: TFileStream;
+  Len: Integer;
+begin
+  Result := '';
+  FS := TFileStream.Create(FileName, fmOpenRead or fmShareDenyWrite);
+  try
+    Len := FS.Size;
+    if Len > 0 then
+    begin
+      SetLength(Result, Len);
+      FS.ReadBuffer(Result[1], Len);
+    end;
+  finally
+    FS.Free;
+  end;
+end;
+
+procedure TCursorBridge.ProcessCommandFile;
+var
+  CmdFilePath: string;
+  Commands: TStringList;
+  Command: string;
+  BOM: array[0..2] of Byte;
+  FS: TFileStream;
+  HasBOM: Boolean;
+begin
+  CmdFilePath := GetCommandFilePath;
+  
+  // Pokud soubor neexistuje, nic nedělej
+  if not FileExists(CmdFilePath) then
+    Exit;
+    
+  Commands := TStringList.Create;
+  try
+    try
+      // Krátký sleep pro případ že právě probíhá zápis
+      Sleep(10);
+      
+      // Načti příkaz(y) - kontrola BOM
+      FS := TFileStream.Create(CmdFilePath, fmOpenRead or fmShareDenyNone);
+      try
+        HasBOM := False;
+        if FS.Size >= 3 then
+        begin
+          FS.Read(BOM, 3);
+          HasBOM := (BOM[0] = $EF) and (BOM[1] = $BB) and (BOM[2] = $BF);
+          
+          // Pokud nemá BOM, vrať se na začátek
+          if not HasBOM then
+            FS.Position := 0;
+        end;
+        
+        Commands.LoadFromStream(FS);
+      finally
+        FS.Free;
+      end;
+      
+      if Commands.Count > 0 then
+      begin
+        Command := Trim(Commands[0]); // První řádek = příkaz
+        
+        // Pokud je příkaz prázdný, jen smaž soubor
+        if Command = '' then
+        begin
+          DeleteFile(CmdFilePath);
+          Exit;
+        end;
+        
+        // NEJDŘÍV smaž soubor (před voláním callbacku!)
+        DeleteFile(CmdFilePath);
+        
+        // PAK teprve zavolej callback pro zpracování příkazu
+        if Assigned(FOnCommand) then
+          FOnCommand(Command);
+      end
+      else
+      begin
+        // Pokud není žádný příkaz, smaž prázdný soubor
+        DeleteFile(CmdFilePath);
+      end;
+      
+    except
+      // Při chybě zkus soubor smazat, aby se neblokoval
+      try
+        DeleteFile(CmdFilePath);
+      except
+        // Tiše ignoruj chybu při mazání
+      end;
+    end;
+    
+  finally
+    Commands.Free;
+  end;
+end;
+
+procedure TCursorBridge.ProcessDebugFile;
+var
+  DebugFilePath: string;
+  Commands: TStringList;
+  Command: string;
+  BOM: array[0..2] of Byte;
+  FS: TFileStream;
+  HasBOM: Boolean;
+begin
+  DebugFilePath := GetDebugFilePath;
+  
+  // Pokud soubor neexistuje, nic nedělej
+  if not FileExists(DebugFilePath) then
+    Exit;
+    
+  Commands := TStringList.Create;
+  try
+    try
+      // Krátký sleep pro případ že právě probíhá zápis
+      Sleep(10);
+      
+      // Načti příkaz(y) - kontrola BOM
+      FS := TFileStream.Create(DebugFilePath, fmOpenRead or fmShareDenyNone);
+      try
+        HasBOM := False;
+        if FS.Size >= 3 then
+        begin
+          FS.Read(BOM, 3);
+          HasBOM := (BOM[0] = $EF) and (BOM[1] = $BB) and (BOM[2] = $BF);
+          
+          // Pokud nemá BOM, vrať se na začátek
+          if not HasBOM then
+            FS.Position := 0;
+        end;
+        
+        Commands.LoadFromStream(FS);
+      finally
+        FS.Free;
+      end;
+      
+      if Commands.Count > 0 then
+      begin
+        Command := Trim(Commands[0]); // První řádek = příkaz
+        
+        // Pokud je příkaz prázdný, jen smaž soubor
+        if Command = '' then
+        begin
+          DeleteFile(DebugFilePath);
+          Exit;
+        end;
+        
+        // NEJDŘÍV smaž soubor (před voláním callbacku!)
+        DeleteFile(DebugFilePath);
+        
+        // PAK teprve zavolej callback pro zpracování příkazu
+        if Assigned(FOnDebuggerCommand) then
+          FOnDebuggerCommand(Command);
+      end
+      else
+      begin
+        // Pokud není žádný příkaz, smaž prázdný soubor
+        DeleteFile(DebugFilePath);
+      end;
+      
+    except
+      // Při chybě zkus soubor smazat, aby se neblokoval
+      try
+        DeleteFile(DebugFilePath);
+      except
+        // Tiše ignoruj chybu při mazání
+      end;
+    end;
+    
+  finally
+    Commands.Free;
+  end;
+end;
+
+function TCursorBridge.SettingsFilePath: string;
+begin
+  // ...\<ExportFolder>\Scripts\_settings.json
+  Result := IncludeTrailingPathDelimiter(EffectiveExportFolder)
+          + '_settings.json';
+end;
+
+// Velmi jednoduché "parser" – stačí najít klíč "editor" a vyčíst hodnotu v uvozovkách.
+function TCursorBridge.LoadEditorFromSettings: string;
+var
+  Pth: string;
+  S: AnsiString;
+  L, i, j, k: Integer;
+  LowS: AnsiString;
+
+  function SkipWs(const T: AnsiString; var Idx: Integer): Boolean;
+  begin
+    while (Idx <= Length(T)) and (T[Idx] in [#9, #10, #13, ' ']) do Inc(Idx);
+    Result := Idx <= Length(T);
+  end;
+
+  function NextQuoted(const T: AnsiString; var Idx: Integer): AnsiString;
+  var
+    q: AnsiChar;
+    b: Integer;
+  begin
+    Result := '';
+    if (Idx > Length(T)) or (T[Idx] <> '"') then Exit;
+    q := '"';
+    Inc(Idx);
+    b := Idx;
+    while (Idx <= Length(T)) and (T[Idx] <> q) do Inc(Idx);
+    if Idx <= Length(T) then
+      Result := Copy(T, b, Idx - b)
+    else
+      Result := '';
+  end;
+
+begin
+  Result := '';
+  Pth := SettingsFilePath;
+  if not FileExists(Pth) then Exit;
+
+  // čteme raw (ANSI/UTF-8 bez BOM – necháváme na DB vrstvě/Editoru)
+  S := ReadAllText(Pth);
+  if S = '' then Exit;
+
+  // case-insensitive hledání klíče "editor"
+  LowS := AnsiLowerCase(S);
+  i := Pos('"editor"', LowS);
+  if i = 0 then Exit;
+
+  // posuň se na dvojtečku
+  j := i + Length('"editor"');
+  if not SkipWs(LowS, j) then Exit;
+  if (j > Length(LowS)) or (LowS[j] <> ':') then Exit;
+  Inc(j);
+  if not SkipWs(LowS, j) then Exit;
+
+  // očekáváme hodnotu v uvozovkách
+  if (j > Length(S)) or (S[j] <> '"') then Exit;
+
+  // přečti quoted hodnotu (z originálního S kvůli zachování velikosti písmen)
+  k := j;
+  Result := Trim(string(NextQuoted(S, k)));
+
+  // ošetři prázdnou hodnotu
+  if Result = '' then Exit;
+
+  // přípustné: 'code', 'cursor', 'code.exe', 'cursor.exe', plná cesta
+  // nic dalšího zde nekontrolujeme; ResolveEditorCommand to vyřeší
+end;
+
+function TCursorBridge.ResolveEditorCommand: string;
+var
+  Cmd, NameOnly, Candidate, P, LocalApp, ProgFiles: string;
+begin
+  // 0) Preferuj hodnotu ze _settings.json, pokud existuje
+  Cmd := LoadEditorFromSettings;
+  if Cmd = '' then
+    Cmd := Trim(FCursorCmdOrPath);  // fallback na property
+
+  // 1) Pokud je zadaná cesta (obsahuje \ nebo :), expanduj proměnné a vrať
+  if (Pos('\', Cmd) > 0) or (Pos(':', Cmd) > 0) then
+  begin
+    Result := ExpandEnv(Cmd);
+    Exit;
+  end;
+
+  // 2) Základní jméno (bez cesty)
+  NameOnly := Cmd;
+
+  // 2a) Pokus o App Paths (preferujeme .exe)
+  Candidate := ReadAppPath(NameOnly + '.exe');
+  if (Candidate <> '') and FileExists(Candidate) then
+  begin
+    Result := Candidate;
+    Exit;
+  end;
+
+  // 2b) PATH – .exe
+  Candidate := SearchExeOnPath(NameOnly);
+  if (Candidate <> '') and FileExists(Candidate) then
+  begin
+    Result := Candidate;
+    Exit;
+  end;
+
+  // 2c) Známé cesty
+  LocalApp  := ExpandEnv('%LocalAppData%');
+  ProgFiles := ExpandEnv('%ProgramFiles%');
+
+  if SameText(NameOnly, 'code') then
+  begin
+    P := IncludeTrailingPathDelimiter(LocalApp)  + 'Programs\Microsoft VS Code\Code.exe';
+    if FileExists(P) then begin Result := P; Exit; end;
+    P := IncludeTrailingPathDelimiter(ProgFiles) + 'Microsoft VS Code\Code.exe';
+    if FileExists(P) then begin Result := P; Exit; end;
+  end
+  else if SameText(NameOnly, 'cursor') then
+  begin
+    P := IncludeTrailingPathDelimiter(LocalApp) + 'Programs\Cursor\Cursor.exe';
+    if FileExists(P) then begin Result := P; Exit; end;
+  end;
+
+  // 2d) PATH – .cmd (např. code.cmd)
+  Candidate := SearchCmdOnPath(NameOnly);
+  if (Candidate <> '') and FileExists(Candidate) then
+  begin
+    Result := Candidate; // .cmd varianta
+    Exit;
+  end;
+
+  // 3) Fallback – vrať, ať ShellExecuteEx rozhodne (může být alias)
+  Result := NameOnly;
+end;
+
+function TCursorBridge.ShellExecNoConsole(const FileName, Params, WorkDir: string; ShowCmd: Integer): Boolean;
+var
+  SEI: TShellExecuteInfo;
+begin
+  ZeroMemory(@SEI, SizeOf(SEI));
+  SEI.cbSize := SizeOf(SEI);
+  SEI.fMask  := SEE_MASK_NO_CONSOLE or SEE_MASK_FLAG_NO_UI;
+  SEI.Wnd    := 0;
+  SEI.lpVerb := 'open';
+  SEI.lpFile := PChar(FileName);
+  SEI.lpParameters := PChar(Params);
+  SEI.lpDirectory  := PChar(WorkDir);
+  SEI.nShow := ShowCmd;
+  Result := ShellExecuteEx(@SEI);
+end;
+
+function TCursorBridge.RunCursorReuse(const AFolder, AFile: string; ALine, ACol: Integer): Boolean;
+var
+  Params, FolderArg, FileArg, WS, Cmd: string;
+  Ext: string;
+begin
+  // Workspace = EffectiveExportFolder, soubor otevřít přes -g (řádek[:sloupec])
+  WS := EffectiveExportFolder;
+  FolderArg := '"' + WS + '"';
+
+  if (ALine > 0) and (ACol > 0) then
+    FileArg := Format(' -g "%s:%d:%d"', [AFile, ALine, ACol])
+  else if (ALine > 0) then
+    FileArg := Format(' -g "%s:%d"', [AFile, ALine])
+  else
+    FileArg := Format(' "%s"', [AFile]);
+
+  // Pořadí: nejdřív workspace (složka), potom soubor
+  Params := Format('-r %s%s', [FolderArg, FileArg]);
+
+  // Najdi skutečný spustitelný soubor (EXE), případně CMD na PATH
+  Cmd := ResolveEditorCommand;
+  Ext := LowerCase(ExtractFileExt(Cmd));
+
+  if (Ext = '.cmd') or (Ext = '.bat') then
+  begin
+    // Spusť .cmd/.bat bez blikající konzole (okno editoru se otevře normálně)
+    Result := ShellExecNoConsole(Cmd, Params, WS, SW_HIDE);
+  end
+  else
+  begin
+    // EXE – běžné spuštění bez mezikroku v cmd.exe
+    Result := ShellExecNoConsole(Cmd, Params, WS, SW_SHOWNORMAL);
+  end;
+end;
+
+procedure TCursorBridge.ActivateCursorWindow;
+var
+  H: HWND;
+  Preferred: string;
+begin
+  // Preferuj okno podle nastaveného příkazu, fallback na druhý editor
+  Preferred := BaseName(FCursorCmdOrPath);
+
+  if Pos('CODE', Preferred) > 0 then
+  begin
+    H := FindMainWindowOfProcess('Code.exe');
+    if H = 0 then H := FindMainWindowOfProcess('Cursor.exe');
+  end
+  else
+  begin
+    H := FindMainWindowOfProcess('Cursor.exe');
+    if H = 0 then H := FindMainWindowOfProcess('Code.exe');
+  end;
+
+  if H <> 0 then
+  begin
+    SetForegroundWindow(H);
+    ShowWindow(H, SW_SHOWNORMAL);
+  end;
+end;
+
+function TCursorBridge.StartEditing(const FormId: string; const Code: AnsiString; JumpLine, JumpCol: Integer): Boolean;
+begin
+  Result := False;
+  if (FormId = '') then Exit;
+
+  // Nastav kontext a cílový soubor
+  FCurrentFormId := FormId;
+  FCurrentFile   := GetScriptFileName(FormId);
+
+  // Ulož kód na disk (atomicky) a ulož baseline timestamp
+  AtomicWriteAllText(FCurrentFile, Code);
+  FLastWrite := GetFileWriteTime(FCurrentFile);
+
+  // Otevři/reuse editor ve workspace a aktivuj okno
+  Result := RunCursorReuse(EffectiveExportFolder, FCurrentFile, JumpLine, JumpCol);
+  ActivateCursorWindow;
+end;
+
+function TCursorBridge.BringToCursor(const Code: AnsiString; JumpLine, JumpCol: Integer): Boolean;
+begin
+  Result := False;
+  if (FCurrentFormId = '') or (FCurrentFile = '') then Exit;
+
+  // Přepiš obsah na disku aktuálním kódem a posuň baseline
+  AtomicWriteAllText(FCurrentFile, Code);
+  FLastWrite := GetFileWriteTime(FCurrentFile);
+
+  // Přepni fokus do existujícího okna, skok na pozici
+  Result := RunCursorReuse(EffectiveExportFolder, FCurrentFile, JumpLine, JumpCol);
+  ActivateCursorWindow;
+end;
+
+procedure TCursorBridge.PollTick;
+var
+  T: TDateTime;
+  Txt: AnsiString;
+begin
+  // 1) Kontrola změn v editovaném souboru (Ctrl+S v editoru)
+  if (FCurrentFile <> '') then
+  begin
+    T := GetFileWriteTime(FCurrentFile);
+    if (T > 0) and (T > FLastWrite) then
+    begin
+      FLastWrite := T;
+      try
+        Txt := ReadAllText(FCurrentFile);
+      except
+        // best-effort (soubor může být krátce zamčený)
+        Txt := '';
+      end;
+
+      if (Txt <> '') and Assigned(FOnExternalSave) then
+        FOnExternalSave(Txt);
+    end;
+  end;
+  
+  // 2) Kontrola příkazů z Cursor extension
+  ProcessCommandFile;
+  
+  // 3) Kontrola debugger příkazů z Cursor extension
+  ProcessDebugFile;
+end;
+
+function TCursorBridge.ReadFieldText: string;
+var
+  FieldFilePath: string;
+  Fields: TStringList;
+  BOM: array[0..2] of Byte;
+  FS: TFileStream;
+  HasBOM: Boolean;
+begin
+  Result := '';
+  FieldFilePath := GetFieldFilePath;
+  
+  // Pokud soubor neexistuje, vrať prázdný řetězec
+  if not FileExists(FieldFilePath) then
+    Exit;
+    
+  Fields := TStringList.Create;
+  try
+    try
+      // Načti obsah - kontrola BOM
+      FS := TFileStream.Create(FieldFilePath, fmOpenRead or fmShareDenyNone);
+      try
+        HasBOM := False;
+        if FS.Size >= 3 then
+        begin
+          FS.Read(BOM, 3);
+          HasBOM := (BOM[0] = $EF) and (BOM[1] = $BB) and (BOM[2] = $BF);
+          
+          // Pokud nemá BOM, vrať se na začátek
+          if not HasBOM then
+            FS.Position := 0;
+        end;
+        
+        Fields.LoadFromStream(FS);
+      finally
+        FS.Free;
+      end;
+      
+      // Vrať první řádek (nebo celý obsah pokud je to jen jeden řádek)
+      if Fields.Count > 0 then
+        Result := Trim(Fields[0])
+      else
+        Result := '';
+        
+    except
+      // Při chybě čtení vrať prázdný řetězec
+      Result := '';
+    end;
+    
+  finally
+    Fields.Free;
+  end;
+end;
+
+procedure TCursorBridge.WriteFieldText(const FieldName: string);
+var
+  FieldFilePath: string;
+  TmpPath: string;
+  FS: TFileStream;
+  BOM: array[0..2] of Byte;
+  Content: AnsiString;
+begin
+  FieldFilePath := GetFieldFilePath;
+  
+  // Zajisti že .fsbridge složka existuje
+  EnsureDir(ExtractFilePath(FieldFilePath));
+  
+  // Atomický zápis přes tmp soubor
+  TmpPath := FieldFilePath + '.tmp';
+  
+  FS := TFileStream.Create(TmpPath, fmCreate or fmShareDenyWrite);
+  try
+    // Zapiš UTF-8 BOM (EF BB BF)
+    BOM[0] := $EF;
+    BOM[1] := $BB;
+    BOM[2] := $BF;
+    FS.WriteBuffer(BOM, 3);
+    
+    // Zapiš obsah jako UTF-8 (bez trailing newline)
+    if FieldName <> '' then
+    begin
+      Content := UTF8Encode(FieldName);
+      FS.WriteBuffer(Content[1], Length(Content));
+    end;
+  finally
+    FS.Free;
+  end;
+  
+  // Atomická výměna
+  MoveFileEx(PChar(TmpPath), PChar(FieldFilePath), 
+             MOVEFILE_REPLACE_EXISTING or MOVEFILE_WRITE_THROUGH);
+end;
+
+procedure TCursorBridge.WriteDebugState(const StateJson: string);
+var
+  StatePath: string;
+  TmpPath: string;
+  FS: TFileStream;
+  BOM: array[0..2] of Byte;
+  Content: AnsiString;
+begin
+  StatePath := GetDebugStatePath;
+  
+  // Zajisti že .fsbridge složka existuje
+  EnsureDir(ExtractFilePath(StatePath));
+  
+  // Atomický zápis přes tmp soubor
+  TmpPath := StatePath + '.tmp';
+  
+  FS := TFileStream.Create(TmpPath, fmCreate or fmShareDenyWrite);
+  try
+    // Zapiš UTF-8 BOM (EF BB BF)
+    BOM[0] := $EF;
+    BOM[1] := $BB;
+    BOM[2] := $BF;
+    FS.WriteBuffer(BOM, 3);
+    
+    // Zapiš obsah jako UTF-8
+    if StateJson <> '' then
+    begin
+      Content := UTF8Encode(StateJson);
+      FS.WriteBuffer(Content[1], Length(Content));
+    end;
+  finally
+    FS.Free;
+  end;
+  
+  // Atomická výměna
+  MoveFileEx(PChar(TmpPath), PChar(StatePath), 
+             MOVEFILE_REPLACE_EXISTING or MOVEFILE_WRITE_THROUGH);
+end;
+
+end.
