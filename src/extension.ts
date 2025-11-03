@@ -83,6 +83,10 @@ export function activate(context: vscode.ExtensionContext) {
 		// Návrh příkazy
 		vscode.commands.registerCommand('faBridge.provestInit', async () => {
 			try {
+				// Nejdřív aktivovat FA
+				await writeFACommand('Aktivovat_formular');
+				await new Promise(resolve => setTimeout(resolve, 400)); // Zpoždění pro aktivaci FA
+				// Pak spustit Init
 				await writeFACommand('DO_INIT');
 				vscode.window.showInformationMessage('FA: Provádím Init...');
 			} catch (error) {
@@ -91,6 +95,10 @@ export function activate(context: vscode.ExtensionContext) {
 		}),
 		vscode.commands.registerCommand('faBridge.provestCalculate', async () => {
 			try {
+				// Nejdřív aktivovat FA
+				await writeFACommand('Aktivovat_formular');
+				await new Promise(resolve => setTimeout(resolve, 400)); // Zpoždění pro aktivaci FA
+				// Pak spustit Calculate
 				await writeFACommand('DO_CALCULATE');
 				vscode.window.showInformationMessage('FA: Provádím Calculate...');
 			} catch (error) {
@@ -99,6 +107,10 @@ export function activate(context: vscode.ExtensionContext) {
 		}),
 		vscode.commands.registerCommand('faBridge.provestEnable', async () => {
 			try {
+				// Nejdřív aktivovat FA
+				await writeFACommand('Aktivovat_formular');
+				await new Promise(resolve => setTimeout(resolve, 400)); // Zpoždění pro aktivaci FA
+				// Pak spustit Enable
 				await writeFACommand('DO_ENABLE');
 				vscode.window.showInformationMessage('FA: Provádím Enable...');
 			} catch (error) {
@@ -107,6 +119,10 @@ export function activate(context: vscode.ExtensionContext) {
 		}),
 		vscode.commands.registerCommand('faBridge.zobrazitInfo', async () => {
 			try {
+				// Nejdřív aktivovat FA
+				await writeFACommand('Aktivovat_formular');
+				await new Promise(resolve => setTimeout(resolve, 400)); // Zpoždění pro aktivaci FA
+				// Pak zobrazit Info
 				await writeFACommand('SHOW_INFO');
 				vscode.window.showInformationMessage('FA: Zobrazuji Info...');
 			} catch (error) {
@@ -115,6 +131,10 @@ export function activate(context: vscode.ExtensionContext) {
 		}),
 		vscode.commands.registerCommand('faBridge.zobrazitPlatebniInformace', async () => {
 			try {
+				// Nejdřív aktivovat FA
+				await writeFACommand('Aktivovat_formular');
+				await new Promise(resolve => setTimeout(resolve, 400)); // Zpoždění pro aktivaci FA
+				// Pak zobrazit Platební informace
 				await writeFACommand('SHOW_PAYMENT_INFO');
 				vscode.window.showInformationMessage('FA: Zobrazuji platební informace...');
 			} catch (error) {
@@ -123,6 +143,10 @@ export function activate(context: vscode.ExtensionContext) {
 		}),
 		vscode.commands.registerCommand('faBridge.zobrazitPeriod', async () => {
 			try {
+				// Nejdřív aktivovat FA
+				await writeFACommand('Aktivovat_formular');
+				await new Promise(resolve => setTimeout(resolve, 400)); // Zpoždění pro aktivaci FA
+				// Pak zobrazit Period
 				await writeFACommand('SHOW_PERIOD');
 				vscode.window.showInformationMessage('FA: Zobrazuji Period...');
 			} catch (error) {

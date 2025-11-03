@@ -5005,19 +5005,6 @@ var
   res: integer;
   s: string;
 begin
-  {$IFDEF UCURSOR}
-  // CURSOR DEBUGGER: Automaticky zastav debugger při zavírání aplikace
-  // Pokud je TMS Scripter pozastavený na breakpointu, zastav ho, jinak aplikace nejde zavřít
-  if Assigned(ScripterT) and ScripterT.Running then
-  begin
-    OutputDebugString(PChar('[FA Debugger] Stopping debugger on application close'));
-    ScripterT.Halt;
-    ScripterT.Running := False;
-    // Dej FA čas na zpracování (aby se debugger skutečně zastavil)
-    Application.ProcessMessages;
-  end;
-  {$ENDIF UCURSOR}
-  
   if FFileOpened and FIsOpenedPDFEditor then begin
     MsgBoxWarn(Caption, sMsgAskCloseIfPDFEditorOpen, MB_OK);
     CanClose:=false;
@@ -26791,7 +26778,6 @@ end;
 
 procedure TfaMain.TimerPollTimer(Sender: TObject);
 begin
-  //OutputDebugString('TimerPoll tick');
   if Assigned(FBridge) then
   begin
     FBridge.PollTick; // detekuje Ctrl+S v Cursoru a případně zavolá BridgeExternalSave
@@ -26914,15 +26900,12 @@ begin
   end;
 end;
 
-// Zpracování debugger příkazů z Cursor extension
+// Zpracování příkazů z Cursor extension
 procedure TfaMain.ProcessDebugCommand(const Command: string);
 var
   CommandName: string;
   ColonPos: Integer;
 begin
-  // TRASOVÁNÍ: Logování přijatého příkazu
-  OutputDebugString(PChar('[FA Command] Received command: ' + Command));
-
   // Parsování příkazu - formát může být "COMMAND" nebo "COMMAND:parameter"
   ColonPos := Pos(':', Command);
   if ColonPos > 0 then
@@ -26937,38 +26920,26 @@ begin
   // Zpracování podle typu příkazu
   if CommandName = 'DO_INIT' then
   begin
-    // Provést Init - volá DoInit
-    OutputDebugString(PChar('[FA Command] Executing DO_INIT'));
     DoInit;
   end
   else if CommandName = 'DO_CALCULATE' then
   begin
-    // Provést Calculate - volá DoCalculate
-    OutputDebugString(PChar('[FA Command] Executing DO_CALCULATE'));
     DoCalculate;
   end
   else if CommandName = 'DO_ENABLE' then
   begin
-    // Provést Enable - volá DoEnable
-    OutputDebugString(PChar('[FA Command] Executing DO_ENABLE'));
     DoEnable;
   end
   else if CommandName = 'SHOW_INFO' then
   begin
-    // Zobrazit Info - volá ShowFormInfo
-    OutputDebugString(PChar('[FA Command] Executing SHOW_INFO'));
     ShowFormInfo;
   end
   else if CommandName = 'SHOW_PAYMENT_INFO' then
   begin
-    // Zobrazit Platební informace - volá DoPaymentInfo
-    OutputDebugString(PChar('[FA Command] Executing SHOW_PAYMENT_INFO'));
     DoPaymentInfo;
   end
   else if CommandName = 'SHOW_PERIOD' then
   begin
-    // Zobrazit Period - zobrazí aktuální období
-    OutputDebugString(PChar('[FA Command] Executing SHOW_PERIOD'));
     ShowMessage(GfaMain.GetPeriod);
   end;
 end;
@@ -27173,13 +27144,10 @@ begin
       SourceLines.Free;
     end;
     
-    // PO parsování: Pokud jsme našli nějaké proměnné, skvělé
-    // Pokud ne, zkusit získat hodnoty běžných proměnných přímo (bez parsování)
-    // Tím zjistíme, jestli problém je v parsování nebo v získávání hodnot
+    // Pokud parsování nenašlo žádné proměnné, zkusit získat hodnoty běžných proměnných přímo
     if VarNames.Count = 0 then
     begin
-      // Pokud parsování nenašlo žádné proměnné, zkusit několik běžných názvů přímo
-      // Použijeme DebugWatches - pokud proměnná existuje, získáme její hodnotu
+      // Zkusit běžné názvy proměnných pomocí DebugWatches
       try
         if Assigned(ScripterT) and Assigned(ScripterT.CurrentScript) and 
            Assigned(ScripterT.CurrentScript.VirtualMachine) then
@@ -27230,17 +27198,15 @@ begin
     end;
     
     // Projít nalezené proměnné a získat jejich hodnoty
-    // Zkusíme několik způsobů: 1) DebugWatches pokud je VirtualMachine, 2) inline script v workScripterT
     for j := 0 to VarNames.Count - 1 do
     begin
       VarName := VarNames[j];
       
-      // Zkusit získat hodnotu pomocí DebugWatches (nejspolehlivější)
+      // Získat hodnotu pomocí DebugWatches
       try
         if Assigned(ScripterT) and Assigned(ScripterT.CurrentScript) and 
            Assigned(ScripterT.CurrentScript.VirtualMachine) then
         begin
-          // Zkusit použít DebugWatches - tento způsob funguje i když script běží
           DebugWatch := ScripterT.CurrentScript.VirtualMachine.DebugWatches.Add;
           try
             DebugWatch.Expression := VarName;
