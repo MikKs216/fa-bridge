@@ -3,7 +3,7 @@
   "displayName": "FA Bridge",
   "publisher": "fa-dev",
   "description": "Propojení Cursor/VS Code s editorem FormStudio (FA)",
-	"version": "0.4.9",
+	"version": "0.5.2",
   "engines": {
     "vscode": "^1.85.0"
   },
@@ -43,35 +43,6 @@
         "title": "FA Bridge: Přepnout na tmavý motiv"
       },
       {
-        "command": "faBridge.debugContinue",
-        "title": "FA Debug: Pokračovat (F5)",
-        "icon": "$(debug-continue)"
-      },
-      {
-        "command": "faBridge.debugStepOver",
-        "title": "FA Debug: Krok přes (F10)",
-        "icon": "$(debug-step-over)"
-      },
-      {
-        "command": "faBridge.debugPause",
-        "title": "FA Debug: Pozastavit",
-        "icon": "$(debug-pause)"
-      },
-      {
-        "command": "faBridge.debugStop",
-        "title": "FA Debug: Zastavit",
-        "icon": "$(debug-stop)"
-      },
-      {
-        "command": "faBridge.debugToggleBreakpoint",
-        "title": "FA Debug: Přepnout breakpoint",
-        "icon": "$(debug-breakpoint)"
-      },
-      {
-        "command": "faBridge.debugPanel",
-        "title": "FA Debug: Otevřít debug panel"
-      },
-      {
         "command": "faBridge.provestInit",
         "title": "FA Návrh: Provést Init (Shift+Alt+I)",
         "icon": "$(symbol-method)"
@@ -79,7 +50,7 @@
       {
         "command": "faBridge.provestCalculate",
         "title": "FA Návrh: Provést Calculate (Shift+Alt+E)",
-        "icon": "$(calculator)"
+        "icon": "$(refresh)"
       },
       {
         "command": "faBridge.provestEnable",
@@ -145,8 +116,13 @@
           "name": "Příkazy"
         },
         {
-          "id": "faBridgeDebugVariables",
-          "name": "Debug Proměnné",
+          "id": "faBridgeMsgWatch",
+          "name": "Msg Watch",
+          "when": "true"
+        },
+        {
+          "id": "faBridgeCommunicationStatus",
+          "name": "Stav komunikace",
           "when": "true"
         }
       ]
@@ -206,31 +182,6 @@
         "command": "faBridge.zobrazitPeriod",
         "key": "shift+alt+r",
         "mac": "shift+alt+r"
-      },
-      {
-        "command": "faBridge.debugContinue",
-        "key": "f5",
-        "when": "editorTextFocus && editorLangId == pascal"
-      },
-      {
-        "command": "faBridge.debugStepOver",
-        "key": "f10",
-        "when": "editorTextFocus && editorLangId == pascal"
-      },
-      {
-        "command": "faBridge.debugPause",
-        "key": "shift+f5",
-        "when": "editorTextFocus && editorLangId == pascal"
-      },
-      {
-        "command": "faBridge.debugStop",
-        "key": "shift+f5",
-        "when": "editorTextFocus && editorLangId == pascal && !debugState"
-      },
-      {
-        "command": "faBridge.debugToggleBreakpoint",
-        "key": "f9",
-        "when": "editorTextFocus && editorLangId == pascal"
       }
     ]
   },

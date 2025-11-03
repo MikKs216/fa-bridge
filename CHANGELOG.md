@@ -5,6 +5,24 @@ All notable changes to the "fa-bridge" extension will be documented in this file
 ## [0.4.9] - 2025-10-31
 
 ### Fixed
+- **✅ OPRAVENO: Problémy s trasováním - F5/F10 nereagují a řádky se označují špatně**
+  - **Problém:** 
+    - F5/F10 klávesy často nereagovaly
+    - Řádky se označovaly zmateně nebo na špatných pozicích
+    - Decorations mizely při přepnutí tabu
+    - Race conditions při rychlých změnách stavu
+  - **Řešení:**
+    - **Přidán debouncing pro `updateState()`** - 150ms delay zabraňuje race conditions
+    - **Přidán listener pro změnu editoru** - `onDidChangeActiveTextEditor` aktualizuje decorations při přepnutí tabu
+    - **Nová metoda `refreshDecorations()`** - zajišťuje správné zobrazení při změně editoru
+    - **Debouncing pro resynchronizaci breakpointů** - 500ms delay pro lepší stabilitu
+    - **Přidáno logování** - všechny debugger metody logují svoje volání pro snadnější debugging
+    - **Přidány kontroly v extension.ts** - příkazy kontrolují jestli je debugger inicializován a zobrazují hlášky
+    - **Zlepšena kontrola editoru** - `updateBreakpoints()` kontroluje jestli je aktivní Pascal soubor
+    - **Zlepšena `highlightCurrentLine()`** - vymaže decoration před nastavením nového
+    - **Cleanup timerů** - všechny timery se správně ruší při dispose()
+  - **Výsledek:** Debugger je nyní stabilnější, F5/F10 fungují spolehlivě, decorations se správně aktualizují ✅
+
 - **✅ OPRAVENO: Off-by-one error v číslu aktuálního řádku**
   - **Problém:** Zvýrazněný řádek byl o jeden řádek výše než skutečný aktuální řádek
   - **Příklad:** Debugger zastavený na řádku 31 (`ini('OdesPSC',...)`) zvýrazňoval řádek 30 (prázdný)
@@ -16,6 +34,78 @@ All notable changes to the "fa-bridge" extension will be documented in this file
   - **Řešení:** Přidána podmínka `editorTextFocus` ke všem debugger klávesovým zkratkám (F5, F9, F10, Shift+F5)
   - Nyní mají debugger příkazy **vyšší prioritu** než systémové zkratky
   - F10 by nyní měla fungovat spolehlivě při krokování kódu 🎯
+
+- **✅ OPRAVENO: Breakpointy se posunuly po vložení/smazání řádků a uložení**
+  - **Problém:** 
+    1. Nastavíš breakpoint na řádku 10
+    2. Vložíš 3 řádky nad něj (breakpoint by měl být nyní na řádku 13)
+    3. Uložíš soubor (což spustí překlad v FA)
+    4. Přidáš další breakpoint → všechny breakpointy se posunou o 3 řádky dolů (chyba!)
+  - **Řešení:**
+    - Extension nyní **sleduje změny v dokumentu** (`onDidChangeTextDocument`) a automaticky přepočítává pozice breakpointů
+    - Po **uložení souboru** (`onDidSaveTextDocument`) extension **resynchronizuje** všechny breakpointy s FA
+    - FA nyní podporuje příkaz `DEBUG_CLEAR_ALL_BREAKPOINTS` pro hromadné vyčištění
+    - Breakpointy se nyní drží na **správných řádcích kódu**, ne na pevných číslech řádků 🎯
+
+- **✅ OPRAVENO: Číslování řádků bylo nekonzistentní v celém systému**
+  - **Problém:** 
+    - FA posílá `currentLine = 32`, ale v editoru se zvýrazňoval řádek 32 (měl by být 33)
+    - Status bar zobrazoval "řádek 33" když FA posílal 32
+    - Nekonzistence mezi `highlightCurrentLine()`, `updateStatusBar()` a `updateBreakpoints()`
+  - **Příčina:** 
+    - **FA používá 1-based indexování** (Delphi/TMS Scripter tradice)
+    - **VS Code používá 0-based indexování** (JavaScript/TypeScript standard)
+    - Kód předpokládal různé indexování na různých místech:
+      - `highlightCurrentLine()` používal `currentLine` přímo (jako 0-based) ❌
+      - `updateStatusBar()` přidával `+1` k už 1-based číslu ❌
+      - `updateBreakpoints()` správně odečítal `-1` (1-based → 0-based) ✅
+      - `extension.ts` správně přidával `+1` při posílání breakpointů (0-based → 1-based) ✅
+  - **Řešení:**
+    - **Jednotná konvence:** FA posílá 1-based čísla, extension je ukládá jako 1-based
+    - **Převod při zobrazení:**
+      - `highlightCurrentLine()`: `line - 1` (1-based → 0-based pro VS Code) ✅
+      - `updateStatusBar()`: zobrazuje přímo `line` (1-based z FA) ✅
+      - `updateBreakpoints()`: `line - 1` (1-based → 0-based pro VS Code) ✅
+    - **Převod při odesílání:**
+      - `extension.ts`: `line + 1` (0-based VS Code → 1-based FA) ✅
+    - Všechna místa jsou nyní **konzistentní** a správně převádějí mezi 0-based a 1-based ✅
+  - **Problém:** 
+    1. Nastavíš breakpoint na řádku 10
+    2. Spustíš debug
+    3. Smažeš breakpoint (F9) - červená tečka zmizí
+    4. Nastavíš jiný breakpoint na řádku 20
+    5. Někdy se stalo, že kód se zastavil na starém smazaném breakpointu (řádek 10)
+  - **Příčina:** 
+    - Extension smazal breakpoint z lokálního stavu a zobrazování
+    - Ale pokud FA ještě nezpracovala `DEBUG_CLEAR_BREAKPOINT`, breakpoint zůstal v FA
+    - Při `updateState()` extension přepsal lokální stav breakpointy z FA (včetně starého)
+  - **Řešení:**
+    - **Extension je nyní "master"** - lokální stav breakpointů má přednost
+    - **Resynchronizace po každé změně breakpointu** - po 300ms se všechny breakpointy resynchronizují
+    - **Resynchronizace při uložení** - vždy smaže všechny breakpointy v FA a pošle lokální
+    - **Detekce nesouladu** - když FA pošle breakpointy které se liší od lokálních, automaticky resynchronizuje
+    - Breakpointy jsou nyní **synchronizované v obou směrech** a staré smazané breakpointy se už neaktivují ✅
+
+### Added
+- **✨ NOVÉ: Příkaz "Smazat všechny breakpointy"**
+  - Dostupný v FA Bridge panelu v sekci "Debug Příkazy"
+  - Ikona koše (trash) pro snadné rozpoznání
+  - Smaže všechny nastavené breakpointy jedním kliknutím
+  - Užitečné při změně strategie debugování nebo po úpravách kódu 🗑️
+
+### Changed
+- **⚡ Zvýšena rychlost reakce FA na příkazy z Cursor**
+  - **TimerPoll interval snížen z 1000 ms na 500 ms**
+  - FA nyní kontroluje příkazy z Cursor **2× za sekundu** (místo 1× za sekundu)
+  - Rychlejší odezva při ukladání souborů, nastavování breakpointů a debugování
+  - Plynulejší práce s FA Bridge extension ⚡
+
+### Removed
+- **🗑️ ODSTRANĚNO: Context menu pro breakpointy v gutteru**
+  - **Důvod:** Context menu nefungovalo správně - editor nebyl nalezen při kliknutí
+  - Pro přepínání breakpointů použij stávající klávesové zkratky:
+    - `F9` - přepnout breakpoint na aktuálním řádku (kde je kurzor)
+    - `Alt+F9` - alternativní zkratka
 
 ## [0.4.8] - 2025-10-30 (STABILNÍ VERZE)
 

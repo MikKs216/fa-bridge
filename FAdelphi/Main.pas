@@ -1,4 +1,4 @@
-﻿{ 28.10.2025 15:12:29 (GMT+1:00) > [mik on WIN-48QDB6JAV23] checked in Propojeni na Cursor / VS code  }
+﻿{ 28.10.2025 15:12:29 (GMT+1:00) > [mik on WIN-48QDB6JAV23] checked in Propojeni na Cursor / VS code 1 }
 { 13.10.2025 20:40:33 (GMT+2:00) > [mik on WIN-48QDB6JAV23] checked in Rok 2026  }
 { 13.10.2025 11:11:27 (GMT+2:00) > [mik on WIN-48QDB6JAV23] checked in Doplneni LogStatN pro standalone.  }
 { 12.10.2025 13:53:01 (GMT+2:00) > [mik on WIN-48QDB6JAV23] checked in Uprava LogStat  }
@@ -2235,8 +2235,9 @@ type
     procedure TimerPollTimer(Sender: TObject);
     procedure ActionCtrlQExecute;
     procedure ProcessFACommand(const Command: string);
-    procedure ProcessDebugCommand(const Command: string); // zpracování debugger příkazů z Cursor
-    procedure UpdateDebugState; // aktualizace stavu debuggeru do Cursor
+    procedure ProcessDebugCommand(const Command: string); // zpracování příkazů z Cursor (facmd.txt + fadebug.txt)
+    function BuildVariablesJson: string; // sestavení JSON s proměnnými ze skriptu
+    function BuildMtValuesCurrentRowJson: string; // sestavení JSON s aktuálním záznamem mtValues
     procedure FAToFront;
     {$ENDIF UCURSOR}
 
@@ -2617,6 +2618,7 @@ type
     {$IFDEF UCURSOR}
     procedure AppInit;
     procedure AppDone;
+    procedure OnMsgCalled(const AMessage: string); // zpracování volání Msg z skriptu (public pro volání z FScriptUtils)
     {$ENDIF UCURSOR}
 
   end;
@@ -26749,8 +26751,8 @@ const
   // Verzování FA Bridge integrace v Main.pas - musí být kompatibilní s FA Bridge extension
   // Formát: 'X.Y.Z-FA' kde X.Y.Z je verze extension (z package.json)
   // Při každé změně v UCURSOR bloku musí být verze aktualizována!
-  FA_BRIDGE_INTEGRATION_VERSION = '0.4.3-FA';
-  FA_BRIDGE_INTEGRATION_VERSION_DATE = '2025-10-30';
+  FA_BRIDGE_INTEGRATION_VERSION = '0.4.9-FA';
+  FA_BRIDGE_INTEGRATION_VERSION_DATE = '2025-10-31';
 
 procedure TfaMain.AppInit;
 begin
@@ -26762,7 +26764,7 @@ begin
   FBridge.OnDebuggerCommand := ProcessDebugCommand; // callback pro debugger příkazy z Cursor
 
   TimerPoll := TTimer.Create(Self);
-  TimerPoll.Interval := 1000; // 1 s
+  TimerPoll.Interval := 500; // 500 ms
   TimerPoll.OnTimer  := TimerPollTimer;
   TimerPoll.Enabled := True;
 end;
@@ -26793,8 +26795,6 @@ begin
   if Assigned(FBridge) then
   begin
     FBridge.PollTick; // detekuje Ctrl+S v Cursoru a případně zavolá BridgeExternalSave
-      // Aktualizuj stav debuggeru do Cursor (pokud není aktivní původní debugger)
-    UpdateDebugState;
   end;
 end;
 
@@ -26917,94 +26917,25 @@ end;
 // Zpracování debugger příkazů z Cursor extension
 procedure TfaMain.ProcessDebugCommand(const Command: string);
 var
-  Line: Integer;
   CommandName: string;
   ColonPos: Integer;
 begin
   // TRASOVÁNÍ: Logování přijatého příkazu
-  OutputDebugString(PChar('[FA Debugger] Received command: ' + Command));
-  
-  // Kontrola: pokud je původní debugger v EScriptEditor aktivní, ignoruj příkaz
-  if (fmScriptEditor <> nil) and fmScriptEditor.IsDebugMode then
-  begin
-    OutputDebugString(PChar('[FA Debugger] Original debugger active, ignoring command'));
-    Exit;
-  end;
+  OutputDebugString(PChar('[FA Command] Received command: ' + Command));
 
-  // Kontrola dostupnosti ScripterT
-  if not Assigned(ScripterT) then
-    Exit;
-
-  // Parsování příkazu - formát může být "DEBUG_COMMAND" nebo "DEBUG_COMMAND:parameter"
+  // Parsování příkazu - formát může být "COMMAND" nebo "COMMAND:parameter"
   ColonPos := Pos(':', Command);
   if ColonPos > 0 then
   begin
     CommandName := Trim(Copy(Command, 1, ColonPos - 1));
-    Line := StrToIntDef(Trim(Copy(Command, ColonPos + 1, Length(Command))), 0);
   end
   else
   begin
     CommandName := Trim(Command);
-    Line := 0;
   end;
 
   // Zpracování podle typu příkazu
-  if CommandName = 'DEBUG_CONTINUE' then
-  begin
-    // Pokračovat v běhu skriptu (pro Delphi 2007 použijeme vlastnost Paused místo metody Resume)
-    if ScripterT.Running and ScripterT.Paused then
-      ScripterT.Paused := False;
-  end
-  else if CommandName = 'DEBUG_PAUSE' then
-  begin
-    // Pozastavit běh skriptu (pro Delphi 2007 použijeme vlastnost Paused místo metody Pause)
-    if ScripterT.Running and not ScripterT.Paused then
-      ScripterT.Paused := True;
-  end
-  else if CommandName = 'DEBUG_STEP_OVER' then
-  begin
-    // Krok přes (provede aktuální řádek a pozastaví na dalším)
-    if ScripterT.Running and ScripterT.Paused then
-      ScripterT.DebugStepOverLine;
-  end
-  else if CommandName = 'DEBUG_STOP' then
-  begin
-    // Zastavit debugování
-    if ScripterT.Running then
-    begin
-      ScripterT.Halt;
-      ScripterT.Running := False;
-    end;
-  end
-  else if CommandName = 'DEBUG_SET_BREAKPOINT' then
-  begin
-    // Nastavit breakpoint na zadaném řádku
-    // Poznámka: Breakpoint může být nastaven pouze pokud je skript načten
-    OutputDebugString(PChar('[FA Debugger] SET_BREAKPOINT: Line=' + IntToStr(Line) + ', CurrentScript assigned=' + BoolToStr(Assigned(ScripterT.CurrentScript), True)));
-    if (Line > 0) and Assigned(ScripterT.CurrentScript) then
-    begin
-      OutputDebugString(PChar('[FA Debugger] Calling DebugToggleBreakLine(' + IntToStr(Line) + ')'));
-      ScripterT.DebugToggleBreakLine(Line);
-      OutputDebugString(PChar('[FA Debugger] After toggle, Breaks.Count=' + IntToStr(ScripterT.CurrentScript.Breaks.Count)));
-    end
-    else
-      OutputDebugString(PChar('[FA Debugger] Skipping DebugToggleBreakLine - conditions not met'));
-  end
-  else if CommandName = 'DEBUG_CLEAR_BREAKPOINT' then
-  begin
-    // Zrušit breakpoint na zadaném řádku
-    // Poznámka: Breakpoint může být zrušen pouze pokud je skript načten
-    OutputDebugString(PChar('[FA Debugger] CLEAR_BREAKPOINT: Line=' + IntToStr(Line) + ', CurrentScript assigned=' + BoolToStr(Assigned(ScripterT.CurrentScript), True)));
-    if (Line > 0) and Assigned(ScripterT.CurrentScript) then
-    begin
-      OutputDebugString(PChar('[FA Debugger] Calling DebugToggleBreakLine(' + IntToStr(Line) + ')'));
-      ScripterT.DebugToggleBreakLine(Line);
-      OutputDebugString(PChar('[FA Debugger] After toggle, Breaks.Count=' + IntToStr(ScripterT.CurrentScript.Breaks.Count)));
-    end
-    else
-      OutputDebugString(PChar('[FA Debugger] Skipping DebugToggleBreakLine - conditions not met'));
-  end
-  else if CommandName = 'DO_INIT' then
+  if CommandName = 'DO_INIT' then
   begin
     // Provést Init - volá DoInit
     OutputDebugString(PChar('[FA Command] Executing DO_INIT'));
@@ -27040,113 +26971,395 @@ begin
     OutputDebugString(PChar('[FA Command] Executing SHOW_PERIOD'));
     ShowMessage(GfaMain.GetPeriod);
   end;
-
-  // Aktualizuj stav debuggeru do Cursor po zpracování příkazu
-  UpdateDebugState;
 end;
 
-// Aktualizace stavu debuggeru do Cursor extension
-procedure TfaMain.UpdateDebugState;
+// Zpracování volání funkce Msg z skriptu
+procedure TfaMain.OnMsgCalled(const AMessage: string);
 var
-  State: TStringList;
-  i: Integer;
   StateJson: string;
-  CurrentLine: Integer;
-  StatusStr: string;
-  BreakPointsStr: string;
+  VariablesJson: string;
+  MtValuesJson: string;
 begin
-  // TRASOVÁNÍ: Logování volání UpdateDebugState
-  OutputDebugString(PChar('[FA Debugger] UpdateDebugState called'));
+  if not Assigned(ScripterT) then
+    Exit;
+
+  // Získání proměnných ze skriptu
+  VariablesJson := BuildVariablesJson;
+
+  // Získání aktuálního záznamu z mtValues
+  MtValuesJson := BuildMtValuesCurrentRowJson;
+
+  // Vytvoření JSON stavu
+  StateJson := Format('{'#13#10 +
+    '  "message": %s,'#13#10 +
+    '  "variables": %s,'#13#10 +
+    '  "mtValuesRow": %s'#13#10 +
+    '}', [
+    AnsiQuotedStr(AMessage, '"'),
+    VariablesJson,
+    MtValuesJson
+  ]);
+
+  // Zapsat do .fsbridge/famsgstate.json
+  if Assigned(FBridge) then
+    FBridge.WriteMsgState(StateJson);
+end;
+
+// Pomocná funkce pro získání proměnných ze skriptu
+// Používá workScripterT s inline scriptem pro získání hodnot proměnných
+function TfaMain.BuildVariablesJson: string;
+var
+  Json: string;
+  VarName: string;
+  VarValue: Variant;
+  VarValueStr: string;
+  First: Boolean;
+  SourceLines: TStringList;
+  i: Integer;
+  Line: string;
+  P: Integer;
+  VarDecl: string;
+  VarNames: TStringList;
+  j: Integer;
+  InVarSection: Boolean;
+  SavedSourceCode: string;
+  DebugWatch: TatDebugWatch;
+begin
+  Result := '{}';
   
-  // Kontrola: pokud je původní debugger v EScriptEditor aktivní, neaktualizuj stav
-  if (fmScriptEditor <> nil) and fmScriptEditor.IsDebugMode then
-  begin
-    OutputDebugString(PChar('[FA Debugger] Original debugger active, skipping state update'));
+  if not Assigned(ScripterT) or not Assigned(ScripterT.CurrentScript) then
     Exit;
-  end;
 
-  // Kontrola dostupnosti FBridge a ScripterT
-  if not Assigned(FBridge) or not Assigned(ScripterT) then
-  begin
-    OutputDebugString(PChar('[FA Debugger] FBridge or ScripterT not assigned'));
-    Exit;
-  end;
-
-  State := TStringList.Create;
+  Json := '{';
+  First := True;
+  VarNames := TStringList.Create;
+  VarNames.Duplicates := dupIgnore;
+  VarNames.Sorted := False;
+  
   try
-    // Zjištění stavu z ScripterT
-    if ScripterT.Running then
-    begin
-      if ScripterT.Paused then
-        StatusStr := 'paused'
-      else
-        StatusStr := 'running';
-    end
-    else
-      StatusStr := 'stopped';
-
-    // Zjištění aktuálního řádku při debugování
-    CurrentLine := 0;
-    if ScripterT.Running and Assigned(ScripterT.NextInstruction) then
-    begin
-      // Použijeme LineNumberFromInstruction pro získání čísla řádku z instrukce
-      CurrentLine := LineNumberFromInstruction(ScripterT.NextInstruction);
-      // Pokud není řádek nalezen, zkusíme DebugExecutionLine (pokud je dostupný)
-      if CurrentLine <= 0 then
-        CurrentLine := ScripterT.DebugExecutionLine;
-    end;
-
-    // Sběr breakpointů (pro Delphi 2007 použijeme vlastnost Line místo LineNumber)
-    BreakPointsStr := '';
-    if Assigned(ScripterT.CurrentScript) and Assigned(ScripterT.CurrentScript.Breaks) then
-    begin
-      // TRASOVÁNÍ: Logování načtení breakpointů z FA
-      OutputDebugString(PChar('[FA Debugger] CurrentScript assigned, reading breakpoints'));
-      for i := 0 to ScripterT.CurrentScript.Breaks.Count - 1 do
-      begin
-        if BreakPointsStr <> '' then
-          BreakPointsStr := BreakPointsStr + ',';
-        BreakPointsStr := BreakPointsStr + IntToStr(ScripterT.CurrentScript.Breaks[i].Line);
-      end;
-      OutputDebugString(PChar('[FA Debugger] Found ' + IntToStr(ScripterT.CurrentScript.Breaks.Count) + ' breakpoints'));
-    end
-    else
-    begin
-      // Pokud není skript načten, pošli stav s prázdným seznamem breakpointů
-      // Extension musí být inteligentní a nechat lokální breakpointy pokud soubor neexistuje
-      // Ale pokud posíláme stav, musíme poslat prázdný seznam (extension si udrží lokální)
-      OutputDebugString(PChar('[FA Debugger] CurrentScript not assigned, sending empty breakpoints list'));
-      BreakPointsStr := '';
-    end;
-
-    // Vytvoření JSON stringu podle formátu z dokumentace
-    State.Add('{');
-    State.Add('  "status": "' + StatusStr + '",');
-    State.Add('  "currentLine": ' + IntToStr(CurrentLine) + ',');
-    State.Add('  "breakpoints": [' + BreakPointsStr + '],');
-    State.Add('  "variables": {}');
-    State.Add('}');
-
-    StateJson := State.Text;
-
-    // TRASOVÁNÍ: Logování odesílaného stavu
-    OutputDebugString(PChar('[FA Debugger] Sending state: ' + StateJson));
-
-    // Zápis stavu do Cursor přes FBridge
-    FBridge.WriteDebugState(StateJson);
-    
-    OutputDebugString(PChar('[FA Debugger] State written successfully'));
-
-  except
-    // Při chybě zkusíme zapsat alespoň základní stav "stopped"
+    // Parsovat source kód a najít deklarace proměnných
+    // Hledáme vzory typu: "var X: string;" nebo "var X, Y: integer;" nebo "X: string;" (v procedurách)
+    SourceLines := TStringList.Create;
     try
-      StateJson := '{"status":"stopped","currentLine":0,"breakpoints":[],"variables":{}}';
-      FBridge.WriteDebugState(StateJson);
-    except
-      // Ignoruj chybu při zápisu
+      SourceLines.Text := ScripterT.SourceCode.Text;
+      
+      i := 0;
+      InVarSection := False;
+      while i < SourceLines.Count do
+      begin
+        Line := Trim(SourceLines[i]);
+        
+        // Skípnout prázdné řádky a komentáře
+        if (Line = '') or (Copy(Line, 1, 2) = '//') or (Copy(Line, 1, 1) = '{') then
+        begin
+          Inc(i);
+          Continue;
+        end;
+        
+        // Detekovat začátek sekce var (globální i lokální v procedurách)
+        // Může být na vlastním řádku "var" nebo "var X: Type;" na jednom řádku
+        if (Pos('var ', LowerCase(Line)) = 1) or (LowerCase(Line) = 'var') then
+        begin
+          InVarSection := True;
+          // Pokud je "var X: Type;" na jednom řádku, neprovedeme Continue, ale zpracujeme to jako deklaraci proměnné
+          if (LowerCase(Line) = 'var') then
+          begin
+            // Jen "var" na vlastním řádku - příští řádky budou deklarace
+            Inc(i);
+            Continue;
+          end
+          else
+          begin
+            // "var X: Type;" na jednom řádku - zpracujeme to dále v kódu
+            // Odstraníme "var " z řádku a zpracujeme jako deklaraci
+            Line := StringReplace(Line, 'var ', '', [rfIgnoreCase]);
+            // Pokračujeme dál - zpracujeme deklaraci níže
+          end;
+        end;
+        
+        // Konec sekce var (begin, procedure, function, type, const, implementation, atd.)
+        // ALE: pokud je 'begin' a jsme v sekci var uvnitř procedury, pokračujeme (var může být před begin)
+        if (Pos('procedure ', LowerCase(Line)) = 1) or
+           (Pos('function ', LowerCase(Line)) = 1) or
+           (Pos('type ', LowerCase(Line)) = 1) or
+           (Pos('const ', LowerCase(Line)) = 1) or
+           (Pos('implementation', LowerCase(Line)) = 1) or
+           (Pos('uses ', LowerCase(Line)) = 1) then
+        begin
+          InVarSection := False;
+          Inc(i);
+          Continue;
+        end;
+        
+        // 'begin' ukončuje sekci var, ALE pouze pokud už jsme v nějaké proceduře/funkci
+        // Pokud je 'begin' na začátku a jsme v globálním var, ukončíme
+        // Pokud je 'begin' v proceduře a máme lokální var, ukončíme
+        if (Pos('begin', LowerCase(Line)) = 1) then
+        begin
+          // 'begin' ukončuje sekci var
+          InVarSection := False;
+          Inc(i);
+          Continue;
+        end;
+        
+        // Hledat deklarace proměnných v sekci var (globální i lokální)
+        // Podporujeme: "X: string;" nebo "X, Y: integer;" nebo "var X: string;"
+        if InVarSection and (Pos(':', Line) > 0) then
+        begin
+          // Ignorovat řádky obsahující závorky (volání funkcí) nebo tečku (vlastnosti objektů)
+          // ALE: pokud je tečka v typu (např. "X: TForm."), to je jiný případ - ignorujeme
+          if (Pos('(', Line) > 0) or ((Pos('.', Line) > 0) and (Pos(':', Line) < Pos('.', Line))) then
+          begin
+            Inc(i);
+            Continue;
+          end;
+          
+          // "var " už bylo odstraněno výše, pokud bylo na stejném řádku
+          // Zkontrolovat, jestli tam ještě není (pro jistotu)
+          Line := StringReplace(Line, 'var ', '', [rfIgnoreCase]);
+          
+          // Najít dvojtečku
+          P := Pos(':', Line);
+          if P > 0 then
+          begin
+            VarDecl := Trim(Copy(Line, 1, P - 1));
+            
+            // Zkontrolovat, že před dvojtečkou není nic složitého (jen identifikátory a čárky)
+            if (Pos('(', VarDecl) = 0) and (Pos('.', VarDecl) = 0) and (Pos('[', VarDecl) = 0) then
+            begin
+              // Pokud je více proměnných oddělených čárkou, rozdělit
+              while VarDecl <> '' do
+              begin
+                P := Pos(',', VarDecl);
+                if P > 0 then
+                begin
+                  VarName := Trim(Copy(VarDecl, 1, P - 1));
+                  VarDecl := Trim(Copy(VarDecl, P + 1, Length(VarDecl)));
+                end
+                else
+                begin
+                  VarName := Trim(VarDecl);
+                  VarDecl := '';
+                end;
+                
+                // Přidat do seznamu, pokud je to platný název proměnné
+                if (VarName <> '') and (Pos(' ', VarName) = 0) and (Pos('(', VarName) = 0) and (Pos('.', VarName) = 0) then
+                begin
+                  // Ignorovat Result a klíčová slova
+                  if (LowerCase(VarName) <> 'result') and
+                     (LowerCase(VarName) <> 'begin') and 
+                     (LowerCase(VarName) <> 'end') and 
+                     (LowerCase(VarName) <> 'if') and
+                     (LowerCase(VarName) <> 'then') and
+                     (LowerCase(VarName) <> 'else') and
+                     (LowerCase(VarName) <> 'for') and
+                     (LowerCase(VarName) <> 'to') and
+                     (LowerCase(VarName) <> 'do') and
+                     (LowerCase(VarName) <> 'while') and
+                     (LowerCase(VarName) <> 'repeat') and
+                     (LowerCase(VarName) <> 'until') then
+                  begin
+                    VarNames.Add(VarName);
+                  end;
+                end;
+              end;
+            end;
+          end;
+        end;
+        
+        Inc(i);
+      end;
+    finally
+      SourceLines.Free;
     end;
+    
+    // PO parsování: Pokud jsme našli nějaké proměnné, skvělé
+    // Pokud ne, zkusit získat hodnoty běžných proměnných přímo (bez parsování)
+    // Tím zjistíme, jestli problém je v parsování nebo v získávání hodnot
+    if VarNames.Count = 0 then
+    begin
+      // Pokud parsování nenašlo žádné proměnné, zkusit několik běžných názvů přímo
+      // Použijeme DebugWatches - pokud proměnná existuje, získáme její hodnotu
+      try
+        if Assigned(ScripterT) and Assigned(ScripterT.CurrentScript) and 
+           Assigned(ScripterT.CurrentScript.VirtualMachine) then
+        begin
+          // Zkusit běžné názvy proměnných: x, i, j, s, str, tmp, temp, result
+          // Pokud existují, přidáme je do seznamu
+          for i := 0 to 7 do
+          begin
+            case i of
+              0: VarName := 'x';
+              1: VarName := 'i';
+              2: VarName := 'j';
+              3: VarName := 's';
+              4: VarName := 'str';
+              5: VarName := 'tmp';
+              6: VarName := 'temp';
+              7: VarName := 'result';
+            else
+              VarName := '';
+            end;
+            
+            if VarName <> '' then
+            begin
+              try
+                DebugWatch := ScripterT.CurrentScript.VirtualMachine.DebugWatches.Add;
+                try
+                  DebugWatch.Expression := VarName;
+                  DebugWatch.Enabled := True;
+                  ScripterT.CurrentScript.VirtualMachine.DebugWatches.CompileAndEvaluate(DebugWatch);
+                  if DebugWatch.WatchStatus = wsEvaluated then
+                  begin
+                    // Pokud jsme získali hodnotu, přidat do seznamu (kromě result)
+                    if LowerCase(VarName) <> 'result' then
+                      VarNames.Add(VarName);
+                  end;
+                except
+                  // Ignorovat chyby
+                end;
+              except
+                // Ignorovat chyby
+              end;
+            end;
+          end;
+        end;
+      except
+        // Ignorovat chyby
+      end;
+    end;
+    
+    // Projít nalezené proměnné a získat jejich hodnoty
+    // Zkusíme několik způsobů: 1) DebugWatches pokud je VirtualMachine, 2) inline script v workScripterT
+    for j := 0 to VarNames.Count - 1 do
+    begin
+      VarName := VarNames[j];
+      
+      // Zkusit získat hodnotu pomocí DebugWatches (nejspolehlivější)
+      try
+        if Assigned(ScripterT) and Assigned(ScripterT.CurrentScript) and 
+           Assigned(ScripterT.CurrentScript.VirtualMachine) then
+        begin
+          // Zkusit použít DebugWatches - tento způsob funguje i když script běží
+          DebugWatch := ScripterT.CurrentScript.VirtualMachine.DebugWatches.Add;
+          try
+            DebugWatch.Expression := VarName;
+            DebugWatch.Enabled := True;
+            ScripterT.CurrentScript.VirtualMachine.DebugWatches.CompileAndEvaluate(DebugWatch);
+            
+            if DebugWatch.WatchStatus = wsEvaluated then
+            begin
+              VarValue := DebugWatch.LastResult;
+            end
+            else
+            begin
+              // Pokud DebugWatches nefunguje, zkusit workScripterT
+              Continue;
+            end;
+          except
+            Continue;
+          end;
+        end
+        else if Assigned(workScripterT) then
+        begin
+          // Fallback: použít workScripterT s jednoduchým inline scriptem
+          SavedSourceCode := workScripterT.SourceCode.Text;
+          try
+            // Zkusit jednoduchý inline script - jen získat hodnotu
+            workScripterT.SourceCode.Text := 'result := ' + VarName + ';';
+            workScripterT.Compile;
+            VarValue := workScripterT.Execute();
+          except
+            try
+              workScripterT.SourceCode.Text := SavedSourceCode;
+              workScripterT.Compile;
+            except
+              // Ignorovat
+            end;
+            Continue;
+          end;
+          
+          // Obnovit
+          try
+            workScripterT.SourceCode.Text := SavedSourceCode;
+            workScripterT.Compile;
+          except
+            // Ignorovat
+          end;
+        end
+        else
+        begin
+          Continue;
+        end;
+        
+        // Převedení hodnoty na string pro JSON
+        // TMS Scripter používá pro proměnné jen Variant
+        if VarIsNull(VarValue) or VarIsEmpty(VarValue) then
+          VarValueStr := 'null'
+        else if VarIsStr(VarValue) then
+          VarValueStr := AnsiQuotedStr(VarToStr(VarValue), '"')
+        else if VarType(VarValue) = varBoolean then
+          VarValueStr := LowerCase(BoolToStr(VarValue, True))
+        else if (VarType(VarValue) = varDouble) or (VarType(VarValue) = varCurrency) or (VarType(VarValue) = varSingle) then
+          VarValueStr := VarToStr(VarValue)
+        else if (VarType(VarValue) = varInteger) or (VarType(VarValue) = varInt64) or (VarType(VarValue) = varSmallInt) or (VarType(VarValue) = varByte) then
+          VarValueStr := VarToStr(VarValue)
+        else
+          VarValueStr := AnsiQuotedStr(VarToStr(VarValue), '"');
+        
+        if not First then
+          Json := Json + ',';
+        First := False;
+        
+        Json := Json + Format(#13#10'    "%s": %s', [VarName, VarValueStr]);
+      except
+        // Pokud se nepodařilo získat hodnotu (např. proměnná ještě není inicializovaná), přeskočit
+        Continue;
+      end;
+    end;
+  finally
+    VarNames.Free;
   end;
-  State.Free;
+  
+  if not First then
+    Result := Json + #13#10'  }'
+  else
+    Result := '{}';
+end;
+
+// Pomocná funkce pro získání aktuálního záznamu z mtValues
+function TfaMain.BuildMtValuesCurrentRowJson: string;
+var
+  Json: string;
+  i: Integer;
+  First: Boolean;
+begin
+  Result := '{}';
+  
+  if not Assigned(mtValues) or not mtValues.Active or mtValues.IsEmpty then
+    Exit;
+
+  Json := '{';
+  First := True;
+  
+  try
+    for i := 0 to mtValues.FieldCount - 1 do
+    begin
+      if not First then
+        Json := Json + ',';
+      First := False;
+      
+      Json := Json + Format('"%s": %s', [
+        mtValues.Fields[i].FieldName,
+        AnsiQuotedStr(mtValues.Fields[i].AsString, '"')
+      ]);
+    end;
+    
+    if not First then
+      Result := Json + '}';
+  except
+    Result := '{}';
+  end;
 end;
 {$ENDIF UCURSOR}
 

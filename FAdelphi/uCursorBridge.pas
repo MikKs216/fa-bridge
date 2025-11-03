@@ -13,8 +13,7 @@ Features:
 - Soubor facmd.txt se maže OKAMŽITĚ po přečtení (před voláním callbacku) aby se předešlo nekonečné smyčce
 - Čtení dat z .fsbridge/fafield.txt pomocí ReadFieldText() (obsah fieldu z Cursor extension)
 - Zápis dat do .fsbridge/fafield.txt pomocí WriteFieldText() (atomicky s UTF-8 BOM)
-- Debugger podpora: Polling pro čtení debugger příkazů z .fsbridge/fadebug.txt a callback OnDebuggerCommand
-- Debugger podpora: Zápis stavu debuggeru do .fsbridge/fadebugstate.json pomocí WriteDebugState()
+- Podpora příkazů: Polling pro čtení příkazů z .fsbridge/fadebug.txt a callback OnDebuggerCommand
 
 Novinky:
 - Workspace se vždy nastavuje na složku ExportFolder (relativní k EXE je podporováno)
@@ -27,7 +26,7 @@ Integrace v aplikaci:
   Bridge.ExportFolder := 'DataPrg\FormsProject'; // relativně k adresáři EXE
   Bridge.CursorCmdOrPath := 'code';              // 'cursor' / 'code' / plná cesta
   Bridge.OnCommand := ProcessFACommand;          // callback pro příkazy
-  Bridge.OnDebuggerCommand := ProcessDebugCommand; // callback pro debugger příkazy
+  Bridge.OnDebuggerCommand := ProcessDebugCommand; // callback pro příkazy z fadebug.txt
   Bridge.StartEditing(FormId, Code, JumpLine, JumpCol);
   Bridge.PollTick; // z Timeru (kontroluje změny souboru + příkazy + debugger příkazy)
   
@@ -35,8 +34,6 @@ Integrace v aplikaci:
   FieldName := Bridge.ReadFieldText;             // načti název fieldu z Cursor extension
   Bridge.WriteFieldText('MyFieldName');          // pošli název fieldu do Cursor extension
   
-  // Debugger komunikace:
-  // Bridge.WriteDebugState('{"status":"paused","currentLine":42,"breakpoints":[12,25]}'); // aktualizuj stav debuggeru
 *)
 
 interface
@@ -98,9 +95,8 @@ type
     function GetCommandFilePath: string;
     procedure ProcessCommandFile;
     
-    // Debugger podpora
+    // Podpora příkazů
     function GetDebugFilePath: string;
-    function GetDebugStatePath: string;
     procedure ProcessDebugFile;
     
     // Čtení field.txt ze Cursor extension
@@ -131,7 +127,7 @@ type
     procedure WriteFieldText(const FieldName: string); // Zapíše název fieldu do fafield.txt
     
     // Debugger podpora
-    procedure WriteDebugState(const StateJson: string); // Zapíše stav debuggeru do fadebugstate.json (UTF-8 s BOM)
+    procedure WriteMsgState(const StateJson: string); // Zapíše stav z Msg do famsgstate.json (UTF-8 s BOM)
   end;
 
 implementation
@@ -335,13 +331,6 @@ begin
           + 'fadebug.txt';
 end;
 
-function TCursorBridge.GetDebugStatePath: string;
-begin
-  // Stav debuggeru pro Cursor extension: <workspace>/.fsbridge/fadebugstate.json
-  Result := IncludeTrailingPathDelimiter(EffectiveExportFolder)
-          + '.fsbridge' + PathDelim
-          + 'fadebugstate.json';
-end;
 
 procedure TCursorBridge.AtomicWriteAllText(const FileName: string; const Text: AnsiString);
 var
@@ -923,7 +912,8 @@ begin
              MOVEFILE_REPLACE_EXISTING or MOVEFILE_WRITE_THROUGH);
 end;
 
-procedure TCursorBridge.WriteDebugState(const StateJson: string);
+
+procedure TCursorBridge.WriteMsgState(const StateJson: string);
 var
   StatePath: string;
   TmpPath: string;
@@ -931,7 +921,10 @@ var
   BOM: array[0..2] of Byte;
   Content: AnsiString;
 begin
-  StatePath := GetDebugStatePath;
+  // Stav z Msg pro Cursor extension: <workspace>/.fsbridge/famsgstate.json
+  StatePath := IncludeTrailingPathDelimiter(EffectiveExportFolder)
+            + '.fsbridge' + PathDelim
+            + 'famsgstate.json';
   
   // Zajisti že .fsbridge složka existuje
   EnsureDir(ExtractFilePath(StatePath));

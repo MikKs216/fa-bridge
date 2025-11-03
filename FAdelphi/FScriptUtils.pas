@@ -601,7 +601,7 @@ procedure SetValueGfodGUID(value: string);
 //  2. dblclick SyntAnalyzer1, Rules|vybrat konkretni styl|Conditions - doplnit do "Keys List"
 //  3. doplnit i do nastaveni colorschema externiho editoru
 //  programem EditPadPro7 Color scheme editor\JGCSCSE4.exe do souboru
-//  V:\Programy\FormAsistent aktu·lnÌ\FA DESIGN\Editor\EditPadPro7\Delphi.jgcscs
+//  V:\Programy\FormAsistent aktuÔøΩlnÔøΩ\FA DESIGN\Editor\EditPadPro7\Delphi.jgcscs
 
 
 //*******************************************************************
@@ -1172,7 +1172,7 @@ end; {OpenLst}
 {nction GetLstTable(AListName:string; ADate:TDateTime;
   out ATable: TTable):boolean;
 begin
-  //nechodÌ - doladit
+  //nechodÔøΩ - doladit
   Result:=GetMemTable(AListName, ADate, ATable);
 end;}{GetLstTable}
 
@@ -2548,6 +2548,13 @@ end;
 
 procedure Msg(const AMessage: string);
 begin
+  // Nejd≈ô√≠v shrom√°≈ædit data a zapsat do Cursor (p≈ôed blokuj√≠c√≠m dialogem)
+  {$IFDEF UCURSOR}
+  if Assigned(GfaMain) then
+    GfaMain.OnMsgCalled(AMessage);
+  {$ENDIF UCURSOR}
+  
+  // Pak zobrazit zpr√°vu (blokuj√≠c√≠ dialog)
   ShowMessage(AMessage);
 end;
 
@@ -3037,7 +3044,7 @@ begin
       Result:=LoadStringFromFile(NormalPath(ExtractFilePath(Application.ExeName)) +
       'SelAdress.par')
     else
-      MessageWarn('','Nelze provÈst test, chybÌ soubor SelAdress.par',[MBOK]);
+      MessageWarn('','Nelze provÔøΩst test, chybÔøΩ soubor SelAdress.par',[MBOK]);
   {$ENDIF FINALBUILD}
 end;
 
@@ -3063,7 +3070,7 @@ begin
       Result:=LoadStringFromFile(NormalPath(ExtractFilePath(Application.ExeName)) +
       'SelPerson.par')
     else
-      MessageWarn('','Nelze provÈst test, chybÌ soubor SelPerson.par',[MBOK]);
+      MessageWarn('','Nelze provÔøΩst test, chybÔøΩ soubor SelPerson.par',[MBOK]);
     {$ENDIF STANDALONE}
   {$ENDIF FINALBUILD}
 end;
@@ -3089,7 +3096,7 @@ begin
       Result:=LoadStringFromFile(NormalPath(ExtractFilePath(Application.ExeName)) +
       'SelBankAccount.par')
     else
-      MessageWarn('','Nelze prtovÈst test, chybÌ soubor SelBankAccount.par',[MBOK]);
+      MessageWarn('','Nelze prtovÔøΩst test, chybÔøΩ soubor SelBankAccount.par',[MBOK]);
   {$ENDIF FINALBUILD}
 end;
 
@@ -3528,67 +3535,67 @@ begin
   s:=Replace(')', s, '\)');
   s:=Replace('<', s, '\210');
   s:=Replace('>', s, '\211');
-  s:=Replace('â', s, '\213');
-  s:=Replace('Ä', s, '\240');
-  s:=Replace('¡', s, '\301');
-  s:=Replace('·', s, '\341');
-  s:=Replace('ƒ', s, '\304');
-  s:=Replace('‰', s, '\344');
-  s:=Replace('»', s, '\225');
-  s:=Replace('Ë', s, '\226');
-  s:=Replace('œ', s, '\230');
-  s:=Replace('Ô', s, '\232');
-  s:=Replace('…', s, '\311');
-  s:=Replace('È', s, '\351');
-  s:=Replace('Ã', s, '\233');
-  s:=Replace('Ï', s, '\234');
-  s:=Replace('À', s, '\313');
-  s:=Replace('Î', s, '\353');
-  s:=Replace('Õ', s, '\315');
-  s:=Replace('Ì', s, '\355');
-  s:=Replace('≈', s, '\241');
-  s:=Replace('Â', s, '\242');
-  s:=Replace('º', s, '\245');
-  s:=Replace('æ', s, '\251');
-  s:=Replace('“', s, '\252');
-  s:=Replace('Ú', s, '\254');
-  s:=Replace('”', s, '\323');
-  s:=Replace('Û', s, '\363');
-  s:=Replace('‘', s, '\324');
-  s:=Replace('Ù', s, '\364');
-  s:=Replace('÷', s, '\326');
-  s:=Replace('ˆ', s, '\366');
-  s:=Replace('’', s, '\266');
-  s:=Replace('ı', s, '\271');
-  s:=Replace('¿', s, '\203');
-  s:=Replace('‡', s, '\261');
-  s:=Replace('ÿ', s, '\277');
-  s:=Replace('¯', s, '\272');
-  s:=Replace('ﬂ', s, '\337');
-  s:=Replace('ä', s, '\227');
-  s:=Replace('ö', s, '\235');
-  s:=Replace('ç', s, '\222');
-  s:=Replace('ù', s, '\243');
-  s:=Replace('⁄', s, '\332');
-  s:=Replace('˙', s, '\372');
-  s:=Replace('‹', s, '\334');
-  s:=Replace('¸', s, '\374');
-  s:=Replace('Ÿ', s, '\262');
-  s:=Replace('˘', s, '\263');
-  s:=Replace('€', s, '\201');
-  s:=Replace('˚', s, '\202');
-  s:=Replace('›', s, '\335');
-  s:=Replace('˝', s, '\375');
-  s:=Replace('é', s, '\231');
-  s:=Replace('û', s, '\236');
-  s:=Replace('¶', s, '\246');
-  s:=Replace('ß', s, '\247');
-  s:=Replace('´', s, '\253');
-  s:=Replace('ª', s, '\273');
-  s:=Replace('µ', s, '\265');
+  s:=Replace('ÔøΩ', s, '\213');
+  s:=Replace('ÔøΩ', s, '\240');
+  s:=Replace('ÔøΩ', s, '\301');
+  s:=Replace('ÔøΩ', s, '\341');
+  s:=Replace('ÔøΩ', s, '\304');
+  s:=Replace('ÔøΩ', s, '\344');
+  s:=Replace('ÔøΩ', s, '\225');
+  s:=Replace('ÔøΩ', s, '\226');
+  s:=Replace('ÔøΩ', s, '\230');
+  s:=Replace('ÔøΩ', s, '\232');
+  s:=Replace('ÔøΩ', s, '\311');
+  s:=Replace('ÔøΩ', s, '\351');
+  s:=Replace('ÔøΩ', s, '\233');
+  s:=Replace('ÔøΩ', s, '\234');
+  s:=Replace('ÔøΩ', s, '\313');
+  s:=Replace('ÔøΩ', s, '\353');
+  s:=Replace('ÔøΩ', s, '\315');
+  s:=Replace('ÔøΩ', s, '\355');
+  s:=Replace('ÔøΩ', s, '\241');
+  s:=Replace('ÔøΩ', s, '\242');
+  s:=Replace('ÔøΩ', s, '\245');
+  s:=Replace('ÔøΩ', s, '\251');
+  s:=Replace('ÔøΩ', s, '\252');
+  s:=Replace('ÔøΩ', s, '\254');
+  s:=Replace('ÔøΩ', s, '\323');
+  s:=Replace('ÔøΩ', s, '\363');
+  s:=Replace('ÔøΩ', s, '\324');
+  s:=Replace('ÔøΩ', s, '\364');
+  s:=Replace('ÔøΩ', s, '\326');
+  s:=Replace('ÔøΩ', s, '\366');
+  s:=Replace('ÔøΩ', s, '\266');
+  s:=Replace('ÔøΩ', s, '\271');
+  s:=Replace('ÔøΩ', s, '\203');
+  s:=Replace('ÔøΩ', s, '\261');
+  s:=Replace('ÔøΩ', s, '\277');
+  s:=Replace('ÔøΩ', s, '\272');
+  s:=Replace('ÔøΩ', s, '\337');
+  s:=Replace('ÔøΩ', s, '\227');
+  s:=Replace('ÔøΩ', s, '\235');
+  s:=Replace('ÔøΩ', s, '\222');
+  s:=Replace('ÔøΩ', s, '\243');
+  s:=Replace('ÔøΩ', s, '\332');
+  s:=Replace('ÔøΩ', s, '\372');
+  s:=Replace('ÔøΩ', s, '\334');
+  s:=Replace('ÔøΩ', s, '\374');
+  s:=Replace('ÔøΩ', s, '\262');
+  s:=Replace('ÔøΩ', s, '\263');
+  s:=Replace('ÔøΩ', s, '\201');
+  s:=Replace('ÔøΩ', s, '\202');
+  s:=Replace('ÔøΩ', s, '\335');
+  s:=Replace('ÔøΩ', s, '\375');
+  s:=Replace('ÔøΩ', s, '\231');
+  s:=Replace('ÔøΩ', s, '\236');
+  s:=Replace('ÔøΩ', s, '\246');
+  s:=Replace('ÔøΩ', s, '\247');
+  s:=Replace('ÔøΩ', s, '\253');
+  s:=Replace('ÔøΩ', s, '\273');
+  s:=Replace('ÔøΩ', s, '\265');
   s:=Replace('-', s, '\205');
-  s:=Replace('ñ', s, '\205');
-  s:=Replace('ó', s, '\204');
+  s:=Replace('ÔøΩ', s, '\205');
+  s:=Replace('ÔøΩ', s, '\204');
   Result:=s;
 end;
 
@@ -4396,7 +4403,7 @@ begin
 end;
 
 //Posle soubory e-mailem nebo pres DS. Pokud se ma poslat pres DS, tak se zadava do
-//  AMailAddr ve formatu '#IDDS#2p2n5ad#⁄zP pro Prahu 1 Prahu 1'
+//  AMailAddr ve formatu '#IDDS#2p2n5ad#ÔøΩzP pro Prahu 1 Prahu 1'
 function SendFilesByEmailOrDS(AMailAddr, ASubject, ABody: string;
   AAttachmentsFileNames: TStringList; AShowDialog: boolean; out AErrorMsg: string): string;
 var sel: Boolean;
@@ -4412,7 +4419,7 @@ begin
 end;
 
 //Umozni vybrat adresu mailovou nebo datove schranky
-//  pokud je vybrana tak vraci e-mail nebo identifikaci DS ve tvaru '#IDDS#2p2n5ad#⁄zP pro Prahu 1 Prahu 1'
+//  pokud je vybrana tak vraci e-mail nebo identifikaci DS ve tvaru '#IDDS#2p2n5ad#ÔøΩzP pro Prahu 1 Prahu 1'
 //  kdyz neni zadny email na vyber ale bylo stisknuto tlacitko e-mailem tak vraci zavinac
 //  kdyz bylo stisknuto Storno tak vraci prazdny retezec
 function SelectEmailOrDS(AOnlyEmail: Boolean = False): string;

@@ -10,12 +10,17 @@ import {
 import { writeFACommand } from './utils/fsBridge';
 import { registerFABridgePanel } from './views/FABridgePanel';
 import { registerSnippetProvider } from './providers/SnippetProvider';
-import { SimpleDebugger } from './debugger/simpleDebugger';
-import { registerDebugVariablesPanel } from './debugger/debugVariables';
+import { registerMsgWatchPanel } from './debugger/msgWatch';
+import { registerCommunicationStatusPanel } from './debugger/communicationStatus';
 
-let faDebugger: SimpleDebugger | null = null;
+let outputChannel: vscode.OutputChannel | null = null;
 
 export function activate(context: vscode.ExtensionContext) {
+	// Vytvoř Output Channel pro logování
+	outputChannel = vscode.window.createOutputChannel('FA Bridge');
+	context.subscriptions.push(outputChannel);
+	
+	outputChannel.appendLine('[FA Bridge] Extension aktivována');
 	console.log('[FA Bridge] Extension aktivována');
 
 	// Registruj sidebar panel
@@ -24,27 +29,31 @@ export function activate(context: vscode.ExtensionContext) {
 	// Registruj Pascal snippet provider (s nastavením zapnout/vypnout)
 	context.subscriptions.push(registerSnippetProvider(context));
 
+	// Output Channel se zobrazí automaticky v dropdownu Output panelu
+	// Není potřeba ho explicitně zobrazovat
+
 	// Inicializuj debugger - používá fsbridgePath z konfigurace (ne workspace!)
 	const config = vscode.workspace.getConfiguration('faBridge');
 	const fsbridgePath = config.get<string>('fsbridgePath');
 	
+	outputChannel.appendLine(`[FA Bridge] Čtení konfigurace: fsbridgePath = ${fsbridgePath || '(není nastaveno)'}`);
+	
+	// Registruj Msg Watch panel vždy (nezávislý na debuggeru a fsbridgePath)
+	// Pokud není fsbridgePath, panel bude prázdný, ale bude viditelný
 	if (fsbridgePath) {
-		faDebugger = new SimpleDebugger(fsbridgePath);
-		faDebugger.startWatching();
-
-		// Registruj debugger variables panel
-		registerDebugVariablesPanel(context, faDebugger);
-
-		// Cleanup při deaktivaci
-		context.subscriptions.push({
-			dispose: () => {
-				faDebugger?.dispose();
-				faDebugger = null;
-			}
-		});
+		registerMsgWatchPanel(context, fsbridgePath, outputChannel);
+		outputChannel.appendLine(`[FA Bridge] Msg Watch panel registrován s cestou: ${fsbridgePath}`);
 	} else {
-		vscode.window.showWarningMessage('FA Bridge: Nastavte cestu k .fsbridge složce v nastavení (faBridge.fsbridgePath)');
+		// I když není fsbridgePath, zaregistruj panel s prázdnou cestou
+		// Panel bude zobrazovat pouze chybovou zprávu
+		registerMsgWatchPanel(context, '', outputChannel);
+		outputChannel.appendLine('[FA Bridge] WARNING: fsbridgePath není nastaven. Msg Watch panel nebude fungovat.');
+		outputChannel.appendLine('[FA Bridge] Nastavte cestu v nastavení: faBridge.fsbridgePath');
 	}
+
+	// Registruj Communication Status panel vždy (zobrazuje stav komunikace)
+	registerCommunicationStatusPanel(context, fsbridgePath || null, outputChannel);
+	outputChannel.appendLine('[FA Bridge] Communication Status panel registrován');
 
 	// Registruj všechny příkazy
 	const commands = [
@@ -69,36 +78,6 @@ export function activate(context: vscode.ExtensionContext) {
 				vscode.ConfigurationTarget.Global
 			);
 			vscode.window.showInformationMessage('Přepnuto na FA Pascal Dark theme');
-		}),
-
-		// Debugger příkazy
-		vscode.commands.registerCommand('faBridge.debugContinue', () => {
-			faDebugger?.continue();
-		}),
-		vscode.commands.registerCommand('faBridge.debugStepOver', () => {
-			faDebugger?.stepOver();
-		}),
-		vscode.commands.registerCommand('faBridge.debugPause', () => {
-			faDebugger?.pause();
-		}),
-		vscode.commands.registerCommand('faBridge.debugStop', () => {
-			faDebugger?.stop();
-		}),
-		vscode.commands.registerCommand('faBridge.debugToggleBreakpoint', () => {
-			const editor = vscode.window.activeTextEditor;
-			if (editor && faDebugger) {
-				const line = editor.selection.active.line + 1; // VS Code používá 0-based, TMS Scripter pravděpodobně 1-based
-				faDebugger.toggleBreakpoint(line);
-			} else {
-				vscode.window.showWarningMessage('Otevřete Pascal soubor pro nastavení breakpointu');
-			}
-		}),
-		// Alias pro panel (toggleBreakpoint → debugToggleBreakpoint)
-		vscode.commands.registerCommand('faBridge.toggleBreakpoint', () => {
-			vscode.commands.executeCommand('faBridge.debugToggleBreakpoint');
-		}),
-		vscode.commands.registerCommand('faBridge.debugPanel', () => {
-			vscode.commands.executeCommand('workbench.view.extension.faBridgeContainer');
 		}),
 
 		// Návrh příkazy
@@ -157,8 +136,4 @@ export function activate(context: vscode.ExtensionContext) {
 
 export function deactivate() {
 	console.log('[FA Bridge] Extension deaktivována');
-	if (faDebugger) {
-		faDebugger.dispose();
-		faDebugger = null;
-	}
 }

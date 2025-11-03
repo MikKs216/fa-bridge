@@ -71,16 +71,16 @@ export class FABridgeTreeProvider implements vscode.TreeDataProvider<CategoryTre
 				new vscode.ThemeIcon('save'),
 				'Uloží aktuální soubor'
 			),
-			new CommandTreeItem(
-				'Aktivovat FA (Alt+Q)',
-				{
-					command: 'workbench.action.files.save',
-					title: 'Uložit soubor',
-				},
-				new vscode.ThemeIcon('save'),
-				'Uloží aktuální soubor (jako Ctrl+S)'
-			),
-			new CommandTreeItem(
+		new CommandTreeItem(
+			'Aktivovat FA (Alt+Q)',
+			{
+				command: 'workbench.action.files.save',
+				title: 'Uložit soubor',
+			},
+			new vscode.ThemeIcon('save'),
+			'Uloží aktuální soubor (jako Ctrl+S)'
+		),
+		new CommandTreeItem(
 				'Vložit název údaje (Shift+Alt+V)',
 				{
 					command: 'faBridge.vlozitNazevUdaje',
@@ -126,7 +126,7 @@ export class FABridgeTreeProvider implements vscode.TreeDataProvider<CategoryTre
 					command: 'faBridge.provestCalculate',
 					title: 'Provést Calculate',
 				},
-				new vscode.ThemeIcon('calculator'),
+				new vscode.ThemeIcon('refresh'),
 				'Spustí funkci Calculate v návrhu formuláře'
 			),
 			new CommandTreeItem(
@@ -167,51 +167,10 @@ export class FABridgeTreeProvider implements vscode.TreeDataProvider<CategoryTre
 			),
 		];
 
-		// Debug příkazy
-		const debugCommands: CommandTreeItem[] = [
-			new CommandTreeItem(
-				'Pokračovat (F5)',
-				{
-					command: 'faBridge.debugContinue',
-					title: 'Pokračovat v běhu scriptu',
-				},
-				new vscode.ThemeIcon('debug-continue'),
-				'Pokračovat v běhu scriptu do dalšího breakpointu'
-			),
-			new CommandTreeItem(
-				'Krokovat (F10)',
-				{
-					command: 'faBridge.debugStepOver',
-					title: 'Krok přes',
-				},
-				new vscode.ThemeIcon('debug-step-over'),
-				'Provést aktuální řádek a zastavit na dalším'
-			),
-			new CommandTreeItem(
-				'Přepnout breakpoint (F9)',
-				{
-					command: 'faBridge.toggleBreakpoint',
-					title: 'Přepnout breakpoint',
-				},
-				new vscode.ThemeIcon('debug-breakpoint'),
-				'Nastavit/zrušit breakpoint na aktuálním řádku'
-			),
-			new CommandTreeItem(
-				'Zastavit debug',
-				{
-					command: 'faBridge.debugStop',
-					title: 'Zastavit debugování',
-				},
-				new vscode.ThemeIcon('debug-stop'),
-				'Ukončit běh scriptu'
-			),
-		];
-
 		// Vytvoř kategorie
 		const categories = [
 			new CategoryTreeItem('FA Příkazy', 'Příkazy pro práci s FA', faCommands),
 			new CategoryTreeItem('Návrh Příkazy', 'Příkazy pro testování návrhu formuláře', navrhCommands),
-			new CategoryTreeItem('Debug Příkazy', 'Příkazy pro ladění scriptů', debugCommands),
 		];
 
 		return Promise.resolve(categories);
