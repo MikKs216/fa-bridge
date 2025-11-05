@@ -26874,30 +26874,6 @@ begin
     s:=FBridge.ReadFieldText;
     SearchField(s);
   end
-  else if Command = 'DO_INIT' then
-  begin
-    DoInit;
-  end
-  else if Command = 'DO_CALCULATE' then
-  begin
-    DoCalculate;
-  end
-  else if Command = 'DO_ENABLE' then
-  begin
-    DoEnable;
-  end
-  else if Command = 'SHOW_INFO' then
-  begin
-    ShowFormInfo;
-  end
-  else if Command = 'SHOW_PAYMENT_INFO' then
-  begin
-    DoPaymentInfo;
-  end
-  else if Command = 'SHOW_PERIOD' then
-  begin
-    ShowMessage(GfaMain.GetPeriod);
-  end;
 end;
 
 // Zpracování příkazů z Cursor extension
@@ -26917,31 +26893,6 @@ begin
     CommandName := Trim(Command);
   end;
 
-  // Zpracování podle typu příkazu
-  if CommandName = 'DO_INIT' then
-  begin
-    DoInit;
-  end
-  else if CommandName = 'DO_CALCULATE' then
-  begin
-    DoCalculate;
-  end
-  else if CommandName = 'DO_ENABLE' then
-  begin
-    DoEnable;
-  end
-  else if CommandName = 'SHOW_INFO' then
-  begin
-    ShowFormInfo;
-  end
-  else if CommandName = 'SHOW_PAYMENT_INFO' then
-  begin
-    DoPaymentInfo;
-  end
-  else if CommandName = 'SHOW_PERIOD' then
-  begin
-    ShowMessage(GfaMain.GetPeriod);
-  end;
 end;
 
 // Zpracování volání funkce Msg z skriptu

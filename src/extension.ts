@@ -2,16 +2,21 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 import {
-	aktivovatFormular,
+	ulozitSoubor,
 	vlozitNazevUdaje,
 	kopirovatNazevUdaje,
 	najitUdaj,
+	hledatPodleAktUdaje,
+	toggleMsgv,
+	toggleField,
+	vlozitUdajSBody,
+	vlozitUdajSDvojteckami,
+	hledatOdZacatku,
 } from './commands/sendCommand';
 import { writeFACommand } from './utils/fsBridge';
 import { registerFABridgePanel } from './views/FABridgePanel';
 import { registerSnippetProvider } from './providers/SnippetProvider';
 import { registerMsgWatchPanel } from './debugger/msgWatch';
-import { registerCommunicationStatusPanel } from './debugger/communicationStatus';
 
 let outputChannel: vscode.OutputChannel | null = null;
 
@@ -51,16 +56,18 @@ export function activate(context: vscode.ExtensionContext) {
 		outputChannel.appendLine('[FA Bridge] Nastavte cestu v nastavení: faBridge.fsbridgePath');
 	}
 
-	// Registruj Communication Status panel vždy (zobrazuje stav komunikace)
-	registerCommunicationStatusPanel(context, fsbridgePath || null, outputChannel);
-	outputChannel.appendLine('[FA Bridge] Communication Status panel registrován');
-
 	// Registruj všechny příkazy
 	const commands = [
-		vscode.commands.registerCommand('faBridge.aktivovatFormular', aktivovatFormular),
+		vscode.commands.registerCommand('faBridge.ulozitSoubor', ulozitSoubor),
 		vscode.commands.registerCommand('faBridge.vlozitNazevUdaje', vlozitNazevUdaje),
 		vscode.commands.registerCommand('faBridge.kopirovatNazevUdaje', kopirovatNazevUdaje),
 		vscode.commands.registerCommand('faBridge.najitUdaj', najitUdaj),
+		vscode.commands.registerCommand('faBridge.hledatPodleAktUdaje', hledatPodleAktUdaje),
+		vscode.commands.registerCommand('faBridge.toggleMsgv', toggleMsgv),
+		vscode.commands.registerCommand('faBridge.toggleField', toggleField),
+		vscode.commands.registerCommand('faBridge.vlozitUdajSBody', vlozitUdajSBody),
+		vscode.commands.registerCommand('faBridge.vlozitUdajSDvojteckami', vlozitUdajSDvojteckami),
+		vscode.commands.registerCommand('faBridge.hledatOdZacatku', hledatOdZacatku),
 		
 		// Commands pro přepínání color themes
 		vscode.commands.registerCommand('faBridge.setLightTheme', () => {
@@ -80,79 +87,6 @@ export function activate(context: vscode.ExtensionContext) {
 			vscode.window.showInformationMessage('Přepnuto na FA Pascal Dark theme');
 		}),
 
-		// Návrh příkazy
-		vscode.commands.registerCommand('faBridge.provestInit', async () => {
-			try {
-				// Nejdřív aktivovat FA
-				await writeFACommand('Aktivovat_formular');
-				await new Promise(resolve => setTimeout(resolve, 400)); // Zpoždění pro aktivaci FA
-				// Pak spustit Init
-				await writeFACommand('DO_INIT');
-				vscode.window.showInformationMessage('FA: Provádím Init...');
-			} catch (error) {
-				vscode.window.showErrorMessage(`Chyba: ${error}`);
-			}
-		}),
-		vscode.commands.registerCommand('faBridge.provestCalculate', async () => {
-			try {
-				// Nejdřív aktivovat FA
-				await writeFACommand('Aktivovat_formular');
-				await new Promise(resolve => setTimeout(resolve, 400)); // Zpoždění pro aktivaci FA
-				// Pak spustit Calculate
-				await writeFACommand('DO_CALCULATE');
-				vscode.window.showInformationMessage('FA: Provádím Calculate...');
-			} catch (error) {
-				vscode.window.showErrorMessage(`Chyba: ${error}`);
-			}
-		}),
-		vscode.commands.registerCommand('faBridge.provestEnable', async () => {
-			try {
-				// Nejdřív aktivovat FA
-				await writeFACommand('Aktivovat_formular');
-				await new Promise(resolve => setTimeout(resolve, 400)); // Zpoždění pro aktivaci FA
-				// Pak spustit Enable
-				await writeFACommand('DO_ENABLE');
-				vscode.window.showInformationMessage('FA: Provádím Enable...');
-			} catch (error) {
-				vscode.window.showErrorMessage(`Chyba: ${error}`);
-			}
-		}),
-		vscode.commands.registerCommand('faBridge.zobrazitInfo', async () => {
-			try {
-				// Nejdřív aktivovat FA
-				await writeFACommand('Aktivovat_formular');
-				await new Promise(resolve => setTimeout(resolve, 400)); // Zpoždění pro aktivaci FA
-				// Pak zobrazit Info
-				await writeFACommand('SHOW_INFO');
-				vscode.window.showInformationMessage('FA: Zobrazuji Info...');
-			} catch (error) {
-				vscode.window.showErrorMessage(`Chyba: ${error}`);
-			}
-		}),
-		vscode.commands.registerCommand('faBridge.zobrazitPlatebniInformace', async () => {
-			try {
-				// Nejdřív aktivovat FA
-				await writeFACommand('Aktivovat_formular');
-				await new Promise(resolve => setTimeout(resolve, 400)); // Zpoždění pro aktivaci FA
-				// Pak zobrazit Platební informace
-				await writeFACommand('SHOW_PAYMENT_INFO');
-				vscode.window.showInformationMessage('FA: Zobrazuji platební informace...');
-			} catch (error) {
-				vscode.window.showErrorMessage(`Chyba: ${error}`);
-			}
-		}),
-		vscode.commands.registerCommand('faBridge.zobrazitPeriod', async () => {
-			try {
-				// Nejdřív aktivovat FA
-				await writeFACommand('Aktivovat_formular');
-				await new Promise(resolve => setTimeout(resolve, 400)); // Zpoždění pro aktivaci FA
-				// Pak zobrazit Period
-				await writeFACommand('SHOW_PERIOD');
-				vscode.window.showInformationMessage('FA: Zobrazuji Period...');
-			} catch (error) {
-				vscode.window.showErrorMessage(`Chyba: ${error}`);
-			}
-		}),
 	];
 
 	context.subscriptions.push(...commands);

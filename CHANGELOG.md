@@ -2,6 +2,86 @@
 
 All notable changes to the "fa-bridge" extension will be documented in this file.
 
+## [0.5.11] - 2025-01-XX
+
+### Changed
+- **Vložit název údaje (Alt+X)**: Funkce nyní nahrazuje označený text místo vložení na kurzor
+  - Pokud je text označen (selekce), nahradí ho obsahem z `fafield.txt`
+  - Pokud není selekce, vloží text na pozici kurzoru (původní chování)
+  - Užitečné pro rychlé nahrazování existujícího textu názvem údaje
+
+### Fixed
+- **Toggle field (Alt+A)**: Kurzor se nyní posouvá o 3 znaky doleva po změně formátu
+  - Umožňuje pokračovat v editaci bez nutnosti ručního posunu kurzoru zpět do slova
+
+### Documentation
+- Aktualizována dokumentace v README.md a CHANGELOG.md podle všech změn od verze 0.4.9
+
+## [0.5.10] - 2025-01-XX
+
+### Changed
+- **Vložit název údaje (Alt+X)**: Funkce nyní nahrazuje označený text místo vložení na kurzor
+  - Pokud je text označen (selekce), nahradí ho obsahem z `fafield.txt`
+  - Pokud není selekce, vloží text na pozici kurzoru (původní chování)
+  - Užitečné pro rychlé nahrazování existujícího textu názvem údaje
+
+### Fixed
+- **Toggle field (Alt+A)**: Kurzor se nyní posouvá o 3 znaky doleva po změně formátu
+  - Umožňuje pokračovat v editaci bez nutnosti ručního posunu kurzoru zpět do slova
+
+## [0.5.9] - 2025-01-XX
+
+### Changed
+- **Hotkey změny pro lepší ergonomii**:
+  - Toggle field: `Alt+B` → `Alt+A`
+  - Vložit název údaje: `Alt+V` → `Alt+X`
+
+## [0.5.8] - 2025-01-XX
+
+### Added
+- **Toggle field (Alt+A)**: Nová funkce pro cyklické měnění formátu slova pod kurzorem
+  - `'slovo'` → `[:slovo:]` → `[.slovo.]` → `'slovo'` → ...
+  - Pokud je kurzor na slově bez formátu, přidá apostrofy: `slovo` → `'slovo'`
+  - Automaticky rozpoznává existující formát a přepne na další v cyklu
+
+### Changed
+- **Toggle msgv (Alt+F9)**: Vylepšená logika vkládání
+  - Pokud je aktuální řádek prázdný, vloží `msgv('');` na tento řádek
+  - Pokud řádek není prázdný, vloží `msgv('');` na nový řádek před aktuální řádek
+
+## [0.5.7] - 2025-01-XX
+
+### Added
+- **Toggle msgv (Alt+F9)**: Nová funkce pro vkládání/smazání `msgv` debug příkazů
+  - Vloží `msgv('');` před aktuální řádek (nebo na aktuální řádek pokud je prázdný)
+  - Smaže celý řádek pokud začíná `msgv(` (s případnými bílými znaky)
+  - Kurzor se automaticky umístí mezi apostrofy pro rychlé vyplnění
+
+## [0.5.6] - 2025-01-XX
+
+### Changed
+- **msg/msgv dialogy**: Dialogové okna se nyní zobrazují uprostřed hlavního okna FA místo monitoru
+  - Používá `GfaMain.Left` a `GfaMain.Top` pro výpočet pozice
+  - Lepší UX při práci s více monitory
+
+### Fixed
+- **msgv export proměnných**: Funkce `msgv` nyní exportuje aktuální proměnné a fieldy do Cursoru stejně jako `msg`
+  - Přidáno volání `GfaMain.OnMsgCalled(VarToStr(AMessage))` v `Msgv` proceduře
+
+## [0.5.5] - 2025-01-XX
+
+### Removed
+- **Sekce "Návrh Příkazy"**: Odstraněna celá sekce včetně všech příkazů:
+  - Provést Init (Shift+Alt+I)
+  - Provést Calculate (Shift+Alt+E)
+  - Provést Enable (Shift+Alt+N)
+  - Zobrazit Info (Shift+Alt+B)
+  - Zobrazit Platební informace (Shift+Alt+P)
+  - Zobrazit Period (Shift+Alt+R)
+- **Panel "Stav komunikace"**: Odstraněn debug panel pro sledování stavu komunikace s FA
+  - Odstraněny všechny související příkazy a komponenty
+  - Vyčištěn kód od pomocného ladícího řešení
+
 ## [0.4.9] - 2025-10-31
 
 ### Fixed

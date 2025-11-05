@@ -168,7 +168,7 @@ export class MsgWatchProvider implements vscode.TreeDataProvider<MsgWatchTreeIte
 			if (state.mtValuesRow && Object.keys(state.mtValuesRow).length > 0) {
 				items.push(
 					new MsgWatchTreeItem(
-						'mtValues (aktuální řádek)',
+						'mtValues',
 						`${Object.keys(state.mtValuesRow).length} polí`,
 						vscode.TreeItemCollapsibleState.Expanded
 					)
@@ -231,7 +231,7 @@ export class MsgWatchProvider implements vscode.TreeDataProvider<MsgWatchTreeIte
 						)
 					);
 				}
-			} else if (parent.label === 'mtValues (aktuální řádek)' && state.mtValuesRow) {
+			} else if (parent.label === 'mtValues' && state.mtValuesRow) {
 				const sortedFields = Object.keys(state.mtValuesRow).sort();
 				for (const fieldName of sortedFields) {
 					const fieldValue = state.mtValuesRow[fieldName];

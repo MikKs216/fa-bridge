@@ -1,0 +1,1010 @@
+﻿<!DOCTYPE HTML>
+<html><head>
+   <title>FORM asistent - funkce</title>
+   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />   
+   <meta name="robots" content="noindex,follow" />
+   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+ 
+   <!-- This line includes the general project style sheet (not required) -->
+   <link type="text/css" href="default.css" rel="stylesheet" />
+
+   <!-- This block defines the styles of the TOC headings, change them as needed -->
+   <style type="text/css">
+       body { }
+       .heading1 { font-size: 10pt; color: #000000; text-decoration: none; }
+       .heading2 { font-size: 10pt; color: #000000; text-decoration: none; }
+       .heading3 { font-size: 10pt; color: #000000; text-decoration: none; }
+       .heading4 { font-size: 10pt; color: #000000; text-decoration: none; }
+       .heading5 { font-size: 10pt; color: #000000; text-decoration: none; }
+       .heading6 { font-size: 10pt; color: #000000; text-decoration: none; }
+
+       .hilight1 { font-size: 10pt; color: #FFFFFF; background: #002682; text-decoration: none; }
+       .hilight2 { font-size: 10pt; color: #FFFFFF; background: #002682; text-decoration: none; }
+       .hilight3 { font-size: 10pt; color: #FFFFFF; background: #002682; text-decoration: none; }
+       .hilight4 { font-size: 10pt; color: #FFFFFF; background: #002682; text-decoration: none; }
+       .hilight5 { font-size: 10pt; color: #FFFFFF; background: #002682; text-decoration: none; }
+       .hilight6 { font-size: 10pt; color: #FFFFFF; background: #002682; text-decoration: none; }
+
+       /* TOC LIST CSS */
+       #toc    { padding:0; margin:0 }
+       #toc li { margin-top:2px; margin-left:0; padding:1px }
+       #toc ul { padding-left:0; margin-left:0px }       
+       /* TOC LIST CSS */
+   </style>
+   <script type="text/javascript" src="jquery.js"></script>
+   <script type="text/javascript" src="helpman_settings.js"></script>
+   <script type="text/javascript">
+     var parentScope = (parent.hmNavigationFrame);
+     if (!parentScope) {
+		      var s = document.createElement("script");
+		      s.setAttribute("type","text/javascript");
+		      s.setAttribute("src", "helpman_navigation.js");
+		      document.getElementsByTagName("head")[0].appendChild(s);
+	    }
+     else {
+       if (initialtocstate != "expandall") parent.hmAddCss(document, "#toc li ul { display: none }");
+     }
+     function loadicons() { var icons = new Array(); for (i=0; i<arguments.length; i++) { icons[i] = new Image(); icons[i].src = arguments[i]; } }
+     function loadtoc() { if (parentScope) parent.loadstate(document.getElementById("toc")); else loadstate(document.getElementById("toc")); }
+     function savetoc() { if (parentScope) parent.savestate(document.getElementById("toc")); else savestate(document.getElementById("toc")); }
+     function clicked(node, event) { deselect(); if (parentScope) parent.hmNodeClicked(node, event); else hmNodeClicked(node, event); }
+     function dblclicked(node) { if (parentScope) parent.hmNodeDblclicked(node); else hmNodeDblclicked(node); }
+     function deselect() { if (window.getSelection) window.getSelection().removeAllRanges(); else if (document.selection) document.selection.empty(); }
+     $(document).ready(function(){
+       loadtoc();
+       $(window).onunload = savetoc;
+     });
+   </script>
+</head>
+<body>
+<ul id="toc" style="list-style-type:none;display:block;padding-left:0">
+<li class="heading1" id="i1" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading1" id="a1" href="globalni_konstanty_a_promenne.htm" target="hmcontent"><span class="heading1" id="s1">Globální konstanty a proměnné</span></a>
+</li>
+<li class="heading1" id="i2" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading1" id="a2" href="globalni_funkce.htm" target="hmcontent"><span class="heading1" id="s2">Globální funkce</span></a>
+</li>
+<li class="heading1" id="i3" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading1" id="a3" href="hlavni_funkce.htm" target="hmcontent"><span class="heading1" id="s3">Hlavní funkce skriptu</span></a>
+</li>
+<li class="heading1" id="i4" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading1" id="a4" href="funkce_skriptu_sestavy.htm" target="hmcontent"><span class="heading1" id="s4">Funkce skriptu sestavy</span></a>
+</li>
+<li class="heading1" id="i5" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading1" id="a5" href="direktivy.htm" target="hmcontent"><span class="heading1" id="s5">Direktivy</span></a>
+</li>
+<li class="heading1" id="i6" data-bg="cicon1.gif;cicon2.gif" style="background:url(cicon2.gif) no-repeat;cursor:pointer;padding-left:20px" onclick="return clicked(this,event)"><a class="heading1" id="a6" href="podminene_prikazy_a_cykly.htm" target="hmcontent"><span class="heading1" id="s6" ondblclick="return dblclicked(this)">Podmíněné příkazy a cykly</span></a>
+<ul id="ul6" style="list-style-type:none">
+<li class="heading2" id="i6.1" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a6.1" href="if_then.htm" target="hmcontent"><span class="heading2" id="s6.1">If ... then</span></a>
+</li>
+<li class="heading2" id="i6.2" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a6.2" href="case.htm" target="hmcontent"><span class="heading2" id="s6.2">Case</span></a>
+</li>
+<li class="heading2" id="i6.3" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a6.3" href="for_to_do.htm" target="hmcontent"><span class="heading2" id="s6.3">For ... to ... do</span></a>
+</li>
+<li class="heading2" id="i6.4" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a6.4" href="while_do.htm" target="hmcontent"><span class="heading2" id="s6.4">While ... do</span></a>
+</li>
+<li class="heading2" id="i6.5" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a6.5" href="repeat_until.htm" target="hmcontent"><span class="heading2" id="s6.5">Repeat ... until</span></a>
+</li>
+<li class="heading2" id="i6.6" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a6.6" href="try_finally.htm" target="hmcontent"><span class="heading2" id="s6.6">Try ... finally</span></a>
+</li>
+</ul>
+</li>
+<li class="heading1" id="i7" data-bg="cicon1.gif;cicon2.gif" style="background:url(cicon2.gif) no-repeat;cursor:pointer;padding-left:20px" onclick="return clicked(this,event)"><a class="heading1" id="a7" href="message_functions.htm" target="hmcontent"><span class="heading1" id="s7" ondblclick="return dblclicked(this)">Zprávy a dialogy</span></a>
+<ul id="ul7" style="list-style-type:none">
+<li class="heading2" id="i7.1" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a7.1" href="msgboxask.htm" target="hmcontent"><span class="heading2" id="s7.1">MsgBoxAsk</span></a>
+</li>
+<li class="heading2" id="i7.2" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a7.2" href="msgboxerr.htm" target="hmcontent"><span class="heading2" id="s7.2">MsgBoxErr</span></a>
+</li>
+<li class="heading2" id="i7.3" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a7.3" href="msgboxinfo.htm" target="hmcontent"><span class="heading2" id="s7.3">MsgBoxInfo</span></a>
+</li>
+<li class="heading2" id="i7.4" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a7.4" href="msgboxwarn.htm" target="hmcontent"><span class="heading2" id="s7.4">MsgBoxWarn</span></a>
+</li>
+<li class="heading2" id="i7.5" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a7.5" href="msgboxaskbuttons.htm" target="hmcontent"><span class="heading2" id="s7.5">MsgBoxAskButtons</span></a>
+</li>
+<li class="heading2" id="i7.6" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a7.6" href="msgaskyesnocancel.htm" target="hmcontent"><span class="heading2" id="s7.6">MsgAskYesNoCancel</span></a>
+</li>
+<li class="heading2" id="i7.7" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a7.7" href="askint.htm" target="hmcontent"><span class="heading2" id="s7.7">AskInt</span></a>
+</li>
+<li class="heading2" id="i7.8" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a7.8" href="askfloat.htm" target="hmcontent"><span class="heading2" id="s7.8">AskFloat</span></a>
+</li>
+<li class="heading2" id="i7.9" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a7.9" href="askstr.htm" target="hmcontent"><span class="heading2" id="s7.9">AskStr</span></a>
+</li>
+<li class="heading2" id="i7.10" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a7.10" href="askstrv.htm" target="hmcontent"><span class="heading2" id="s7.10">AskStrV</span></a>
+</li>
+<li class="heading2" id="i7.11" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a7.11" href="askintint.htm" target="hmcontent"><span class="heading2" id="s7.11">AskIntInt</span></a>
+</li>
+<li class="heading2" id="i7.12" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a7.12" href="askdate.htm" target="hmcontent"><span class="heading2" id="s7.12">AskDate</span></a>
+</li>
+<li class="heading2" id="i7.13" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a7.13" href="askdatedate.htm" target="hmcontent"><span class="heading2" id="s7.13">AskDateDate</span></a>
+</li>
+<li class="heading2" id="i7.14" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a7.14" href="askmemo.htm" target="hmcontent"><span class="heading2" id="s7.14">AskMemo</span></a>
+</li>
+<li class="heading2" id="i7.15" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a7.15" href="askmemov.htm" target="hmcontent"><span class="heading2" id="s7.15">AskMemoV</span></a>
+</li>
+<li class="heading2" id="i7.16" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a7.16" href="selectclientbankaccount.htm" target="hmcontent"><span class="heading2" id="s7.16">SelectClientBankAccount</span></a>
+</li>
+<li class="heading2" id="i7.17" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a7.17" href="selectclientperson.htm" target="hmcontent"><span class="heading2" id="s7.17">SelectClientPerson</span></a>
+</li>
+<li class="heading2" id="i7.18" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a7.18" href="selectclientadress.htm" target="hmcontent"><span class="heading2" id="s7.18">SelectClientAdress</span></a>
+</li>
+<li class="heading2" id="i7.19" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a7.19" href="const_astring__afilename_strin.htm" target="hmcontent"><span class="heading2" id="s7.19">SetMultilineOpenDialog</span></a>
+</li>
+<li class="heading2" id="i7.20" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a7.20" href="selectemailords.htm" target="hmcontent"><span class="heading2" id="s7.20">SelectEmailOrDS</span></a>
+</li>
+<li class="heading2" id="i7.21" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a7.21" href="showinfoares.htm" target="hmcontent"><span class="heading2" id="s7.21">ShowInfoARES</span></a>
+</li>
+<li class="heading2" id="i7.22" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a7.22" href="getformsordocuments.htm" target="hmcontent"><span class="heading2" id="s7.22">GetFormsOrDocuments</span></a>
+</li>
+<li class="heading2" id="i7.23" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a7.23" href="getforms.htm" target="hmcontent"><span class="heading2" id="s7.23">GetForms</span></a>
+</li>
+<li class="heading2" id="i7.24" style="background:url(cicon41.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a7.24" href="showmessage.htm" target="hmcontent"><span class="heading2" id="s7.24">ShowMessage</span></a>
+</li>
+</ul>
+</li>
+<li class="heading1" id="i8" data-bg="cicon1.gif;cicon2.gif" style="background:url(cicon2.gif) no-repeat;cursor:pointer;padding-left:20px" onclick="return clicked(this,event)"><a class="heading1" id="a8" href="string_functions.htm" target="hmcontent"><span class="heading1" id="s8" ondblclick="return dblclicked(this)">Textové funkce</span></a>
+<ul id="ul8" style="list-style-type:none">
+<li class="heading2" id="i8.1" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a8.1" href="changediakritic.htm" target="hmcontent"><span class="heading2" id="s8.1">ChangeDiakritic</span></a>
+</li>
+<li class="heading2" id="i8.2" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a8.2" href="isstringuppercase.htm" target="hmcontent"><span class="heading2" id="s8.2">IsStringUpperCase</span></a>
+</li>
+<li class="heading2" id="i8.3" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a8.3" href="isstringlowercase.htm" target="hmcontent"><span class="heading2" id="s8.3">IsStringLowerCase</span></a>
+</li>
+<li class="heading2" id="i8.4" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a8.4" href="isstringfirstuppercase.htm" target="hmcontent"><span class="heading2" id="s8.4">IsStringFirstUpperCase</span></a>
+</li>
+<li class="heading2" id="i8.5" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a8.5" href="stringfirstuppercase.htm" target="hmcontent"><span class="heading2" id="s8.5">StringFirstUpperCase</span></a>
+</li>
+<li class="heading2" id="i8.6" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a8.6" href="changestringcase.htm" target="hmcontent"><span class="heading2" id="s8.6">ChangeStringCase</span></a>
+</li>
+<li class="heading2" id="i8.7" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a8.7" href="removenonlicchar.htm" target="hmcontent"><span class="heading2" id="s8.7">RemoveNonLicChar</span></a>
+</li>
+<li class="heading2" id="i8.8" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a8.8" href="replace.htm" target="hmcontent"><span class="heading2" id="s8.8">Replace</span></a>
+</li>
+<li class="heading2" id="i8.9" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a8.9" href="quotedstr.htm" target="hmcontent"><span class="heading2" id="s8.9">QuotedStr</span></a>
+</li>
+<li class="heading2" id="i8.10" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a8.10" href="str1250toansi.htm" target="hmcontent"><span class="heading2" id="s8.10">Str1250ToANSI</span></a>
+</li>
+<li class="heading2" id="i8.11" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a8.11" href="isinteger.htm" target="hmcontent"><span class="heading2" id="s8.11">IsInteger</span></a>
+</li>
+<li class="heading2" id="i8.12" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a8.12" href="isfloat.htm" target="hmcontent"><span class="heading2" id="s8.12">IsFloat</span></a>
+</li>
+<li class="heading2" id="i8.13" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a8.13" href="iscurrencyint.htm" target="hmcontent"><span class="heading2" id="s8.13">IsCurrencyInt</span></a>
+</li>
+<li class="heading2" id="i8.14" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a8.14" href="isdate.htm" target="hmcontent"><span class="heading2" id="s8.14">IsDate</span></a>
+</li>
+<li class="heading2" id="i8.15" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a8.15" href="isboolean.htm" target="hmcontent"><span class="heading2" id="s8.15">IsBoolean</span></a>
+</li>
+<li class="heading2" id="i8.16" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a8.16" href="isdots.htm" target="hmcontent"><span class="heading2" id="s8.16">IsDots</span></a>
+</li>
+<li class="heading2" id="i8.17" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a8.17" href="isdigit.htm" target="hmcontent"><span class="heading2" id="s8.17">IsDigit</span></a>
+</li>
+<li class="heading2" id="i8.18" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a8.18" href="createguidstring.htm" target="hmcontent"><span class="heading2" id="s8.18">CreateGUIDString</span></a>
+</li>
+<li class="heading2" id="i8.19" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a8.19" href="replacelatin2invalidchar.htm" target="hmcontent"><span class="heading2" id="s8.19">ReplaceLatin2InvalidChar</span></a>
+</li>
+<li class="heading2" id="i8.20" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a8.20" href="xmlnormchars.htm" target="hmcontent"><span class="heading2" id="s8.20">XMLNormChars</span></a>
+</li>
+<li class="heading2" id="i8.21" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a8.21" href="addxmlstrvalue.htm" target="hmcontent"><span class="heading2" id="s8.21">AddXMLStrValue</span></a>
+</li>
+<li class="heading2" id="i8.22" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a8.22" href="xmlstrtowindows1250.htm" target="hmcontent"><span class="heading2" id="s8.22">XMLStrToWindows1250</span></a>
+</li>
+<li class="heading2" id="i8.23" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a8.23" href="strcharsetconversion.htm" target="hmcontent"><span class="heading2" id="s8.23">StrCharsetConversion</span></a>
+</li>
+<li class="heading2" id="i8.24" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a8.24" href="trimchars.htm" target="hmcontent"><span class="heading2" id="s8.24">TrimChars</span></a>
+</li>
+<li class="heading2" id="i8.25" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a8.25" href="trimcharsleft.htm" target="hmcontent"><span class="heading2" id="s8.25">TrimCharsLeft</span></a>
+</li>
+<li class="heading2" id="i8.26" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a8.26" href="trimcharsright.htm" target="hmcontent"><span class="heading2" id="s8.26">TrimCharsRight</span></a>
+</li>
+<li class="heading2" id="i8.27" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a8.27" href="removechars.htm" target="hmcontent"><span class="heading2" id="s8.27">RemoveChars</span></a>
+</li>
+<li class="heading2" id="i8.28" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a8.28" href="concatstr.htm" target="hmcontent"><span class="heading2" id="s8.28">ConCatStr</span></a>
+</li>
+<li class="heading2" id="i8.29" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a8.29" href="extractbeforechar.htm" target="hmcontent"><span class="heading2" id="s8.29">ExtractBeforeChar</span></a>
+</li>
+<li class="heading2" id="i8.30" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a8.30" href="extractafterchar.htm" target="hmcontent"><span class="heading2" id="s8.30">ExtractAfterChar</span></a>
+</li>
+<li class="heading2" id="i8.31" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a8.31" href="nameofmonth.htm" target="hmcontent"><span class="heading2" id="s8.31">NameOfMonth</span></a>
+</li>
+<li class="heading2" id="i8.32" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a8.32" href="nameofmonth2.htm" target="hmcontent"><span class="heading2" id="s8.32">NameOfMonth2</span></a>
+</li>
+<li class="heading2" id="i8.33" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a8.33" href="replacexmlstr.htm" target="hmcontent"><span class="heading2" id="s8.33">ReplaceXmlStr</span></a>
+</li>
+<li class="heading2" id="i8.34" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a8.34" href="encodefdfstring.htm" target="hmcontent"><span class="heading2" id="s8.34">EncodeFDFString</span></a>
+</li>
+<li class="heading2" id="i8.35" style="background:url(cicon41.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a8.35" href="lowercase.htm" target="hmcontent"><span class="heading2" id="s8.35">LowerCase</span></a>
+</li>
+<li class="heading2" id="i8.36" style="background:url(cicon41.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a8.36" href="uppercase.htm" target="hmcontent"><span class="heading2" id="s8.36">UpperCase</span></a>
+</li>
+<li class="heading2" id="i8.37" style="background:url(cicon41.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a8.37" href="ansilowercase.htm" target="hmcontent"><span class="heading2" id="s8.37">AnsiLowerCase</span></a>
+</li>
+<li class="heading2" id="i8.38" style="background:url(cicon41.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a8.38" href="ansiuppercase.htm" target="hmcontent"><span class="heading2" id="s8.38">AnsiUpperCase</span></a>
+</li>
+<li class="heading2" id="i8.39" style="background:url(cicon41.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a8.39" href="copy.htm" target="hmcontent"><span class="heading2" id="s8.39">Copy</span></a>
+</li>
+<li class="heading2" id="i8.40" style="background:url(cicon41.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a8.40" href="delete.htm" target="hmcontent"><span class="heading2" id="s8.40">Delete</span></a>
+</li>
+<li class="heading2" id="i8.41" style="background:url(cicon41.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a8.41" href="ansisametext.htm" target="hmcontent"><span class="heading2" id="s8.41">AnsiSameText</span></a>
+</li>
+<li class="heading2" id="i8.42" style="background:url(cicon41.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a8.42" href="sametext.htm" target="hmcontent"><span class="heading2" id="s8.42">SameText</span></a>
+</li>
+<li class="heading2" id="i8.43" style="background:url(cicon41.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a8.43" href="length.htm" target="hmcontent"><span class="heading2" id="s8.43">Length</span></a>
+</li>
+<li class="heading2" id="i8.44" style="background:url(cicon41.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a8.44" href="pos.htm" target="hmcontent"><span class="heading2" id="s8.44">Pos</span></a>
+</li>
+<li class="heading2" id="i8.45" style="background:url(cicon41.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a8.45" href="trim.htm" target="hmcontent"><span class="heading2" id="s8.45">Trim</span></a>
+</li>
+<li class="heading2" id="i8.46" style="background:url(cicon41.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a8.46" href="trimright.htm" target="hmcontent"><span class="heading2" id="s8.46">TrimRight</span></a>
+</li>
+<li class="heading2" id="i8.47" style="background:url(cicon41.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a8.47" href="trimleft.htm" target="hmcontent"><span class="heading2" id="s8.47">TrimLeft</span></a>
+</li>
+<li class="heading2" id="i8.48" style="background:url(cicon41.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a8.48" href="format.htm" target="hmcontent"><span class="heading2" id="s8.48">Format</span></a>
+</li>
+<li class="heading2" id="i8.49" style="background:url(cicon41.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a8.49" href="vararrayof.htm" target="hmcontent"><span class="heading2" id="s8.49">VarArrayOf</span></a>
+</li>
+<li class="heading2" id="i8.50" style="background:url(cicon19.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a8.50" href="strpadright.htm" target="hmcontent"><span class="heading2" id="s8.50">StrPadRight</span></a>
+</li>
+<li class="heading2" id="i8.51" style="background:url(cicon19.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a8.51" href="strpadleft.htm" target="hmcontent"><span class="heading2" id="s8.51">StrPadLeft</span></a>
+</li>
+<li class="heading2" id="i8.52" style="background:url(cicon19.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a8.52" href="strtrimcharright.htm" target="hmcontent"><span class="heading2" id="s8.52">StrTrimCharRight</span></a>
+</li>
+<li class="heading2" id="i8.53" style="background:url(cicon19.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a8.53" href="strtrimcharleft.htm" target="hmcontent"><span class="heading2" id="s8.53">StrTrimCharLeft</span></a>
+</li>
+<li class="heading2" id="i8.54" style="background:url(cicon19.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a8.54" href="strstrcount.htm" target="hmcontent"><span class="heading2" id="s8.54">StrStrCount</span></a>
+</li>
+<li class="heading2" id="i8.55" style="background:url(cicon19.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a8.55" href="strnpos.htm" target="hmcontent"><span class="heading2" id="s8.55">StrNPos</span></a>
+</li>
+<li class="heading2" id="i8.56" style="background:url(cicon19.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a8.56" href="strisalpha.htm" target="hmcontent"><span class="heading2" id="s8.56">StrIsAlpha</span></a>
+</li>
+<li class="heading2" id="i8.57" style="background:url(cicon19.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a8.57" href="strisalphanum.htm" target="hmcontent"><span class="heading2" id="s8.57">StrIsAlphaNum</span></a>
+</li>
+<li class="heading2" id="i8.58" style="background:url(cicon19.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a8.58" href="strisalphanumunderscore.htm" target="hmcontent"><span class="heading2" id="s8.58">StrIsAlphaNumUnderscore</span></a>
+</li>
+<li class="heading2" id="i8.59" style="background:url(cicon19.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a8.59" href="strrepeat.htm" target="hmcontent"><span class="heading2" id="s8.59">StrRepeat</span></a>
+</li>
+<li class="heading2" id="i8.60" style="background:url(cicon19.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a8.60" href="strbefore.htm" target="hmcontent"><span class="heading2" id="s8.60">StrBefore</span></a>
+</li>
+<li class="heading2" id="i8.61" style="background:url(cicon19.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a8.61" href="strafter.htm" target="hmcontent"><span class="heading2" id="s8.61">StrAfter</span></a>
+</li>
+<li class="heading2" id="i8.62" style="background:url(cicon19.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a8.62" href="strleft.htm" target="hmcontent"><span class="heading2" id="s8.62">StrLeft</span></a>
+</li>
+<li class="heading2" id="i8.63" style="background:url(cicon19.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a8.63" href="strright.htm" target="hmcontent"><span class="heading2" id="s8.63">StrRight</span></a>
+</li>
+</ul>
+</li>
+<li class="heading1" id="i9" data-bg="cicon1.gif;cicon2.gif" style="background:url(cicon2.gif) no-repeat;cursor:pointer;padding-left:20px" onclick="return clicked(this,event)"><a class="heading1" id="a9" href="stringlist.htm" target="hmcontent"><span class="heading1" id="s9" ondblclick="return dblclicked(this)">StringList funkce</span></a>
+<ul id="ul9" style="list-style-type:none">
+<li class="heading2" id="i9.1" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a9.1" href="addstringline.htm" target="hmcontent"><span class="heading2" id="s9.1">AddStringLine</span></a>
+</li>
+<li class="heading2" id="i9.2" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a9.2" href="addstrline.htm" target="hmcontent"><span class="heading2" id="s9.2">AddStrLine</span></a>
+</li>
+<li class="heading2" id="i9.3" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a9.3" href="getstringlinescount.htm" target="hmcontent"><span class="heading2" id="s9.3">GetStringLinesCount</span></a>
+</li>
+<li class="heading2" id="i9.4" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a9.4" href="getstringline.htm" target="hmcontent"><span class="heading2" id="s9.4">GetStringLine</span></a>
+</li>
+<li class="heading2" id="i9.5" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a9.5" href="getstringlinevalue.htm" target="hmcontent"><span class="heading2" id="s9.5">GetStringLineValue</span></a>
+</li>
+<li class="heading2" id="i9.6" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a9.6" href="getstringlinename.htm" target="hmcontent"><span class="heading2" id="s9.6">GetStringLineName</span></a>
+</li>
+<li class="heading2" id="i9.7" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a9.7" href="savestringtofile.htm" target="hmcontent"><span class="heading2" id="s9.7">SaveStringToFile</span></a>
+</li>
+<li class="heading2" id="i9.8" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a9.8" href="loadstringfromfile.htm" target="hmcontent"><span class="heading2" id="s9.8">LoadStringFromFile</span></a>
+</li>
+<li class="heading2" id="i9.9" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a9.9" href="getsection.htm" target="hmcontent"><span class="heading2" id="s9.9">GetSection</span></a>
+</li>
+<li class="heading2" id="i9.10" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a9.10" href="setsection.htm" target="hmcontent"><span class="heading2" id="s9.10">SetSection</span></a>
+</li>
+<li class="heading2" id="i9.11" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a9.11" href="deletestringline.htm" target="hmcontent"><span class="heading2" id="s9.11">DeleteStringLine</span></a>
+</li>
+<li class="heading2" id="i9.12" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a9.12" href="trimstringlisttext.htm" target="hmcontent"><span class="heading2" id="s9.12">TrimStringListText</span></a>
+</li>
+</ul>
+</li>
+<li class="heading1" id="i10" data-bg="cicon1.gif;cicon2.gif" style="background:url(cicon2.gif) no-repeat;cursor:pointer;padding-left:20px" onclick="return clicked(this,event)"><a class="heading1" id="a10" href="csv_strings_functions.htm" target="hmcontent"><span class="heading1" id="s10" ondblclick="return dblclicked(this)">CSV strings funkce</span></a>
+<ul id="ul10" style="list-style-type:none">
+<li class="heading2" id="i10.1" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a10.1" href="countlistitems.htm" target="hmcontent"><span class="heading2" id="s10.1">CountListItems</span></a>
+</li>
+<li class="heading2" id="i10.2" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a10.2" href="getlistitem.htm" target="hmcontent"><span class="heading2" id="s10.2">GetListItem</span></a>
+</li>
+<li class="heading2" id="i10.3" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a10.3" href="addvaluetolist.htm" target="hmcontent"><span class="heading2" id="s10.3">AddValueToList</span></a>
+</li>
+<li class="heading2" id="i10.4" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a10.4" href="removevaluefromlist.htm" target="hmcontent"><span class="heading2" id="s10.4">RemoveValueFromList</span></a>
+</li>
+<li class="heading2" id="i10.5" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a10.5" href="isiteminlist.htm" target="hmcontent"><span class="heading2" id="s10.5">IsItemInList</span></a>
+</li>
+<li class="heading2" id="i10.6" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a10.6" href="getitemposition.htm" target="hmcontent"><span class="heading2" id="s10.6">GetItemPosition</span></a>
+</li>
+<li class="heading2" id="i10.7" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a10.7" href="decodeintegerlist.htm" target="hmcontent"><span class="heading2" id="s10.7">DecodeIntegerList</span></a>
+</li>
+<li class="heading2" id="i10.8" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a10.8" href="checkvalidintegerlist.htm" target="hmcontent"><span class="heading2" id="s10.8">CheckValidIntegerList</span></a>
+</li>
+<li class="heading2" id="i10.9" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a10.9" href="getcsvfieldbyname.htm" target="hmcontent"><span class="heading2" id="s10.9">GetCsvFieldByName</span></a>
+</li>
+</ul>
+</li>
+<li class="heading1" id="i11" data-bg="cicon1.gif;cicon2.gif" style="background:url(cicon2.gif) no-repeat;cursor:pointer;padding-left:20px" onclick="return clicked(this,event)"><a class="heading1" id="a11" href="datetime_functions.htm" target="hmcontent"><span class="heading1" id="s11" ondblclick="return dblclicked(this)">Datumové funkce</span></a>
+<ul id="ul11" style="list-style-type:none">
+<li class="heading2" id="i11.1" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a11.1" href="normalizedatestr.htm" target="hmcontent"><span class="heading2" id="s11.1">NormalizeDateStr</span></a>
+</li>
+<li class="heading2" id="i11.2" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a11.2" href="correctdatestring.htm" target="hmcontent"><span class="heading2" id="s11.2">CorrectDateString</span></a>
+</li>
+<li class="heading2" id="i11.3" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a11.3" href="getvaliddatestr.htm" target="hmcontent"><span class="heading2" id="s11.3">GetValidDateStr</span></a>
+</li>
+<li class="heading2" id="i11.4" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a11.4" href="getvaliddatestrfmt.htm" target="hmcontent"><span class="heading2" id="s11.4">GetValidDateStrFmt</span></a>
+</li>
+<li class="heading2" id="i11.5" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a11.5" href="encdate.htm" target="hmcontent"><span class="heading2" id="s11.5">EncDate</span></a>
+</li>
+<li class="heading2" id="i11.6" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a11.6" href="tryencodedatetimeex.htm" target="hmcontent"><span class="heading2" id="s11.6">TryEncodeDateTimeEx</span></a>
+</li>
+<li class="heading2" id="i11.7" style="background:url(cicon41.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a11.7" href="currentyear.htm" target="hmcontent"><span class="heading2" id="s11.7">CurrentYear</span></a>
+</li>
+<li class="heading2" id="i11.8" style="background:url(cicon41.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a11.8" href="date.htm" target="hmcontent"><span class="heading2" id="s11.8">Date</span></a>
+</li>
+<li class="heading2" id="i11.9" style="background:url(cicon41.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a11.9" href="now.htm" target="hmcontent"><span class="heading2" id="s11.9">Now</span></a>
+</li>
+<li class="heading2" id="i11.10" style="background:url(cicon41.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a11.10" href="dayof.htm" target="hmcontent"><span class="heading2" id="s11.10">DayOf</span></a>
+</li>
+<li class="heading2" id="i11.11" style="background:url(cicon41.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a11.11" href="monthof.htm" target="hmcontent"><span class="heading2" id="s11.11">MonthOf</span></a>
+</li>
+<li class="heading2" id="i11.12" style="background:url(cicon41.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a11.12" href="yearof.htm" target="hmcontent"><span class="heading2" id="s11.12">YearOf</span></a>
+</li>
+<li class="heading2" id="i11.13" style="background:url(cicon41.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a11.13" href="daysinamonth.htm" target="hmcontent"><span class="heading2" id="s11.13">DaysInAMonth</span></a>
+</li>
+<li class="heading2" id="i11.14" style="background:url(cicon41.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a11.14" href="daysinmonth.htm" target="hmcontent"><span class="heading2" id="s11.14">DaysInMonth</span></a>
+</li>
+<li class="heading2" id="i11.15" style="background:url(cicon41.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a11.15" href="daysbetween.htm" target="hmcontent"><span class="heading2" id="s11.15">DaysBetween</span></a>
+</li>
+<li class="heading2" id="i11.16" style="background:url(cicon41.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a11.16" href="daysinayear.htm" target="hmcontent"><span class="heading2" id="s11.16">DaysInAYear</span></a>
+</li>
+<li class="heading2" id="i11.17" style="background:url(cicon41.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a11.17" href="decodedate.htm" target="hmcontent"><span class="heading2" id="s11.17">DecodeDate</span></a>
+</li>
+<li class="heading2" id="i11.18" style="background:url(cicon41.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a11.18" href="decodedatefully.htm" target="hmcontent"><span class="heading2" id="s11.18">DecodeDateFully</span></a>
+</li>
+<li class="heading2" id="i11.19" style="background:url(cicon41.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a11.19" href="encodedate.htm" target="hmcontent"><span class="heading2" id="s11.19">EncodeDate</span></a>
+</li>
+<li class="heading2" id="i11.20" style="background:url(cicon41.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a11.20" href="incday.htm" target="hmcontent"><span class="heading2" id="s11.20">IncDay</span></a>
+</li>
+<li class="heading2" id="i11.21" style="background:url(cicon41.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a11.21" href="incmonth.htm" target="hmcontent"><span class="heading2" id="s11.21">IncMonth</span></a>
+</li>
+<li class="heading2" id="i11.22" style="background:url(cicon41.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a11.22" href="incyear.htm" target="hmcontent"><span class="heading2" id="s11.22">IncYear</span></a>
+</li>
+<li class="heading2" id="i11.23" style="background:url(cicon41.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a11.23" href="formatdatetime.htm" target="hmcontent"><span class="heading2" id="s11.23">FormatDateTime</span></a>
+</li>
+</ul>
+</li>
+<li class="heading1" id="i12" data-bg="cicon1.gif;cicon2.gif" style="background:url(cicon2.gif) no-repeat;cursor:pointer;padding-left:20px" onclick="return clicked(this,event)"><a class="heading1" id="a12" href="number_functions.htm" target="hmcontent"><span class="heading1" id="s12" ondblclick="return dblclicked(this)">Číselné funkce</span></a>
+<ul id="ul12" style="list-style-type:none">
+<li class="heading2" id="i12.1" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a12.1" href="correctnumberstring.htm" target="hmcontent"><span class="heading2" id="s12.1">CorrectNumberString</span></a>
+</li>
+<li class="heading2" id="i12.2" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a12.2" href="roundari.htm" target="hmcontent"><span class="heading2" id="s12.2">RoundAri</span></a>
+</li>
+<li class="heading2" id="i12.3" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a12.3" href="roundup.htm" target="hmcontent"><span class="heading2" id="s12.3">RoundUp</span></a>
+</li>
+<li class="heading2" id="i12.4" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a12.4" href="rounddown.htm" target="hmcontent"><span class="heading2" id="s12.4">RoundDown</span></a>
+</li>
+<li class="heading2" id="i12.5" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a12.5" href="roundhalfari.htm" target="hmcontent"><span class="heading2" id="s12.5">RoundHalfAri</span></a>
+</li>
+<li class="heading2" id="i12.6" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a12.6" href="roundhalfup.htm" target="hmcontent"><span class="heading2" id="s12.6">RoundHalfUp</span></a>
+</li>
+<li class="heading2" id="i12.7" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a12.7" href="maxfloat.htm" target="hmcontent"><span class="heading2" id="s12.7">MaxFloat</span></a>
+</li>
+<li class="heading2" id="i12.8" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a12.8" href="minfloat.htm" target="hmcontent"><span class="heading2" id="s12.8">MinFloat</span></a>
+</li>
+<li class="heading2" id="i12.9" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a12.9" href="amountbywords.htm" target="hmcontent"><span class="heading2" id="s12.9">AmountByWords</span></a>
+</li>
+<li class="heading2" id="i12.10" style="background:url(cicon41.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a12.10" href="formatfloat.htm" target="hmcontent"><span class="heading2" id="s12.10">FormatFloat</span></a>
+</li>
+<li class="heading2" id="i12.11" style="background:url(cicon41.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a12.11" href="round.htm" target="hmcontent"><span class="heading2" id="s12.11">Round</span></a>
+</li>
+<li class="heading2" id="i12.12" style="background:url(cicon41.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a12.12" href="trunc.htm" target="hmcontent"><span class="heading2" id="s12.12">Trunc</span></a>
+</li>
+<li class="heading2" id="i12.13" style="background:url(cicon41.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a12.13" href="int.htm" target="hmcontent"><span class="heading2" id="s12.13">Int</span></a>
+</li>
+<li class="heading2" id="i12.14" style="background:url(cicon41.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a12.14" href="frac.htm" target="hmcontent"><span class="heading2" id="s12.14">Frac</span></a>
+</li>
+<li class="heading2" id="i12.15" style="background:url(cicon41.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a12.15" href="min.htm" target="hmcontent"><span class="heading2" id="s12.15">Min</span></a>
+</li>
+<li class="heading2" id="i12.16" style="background:url(cicon41.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a12.16" href="max.htm" target="hmcontent"><span class="heading2" id="s12.16">Max</span></a>
+</li>
+<li class="heading2" id="i12.17" style="background:url(cicon41.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a12.17" href="abs.htm" target="hmcontent"><span class="heading2" id="s12.17">Abs</span></a>
+</li>
+<li class="heading2" id="i12.18" style="background:url(cicon41.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a12.18" href="div.htm" target="hmcontent"><span class="heading2" id="s12.18">div</span></a>
+</li>
+<li class="heading2" id="i12.19" style="background:url(cicon41.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a12.19" href="mod.htm" target="hmcontent"><span class="heading2" id="s12.19">mod</span></a>
+</li>
+</ul>
+</li>
+<li class="heading1" id="i13" data-bg="cicon1.gif;cicon2.gif" style="background:url(cicon2.gif) no-repeat;cursor:pointer;padding-left:20px" onclick="return clicked(this,event)"><a class="heading1" id="a13" href="konverzni_funkce.htm" target="hmcontent"><span class="heading1" id="s13" ondblclick="return dblclicked(this)">Konverzní funkce</span></a>
+<ul id="ul13" style="list-style-type:none">
+<li class="heading2" id="i13.1" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a13.1" href="strtointsafe.htm" target="hmcontent"><span class="heading2" id="s13.1">StrToIntSafe</span></a>
+</li>
+<li class="heading2" id="i13.2" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a13.2" href="strtofloatsafe.htm" target="hmcontent"><span class="heading2" id="s13.2">StrToFloatSafe</span></a>
+</li>
+<li class="heading2" id="i13.3" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a13.3" href="strtoboolsafe.htm" target="hmcontent"><span class="heading2" id="s13.3">StrToBoolSafe</span></a>
+</li>
+<li class="heading2" id="i13.4" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a13.4" href="strtodatesafe.htm" target="hmcontent"><span class="heading2" id="s13.4">StrToDateSafe</span></a>
+</li>
+<li class="heading2" id="i13.5" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a13.5" href="datetostrnorm.htm" target="hmcontent"><span class="heading2" id="s13.5">DateToStrNorm</span></a>
+</li>
+<li class="heading2" id="i13.6" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a13.6" href="frac2str.htm" target="hmcontent"><span class="heading2" id="s13.6">Frac2Str</span></a>
+</li>
+<li class="heading2" id="i13.7" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a13.7" href="intpart2str.htm" target="hmcontent"><span class="heading2" id="s13.7">IntPart2Str</span></a>
+</li>
+<li class="heading2" id="i13.8" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a13.8" href="floatfieldintpartstr.htm" target="hmcontent"><span class="heading2" id="s13.8">FloatFieldIntPartStr</span></a>
+</li>
+<li class="heading2" id="i13.9" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a13.9" href="floatfieldfracpartstr.htm" target="hmcontent"><span class="heading2" id="s13.9">FloatFieldFracPartStr</span></a>
+</li>
+<li class="heading2" id="i13.10" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a13.10" href="datetimestreval.htm" target="hmcontent"><span class="heading2" id="s13.10">DateTimeStrEval</span></a>
+</li>
+<li class="heading2" id="i13.11" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a13.11" href="utf8toansistring.htm" target="hmcontent"><span class="heading2" id="s13.11">Utf8ToAnsiString</span></a>
+</li>
+<li class="heading2" id="i13.12" style="background:url(cicon41.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a13.12" href="floattostr.htm" target="hmcontent"><span class="heading2" id="s13.12">FloatToStr</span></a>
+</li>
+<li class="heading2" id="i13.13" style="background:url(cicon41.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a13.13" href="strtofloat.htm" target="hmcontent"><span class="heading2" id="s13.13">StrToFloat</span></a>
+</li>
+<li class="heading2" id="i13.14" style="background:url(cicon41.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a13.14" href="strtobool.htm" target="hmcontent"><span class="heading2" id="s13.14">StrToBool</span></a>
+</li>
+<li class="heading2" id="i13.15" style="background:url(cicon41.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a13.15" href="booltostr.htm" target="hmcontent"><span class="heading2" id="s13.15">BoolToStr</span></a>
+</li>
+<li class="heading2" id="i13.16" style="background:url(cicon41.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a13.16" href="strtocurr.htm" target="hmcontent"><span class="heading2" id="s13.16">StrToCurr</span></a>
+</li>
+<li class="heading2" id="i13.17" style="background:url(cicon41.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a13.17" href="strtodate.htm" target="hmcontent"><span class="heading2" id="s13.17">StrToDate</span></a>
+</li>
+<li class="heading2" id="i13.18" style="background:url(cicon41.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a13.18" href="datetostr.htm" target="hmcontent"><span class="heading2" id="s13.18">DateToStr</span></a>
+</li>
+<li class="heading2" id="i13.19" style="background:url(cicon41.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a13.19" href="strtoint.htm" target="hmcontent"><span class="heading2" id="s13.19">StrToInt</span></a>
+</li>
+<li class="heading2" id="i13.20" style="background:url(cicon41.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a13.20" href="inttostr.htm" target="hmcontent"><span class="heading2" id="s13.20">IntToStr</span></a>
+</li>
+<li class="heading2" id="i13.21" style="background:url(cicon41.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a13.21" href="datetimetostr.htm" target="hmcontent"><span class="heading2" id="s13.21">DateTimeToStr</span></a>
+</li>
+<li class="heading2" id="i13.22" style="background:url(cicon41.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a13.22" href="vartostr.htm" target="hmcontent"><span class="heading2" id="s13.22">VarToStr</span></a>
+</li>
+<li class="heading2" id="i13.23" style="background:url(cicon41.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a13.23" href="vartodatetime.htm" target="hmcontent"><span class="heading2" id="s13.23">VarToDateTime</span></a>
+</li>
+<li class="heading2" id="i13.24" style="background:url(cicon41.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a13.24" href="ansitoutf8.htm" target="hmcontent"><span class="heading2" id="s13.24">AnsiToUTF8</span></a>
+</li>
+<li class="heading2" id="i13.25" style="background:url(cicon41.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a13.25" href="utf8toansi.htm" target="hmcontent"><span class="heading2" id="s13.25">UTF8ToAnsi</span></a>
+</li>
+</ul>
+</li>
+<li class="heading1" id="i14" data-bg="cicon1.gif;cicon2.gif" style="background:url(cicon2.gif) no-repeat;cursor:pointer;padding-left:20px" onclick="return clicked(this,event)"><a class="heading1" id="a14" href="conversion_functions_other.htm" target="hmcontent"><span class="heading1" id="s14" ondblclick="return dblclicked(this)">Konverzní funkce - ostatní</span></a>
+<ul id="ul14" style="list-style-type:none">
+<li class="heading2" id="i14.1" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a14.1" href="inttohexstr.htm" target="hmcontent"><span class="heading2" id="s14.1">IntToHexStr</span></a>
+</li>
+<li class="heading2" id="i14.2" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a14.2" href="hexstrtoint.htm" target="hmcontent"><span class="heading2" id="s14.2">HexStrToInt</span></a>
+</li>
+<li class="heading2" id="i14.3" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a14.3" href="colortohexstr.htm" target="hmcontent"><span class="heading2" id="s14.3">ColorToHexStr</span></a>
+</li>
+<li class="heading2" id="i14.4" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a14.4" href="hexstrtocolor.htm" target="hmcontent"><span class="heading2" id="s14.4">HexStrToColor</span></a>
+</li>
+<li class="heading2" id="i14.5" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a14.5" href="colortostr.htm" target="hmcontent"><span class="heading2" id="s14.5">ColorToStr</span></a>
+</li>
+<li class="heading2" id="i14.6" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a14.6" href="strtocolor.htm" target="hmcontent"><span class="heading2" id="s14.6">StrToColor</span></a>
+</li>
+<li class="heading2" id="i14.7" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a14.7" href="isvalidhexstrcolor.htm" target="hmcontent"><span class="heading2" id="s14.7">IsValidHexStrColor</span></a>
+</li>
+<li class="heading2" id="i14.8" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a14.8" href="logiccolortostr.htm" target="hmcontent"><span class="heading2" id="s14.8">LogicColorToStr</span></a>
+</li>
+<li class="heading2" id="i14.9" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a14.9" href="strtologiccolor.htm" target="hmcontent"><span class="heading2" id="s14.9">StrToLogicColor</span></a>
+</li>
+<li class="heading2" id="i14.10" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a14.10" href="isvalidstrlogiccolor.htm" target="hmcontent"><span class="heading2" id="s14.10">IsValidStrLogicColor</span></a>
+</li>
+<li class="heading2" id="i14.11" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a14.11" href="islogiccolor.htm" target="hmcontent"><span class="heading2" id="s14.11">IsLogicColor</span></a>
+</li>
+<li class="heading2" id="i14.12" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a14.12" href="stringmimetobinaryfile.htm" target="hmcontent"><span class="heading2" id="s14.12">StringMimeToBinaryFile</span></a>
+</li>
+<li class="heading2" id="i14.13" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a14.13" href="binaryfiletostringmime.htm" target="hmcontent"><span class="heading2" id="s14.13">BinaryFileToStringMime</span></a>
+</li>
+<li class="heading2" id="i14.14" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a14.14" href="stringbase64tobinaryfile.htm" target="hmcontent"><span class="heading2" id="s14.14">StringBase64ToBinaryFile</span></a>
+</li>
+<li class="heading2" id="i14.15" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a14.15" href="binaryfiletostringbase64.htm" target="hmcontent"><span class="heading2" id="s14.15">BinaryFileToStringBase64</span></a>
+</li>
+</ul>
+</li>
+<li class="heading1" id="i15" data-bg="cicon1.gif;cicon2.gif" style="background:url(cicon2.gif) no-repeat;cursor:pointer;padding-left:20px" onclick="return clicked(this,event)"><a class="heading1" id="a15" href="variant_functions.htm" target="hmcontent"><span class="heading1" id="s15" ondblclick="return dblclicked(this)">Variant funkce</span></a>
+<ul id="ul15" style="list-style-type:none">
+<li class="heading2" id="i15.1" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a15.1" href="varisne.htm" target="hmcontent"><span class="heading2" id="s15.1">VarIsNE</span></a>
+</li>
+<li class="heading2" id="i15.2" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a15.2" href="vartodouble.htm" target="hmcontent"><span class="heading2" id="s15.2">VarToDouble</span></a>
+</li>
+<li class="heading2" id="i15.3" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a15.3" href="vartoint.htm" target="hmcontent"><span class="heading2" id="s15.3">VarToInt</span></a>
+</li>
+<li class="heading2" id="i15.4" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a15.4" href="vartobool.htm" target="hmcontent"><span class="heading2" id="s15.4">VarToBool</span></a>
+</li>
+</ul>
+</li>
+<li class="heading1" id="i16" data-bg="cicon1.gif;cicon2.gif" style="background:url(cicon2.gif) no-repeat;cursor:pointer;padding-left:20px" onclick="return clicked(this,event)"><a class="heading1" id="a16" href="fileandpath_functions.htm" target="hmcontent"><span class="heading1" id="s16" ondblclick="return dblclicked(this)">Soubory a složky</span></a>
+<ul id="ul16" style="list-style-type:none">
+<li class="heading2" id="i16.1" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a16.1" href="normalpath.htm" target="hmcontent"><span class="heading2" id="s16.1">NormalPath</span></a>
+</li>
+<li class="heading2" id="i16.2" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a16.2" href="getuniquefilename.htm" target="hmcontent"><span class="heading2" id="s16.2">GetUniqueFileName</span></a>
+</li>
+<li class="heading2" id="i16.3" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a16.3" href="setvalidfilename.htm" target="hmcontent"><span class="heading2" id="s16.3">SetValidFileName</span></a>
+</li>
+<li class="heading2" id="i16.4" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a16.4" href="setvalidfilenametrim.htm" target="hmcontent"><span class="heading2" id="s16.4">SetValidFileNameTrim</span></a>
+</li>
+<li class="heading2" id="i16.5" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a16.5" href="getprgversion.htm" target="hmcontent"><span class="heading2" id="s16.5">GetPrgVersion</span></a>
+</li>
+<li class="heading2" id="i16.6" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a16.6" href="compareversion.htm" target="hmcontent"><span class="heading2" id="s16.6">CompareVersion</span></a>
+</li>
+<li class="heading2" id="i16.7" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a16.7" href="searchfiles.htm" target="hmcontent"><span class="heading2" id="s16.7">SearchFiles</span></a>
+</li>
+<li class="heading2" id="i16.8" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a16.8" href="savestringstoini.htm" target="hmcontent"><span class="heading2" id="s16.8">SaveStringsToIni</span></a>
+</li>
+<li class="heading2" id="i16.9" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a16.9" href="loadstringsfromini.htm" target="hmcontent"><span class="heading2" id="s16.9">LoadStringsFromIni</span></a>
+</li>
+<li class="heading2" id="i16.10" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a16.10" href="trydeletedirectory.htm" target="hmcontent"><span class="heading2" id="s16.10">TryDeleteDirectory</span></a>
+</li>
+<li class="heading2" id="i16.11" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a16.11" href="deletefiles.htm" target="hmcontent"><span class="heading2" id="s16.11">DeleteFiles</span></a>
+</li>
+<li class="heading2" id="i16.12" style="background:url(cicon41.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a16.12" href="extractfilename.htm" target="hmcontent"><span class="heading2" id="s16.12">ExtractFileName</span></a>
+</li>
+<li class="heading2" id="i16.13" style="background:url(cicon41.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a16.13" href="extractfilepath.htm" target="hmcontent"><span class="heading2" id="s16.13">ExtractFilePath</span></a>
+</li>
+<li class="heading2" id="i16.14" style="background:url(cicon41.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a16.14" href="extractfileext.htm" target="hmcontent"><span class="heading2" id="s16.14">ExtractFileExt</span></a>
+</li>
+<li class="heading2" id="i16.15" style="background:url(cicon41.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a16.15" href="extractfiledir.htm" target="hmcontent"><span class="heading2" id="s16.15">ExtractFileDir</span></a>
+</li>
+<li class="heading2" id="i16.16" style="background:url(cicon41.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a16.16" href="changefileext.htm" target="hmcontent"><span class="heading2" id="s16.16">ChangeFileExt</span></a>
+</li>
+<li class="heading2" id="i16.17" style="background:url(cicon41.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a16.17" href="forcedirectories.htm" target="hmcontent"><span class="heading2" id="s16.17">ForceDirectories</span></a>
+</li>
+<li class="heading2" id="i16.18" style="background:url(cicon41.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a16.18" href="deletefile.htm" target="hmcontent"><span class="heading2" id="s16.18">DeleteFile</span></a>
+</li>
+<li class="heading2" id="i16.19" style="background:url(cicon41.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a16.19" href="fileexists.htm" target="hmcontent"><span class="heading2" id="s16.19">FileExists</span></a>
+</li>
+<li class="heading2" id="i16.20" style="background:url(cicon41.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a16.20" href="directoryexists.htm" target="hmcontent"><span class="heading2" id="s16.20">DirectoryExists</span></a>
+</li>
+</ul>
+</li>
+<li class="heading1" id="i17" data-bg="cicon1.gif;cicon2.gif" style="background:url(cicon2.gif) no-repeat;cursor:pointer;padding-left:20px" onclick="return clicked(this,event)"><a class="heading1" id="a17" href="shell_functions.htm" target="hmcontent"><span class="heading1" id="s17" ondblclick="return dblclicked(this)">Shell funkce</span></a>
+<ul id="ul17" style="list-style-type:none">
+<li class="heading2" id="i17.1" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a17.1" href="shellopen.htm" target="hmcontent"><span class="heading2" id="s17.1">ShellOpen</span></a>
+</li>
+<li class="heading2" id="i17.2" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a17.2" href="shellexec.htm" target="hmcontent"><span class="heading2" id="s17.2">ShellExec</span></a>
+</li>
+<li class="heading2" id="i17.3" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a17.3" href="shellopenpdf.htm" target="hmcontent"><span class="heading2" id="s17.3">ShellOpenPdf</span></a>
+</li>
+<li class="heading2" id="i17.4" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a17.4" href="shellopenandwait.htm" target="hmcontent"><span class="heading2" id="s17.4">ShellOpenAndWait</span></a>
+</li>
+</ul>
+</li>
+<li class="heading1" id="i18" data-bg="cicon1.gif;cicon2.gif" style="background:url(cicon2.gif) no-repeat;cursor:pointer;padding-left:20px" onclick="return clicked(this,event)"><a class="heading1" id="a18" href="kontroly_function.htm" target="hmcontent"><span class="heading1" id="s18" ondblclick="return dblclicked(this)">Kontroly</span></a>
+<ul id="ul18" style="list-style-type:none">
+<li class="heading2" id="i18.1" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a18.1" href="checkrodnecislodatnar.htm" target="hmcontent"><span class="heading2" id="s18.1">CheckRodneCisloDatNar</span></a>
+</li>
+<li class="heading2" id="i18.2" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a18.2" href="checkrodnecislo.htm" target="hmcontent"><span class="heading2" id="s18.2">CheckRodneCislo</span></a>
+</li>
+<li class="heading2" id="i18.3" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a18.3" href="checkrodnecislomsg.htm" target="hmcontent"><span class="heading2" id="s18.3">CheckRodneCisloMsg</span></a>
+</li>
+<li class="heading2" id="i18.4" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a18.4" href="checkico.htm" target="hmcontent"><span class="heading2" id="s18.4">CheckICO</span></a>
+</li>
+<li class="heading2" id="i18.5" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a18.5" href="checkdic.htm" target="hmcontent"><span class="heading2" id="s18.5">CheckDIC</span></a>
+</li>
+<li class="heading2" id="i18.6" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a18.6" href="checkbu.htm" target="hmcontent"><span class="heading2" id="s18.6">CheckBU</span></a>
+</li>
+<li class="heading2" id="i18.7" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a18.7" href="checkiban.htm" target="hmcontent"><span class="heading2" id="s18.7">CheckIBAN</span></a>
+</li>
+<li class="heading2" id="i18.8" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a18.8" href="checkskdic.htm" target="hmcontent"><span class="heading2" id="s18.8">CheckSkDIC</span></a>
+</li>
+<li class="heading2" id="i18.9" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a18.9" href="checkskicdph.htm" target="hmcontent"><span class="heading2" id="s18.9">CheckSkICDPH</span></a>
+</li>
+<li class="heading2" id="i18.10" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a18.10" href="checkidds.htm" target="hmcontent"><span class="heading2" id="s18.10">CheckIDDS</span></a>
+</li>
+<li class="heading2" id="i18.11" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a18.11" href="showchecking.htm" target="hmcontent"><span class="heading2" id="s18.11">ShowChecking</span></a>
+</li>
+<li class="heading2" id="i18.12" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a18.12" href="displaycheck.htm" target="hmcontent"><span class="heading2" id="s18.12">DisplayCheck</span></a>
+</li>
+</ul>
+</li>
+<li class="heading1" id="i19" data-bg="cicon1.gif;cicon2.gif" style="background:url(cicon2.gif) no-repeat;cursor:pointer;padding-left:20px" onclick="return clicked(this,event)"><a class="heading1" id="a19" href="zip_function.htm" target="hmcontent"><span class="heading1" id="s19" ondblclick="return dblclicked(this)">ZIP funkce</span></a>
+<ul id="ul19" style="list-style-type:none">
+<li class="heading2" id="i19.1" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a19.1" href="zipfile.htm" target="hmcontent"><span class="heading2" id="s19.1">ZipFile</span></a>
+</li>
+<li class="heading2" id="i19.2" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a19.2" href="unzipfile.htm" target="hmcontent"><span class="heading2" id="s19.2">UnzipFile</span></a>
+</li>
+<li class="heading2" id="i19.3" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a19.3" href="getzipfilecomment.htm" target="hmcontent"><span class="heading2" id="s19.3">GetZipFileComment</span></a>
+</li>
+<li class="heading2" id="i19.4" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a19.4" href="loadmemtablefromzip.htm" target="hmcontent"><span class="heading2" id="s19.4">LoadMemTableFromZip</span></a>
+</li>
+<li class="heading2" id="i19.5" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a19.5" href="loadtextfromzip.htm" target="hmcontent"><span class="heading2" id="s19.5">LoadTextFromZip</span></a>
+</li>
+</ul>
+</li>
+<li class="heading1" id="i20" data-bg="cicon1.gif;cicon2.gif" style="background:url(cicon2.gif) no-repeat;cursor:pointer;padding-left:20px" onclick="return clicked(this,event)"><a class="heading1" id="a20" href="nacitani_z_webu.htm" target="hmcontent"><span class="heading1" id="s20" ondblclick="return dblclicked(this)">Načítání z webu</span></a>
+<ul id="ul20" style="list-style-type:none">
+<li class="heading2" id="i20.1" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a20.1" href="nactiadresuzares.htm" target="hmcontent"><span class="heading2" id="s20.1">NactiAdresuZARES</span></a>
+</li>
+<li class="heading2" id="i20.2" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a20.2" href="nactiadresuzaresd.htm" target="hmcontent"><span class="heading2" id="s20.2">NactiAdresuZARESD</span></a>
+</li>
+<li class="heading2" id="i20.3" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a20.3" href="weblist2csv.htm" target="hmcontent"><span class="heading2" id="s20.3">WebList2CSV</span></a>
+</li>
+<li class="heading2" id="i20.4" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a20.4" href="isconnectedtointernet.htm" target="hmcontent"><span class="heading2" id="s20.4">IsConnectedToInternet</span></a>
+</li>
+<li class="heading2" id="i20.5" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a20.5" href="gethttpdocument.htm" target="hmcontent"><span class="heading2" id="s20.5">GetHTTPDocument</span></a>
+</li>
+</ul>
+</li>
+<li class="heading1" id="i21" data-bg="cicon1.gif;cicon2.gif" style="background:url(cicon2.gif) no-repeat;cursor:pointer;padding-left:20px" onclick="return clicked(this,event)"><a class="heading1" id="a21" href="bank_function.htm" target="hmcontent"><span class="heading1" id="s21" ondblclick="return dblclicked(this)">Bankovní a platební funkce</span></a>
+<ul id="ul21" style="list-style-type:none">
+<li class="heading2" id="i21.1" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a21.1" href="calcqrcodetext.htm" target="hmcontent"><span class="heading2" id="s21.1">CalcQRCodeText</span></a>
+</li>
+<li class="heading2" id="i21.2" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a21.2" href="convertbu2iban.htm" target="hmcontent"><span class="heading2" id="s21.2">ConvertBU2IBAN</span></a>
+</li>
+<li class="heading2" id="i21.3" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a21.3" href="formatiban.htm" target="hmcontent"><span class="heading2" id="s21.3">FormatIBAN</span></a>
+</li>
+<li class="heading2" id="i21.4" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a21.4" href="savepaymentrec.htm" target="hmcontent"><span class="heading2" id="s21.4">SavePaymentRec</span></a>
+</li>
+<li class="heading2" id="i21.5" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a21.5" href="createpaymentorder.htm" target="hmcontent"><span class="heading2" id="s21.5">CreatePaymentOrder</span></a>
+</li>
+<li class="heading2" id="i21.6" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a21.6" href="createpaymentordersepa.htm" target="hmcontent"><span class="heading2" id="s21.6">CreatePaymentOrderSEPA</span></a>
+</li>
+<li class="heading2" id="i21.7" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a21.7" href="calcfullbaaccount.htm" target="hmcontent"><span class="heading2" id="s21.7">CalcFullBaAccount</span></a>
+</li>
+<li class="heading2" id="i21.8" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a21.8" href="extractbankaccount.htm" target="hmcontent"><span class="heading2" id="s21.8">ExtractBankAccount</span></a>
+</li>
+<li class="heading2" id="i21.9" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a21.9" href="extractbankcode.htm" target="hmcontent"><span class="heading2" id="s21.9">ExtractBankCode</span></a>
+</li>
+</ul>
+</li>
+<li class="heading1" id="i22" data-bg="cicon1.gif;cicon2.gif" style="background:url(cicon2.gif) no-repeat;cursor:pointer;padding-left:20px" onclick="return clicked(this,event)"><a class="heading1" id="a22" href="other_function.htm" target="hmcontent"><span class="heading1" id="s22" ondblclick="return dblclicked(this)">Ostatní funkce</span></a>
+<ul id="ul22" style="list-style-type:none">
+<li class="heading2" id="i22.1" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a22.1" href="cond.htm" target="hmcontent"><span class="heading2" id="s22.1">Cond</span></a>
+</li>
+<li class="heading2" id="i22.2" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a22.2" href="cond2.htm" target="hmcontent"><span class="heading2" id="s22.2">Cond2</span></a>
+</li>
+<li class="heading2" id="i22.3" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a22.3" href="cond3.htm" target="hmcontent"><span class="heading2" id="s22.3">Cond3</span></a>
+</li>
+<li class="heading2" id="i22.4" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a22.4" href="cond4.htm" target="hmcontent"><span class="heading2" id="s22.4">Cond4</span></a>
+</li>
+<li class="heading2" id="i22.5" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a22.5" href="cond5.htm" target="hmcontent"><span class="heading2" id="s22.5">Cond5</span></a>
+</li>
+<li class="heading2" id="i22.6" style="background:url(cicon41.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a22.6" href="inc.htm" target="hmcontent"><span class="heading2" id="s22.6">Inc</span></a>
+</li>
+<li class="heading2" id="i22.7" style="background:url(cicon41.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a22.7" href="dec.htm" target="hmcontent"><span class="heading2" id="s22.7">Dec</span></a>
+</li>
+<li class="heading2" id="i22.8" style="background:url(cicon41.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a22.8" href="chr.htm" target="hmcontent"><span class="heading2" id="s22.8">Chr</span></a>
+</li>
+<li class="heading2" id="i22.9" style="background:url(cicon41.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a22.9" href="ord.htm" target="hmcontent"><span class="heading2" id="s22.9">Ord</span></a>
+</li>
+</ul>
+</li>
+<li class="heading1" id="i23" data-bg="cicon1.gif;cicon2.gif" style="background:url(cicon2.gif) no-repeat;cursor:pointer;padding-left:20px" onclick="return clicked(this,event)"><a class="heading1" id="a23" href="seznamy_lists.htm" target="hmcontent"><span class="heading1" id="s23" ondblclick="return dblclicked(this)">Seznamy (Lists)</span></a>
+<ul id="ul23" style="list-style-type:none">
+<li class="heading2" id="i23.1" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a23.1" href="lst.htm" target="hmcontent"><span class="heading2" id="s23.1">Lst</span></a>
+</li>
+<li class="heading2" id="i23.2" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a23.2" href="simplelst.htm" target="hmcontent"><span class="heading2" id="s23.2">SimpleLst</span></a>
+</li>
+<li class="heading2" id="i23.3" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a23.3" href="isvalueinsimplelist.htm" target="hmcontent"><span class="heading2" id="s23.3">IsValueInSimpleList</span></a>
+</li>
+<li class="heading2" id="i23.4" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a23.4" href="openlst.htm" target="hmcontent"><span class="heading2" id="s23.4">OpenLst</span></a>
+</li>
+<li class="heading2" id="i23.5" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a23.5" href="doopensimplelist.htm" target="hmcontent"><span class="heading2" id="s23.5">DoOpenSimpleList</span></a>
+</li>
+<li class="heading2" id="i23.6" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a23.6" href="lstlookup.htm" target="hmcontent"><span class="heading2" id="s23.6">LstLookup</span></a>
+</li>
+<li class="heading2" id="i23.7" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a23.7" href="lstlookupnearest.htm" target="hmcontent"><span class="heading2" id="s23.7">LstLookupNearest</span></a>
+</li>
+<li class="heading2" id="i23.8" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a23.8" href="lstlookupnear.htm" target="hmcontent"><span class="heading2" id="s23.8">LstLookupNear</span></a>
+</li>
+<li class="heading2" id="i23.9" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a23.9" href="lstlookupnearascending.htm" target="hmcontent"><span class="heading2" id="s23.9">LstLookupNearAscending</span></a>
+</li>
+<li class="heading2" id="i23.10" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a23.10" href="loadlisttowt.htm" target="hmcontent"><span class="heading2" id="s23.10">LoadListToWT</span></a>
+</li>
+</ul>
+</li>
+<li class="heading1" id="i24" data-bg="cicon1.gif;cicon2.gif" style="background:url(cicon2.gif) no-repeat;cursor:pointer;padding-left:20px" onclick="return clicked(this,event)"><a class="heading1" id="a24" href="pohyb_ve_formulari.htm" target="hmcontent"><span class="heading1" id="s24" ondblclick="return dblclicked(this)">Pohyb ve formuláři</span></a>
+<ul id="ul24" style="list-style-type:none">
+<li class="heading2" id="i24.1" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a24.1" href="gotofld.htm" target="hmcontent"><span class="heading2" id="s24.1">GotoFld</span></a>
+</li>
+<li class="heading2" id="i24.2" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a24.2" href="gotoappendix.htm" target="hmcontent"><span class="heading2" id="s24.2">GotoAppendix</span></a>
+</li>
+</ul>
+</li>
+<li class="heading1" id="i25" data-bg="cicon1.gif;cicon2.gif" style="background:url(cicon2.gif) no-repeat;cursor:pointer;padding-left:20px" onclick="return clicked(this,event)"><a class="heading1" id="a25" href="prebirani_z_nastaveni_klienta.htm" target="hmcontent"><span class="heading1" id="s25" ondblclick="return dblclicked(this)">Přebírání z Nastavení klienta</span></a>
+<ul id="ul25" style="list-style-type:none">
+<li class="heading2" id="i25.1" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a25.1" href="clientparam.htm" target="hmcontent"><span class="heading2" id="s25.1">ClientParam</span></a>
+</li>
+<li class="heading2" id="i25.2" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a25.2" href="getdoc.htm" target="hmcontent"><span class="heading2" id="s25.2">GetDoc</span></a>
+</li>
+<li class="heading2" id="i25.3" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a25.3" href="getclientparams.htm" target="hmcontent"><span class="heading2" id="s25.3">GetClientParams</span></a>
+</li>
+</ul>
+</li>
+<li class="heading1" id="i26" data-bg="cicon1.gif;cicon2.gif" style="background:url(cicon2.gif) no-repeat;cursor:pointer;padding-left:20px" onclick="return clicked(this,event)"><a class="heading1" id="a26" href="adresa_a_id_klienta.htm" target="hmcontent"><span class="heading1" id="s26" ondblclick="return dblclicked(this)">Adresa a ID klienta</span></a>
+<ul id="ul26" style="list-style-type:none">
+<li class="heading2" id="i26.1" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a26.1" href="rcdatnar.htm" target="hmcontent"><span class="heading2" id="s26.1">RCDatNar</span></a>
+</li>
+<li class="heading2" id="i26.2" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a26.2" href="rctosexcode.htm" target="hmcontent"><span class="heading2" id="s26.2">RCToSexCode</span></a>
+</li>
+<li class="heading2" id="i26.3" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a26.3" href="calcfullname.htm" target="hmcontent"><span class="heading2" id="s26.3">CalcFullName</span></a>
+</li>
+<li class="heading2" id="i26.4" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a26.4" href="calcphonemobil.htm" target="hmcontent"><span class="heading2" id="s26.4">CalcPhoneMobil</span></a>
+</li>
+<li class="heading2" id="i26.5" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a26.5" href="calcfulladdress.htm" target="hmcontent"><span class="heading2" id="s26.5">CalcFullAddress</span></a>
+</li>
+<li class="heading2" id="i26.6" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a26.6" href="splitaddress.htm" target="hmcontent"><span class="heading2" id="s26.6">SplitAddress</span></a>
+</li>
+<li class="heading2" id="i26.7" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a26.7" href="streetfromaddress.htm" target="hmcontent"><span class="heading2" id="s26.7">StreetFromAddress</span></a>
+</li>
+<li class="heading2" id="i26.8" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a26.8" href="zipcodefromaddress.htm" target="hmcontent"><span class="heading2" id="s26.8">ZipCodeFromAddress</span></a>
+</li>
+<li class="heading2" id="i26.9" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a26.9" href="cityfromaddress.htm" target="hmcontent"><span class="heading2" id="s26.9">CityFromAddress</span></a>
+</li>
+<li class="heading2" id="i26.10" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a26.10" href="extractstreetfromstreetandnum.htm" target="hmcontent"><span class="heading2" id="s26.10">ExtractStreetFromStreetAndNum</span></a>
+</li>
+<li class="heading2" id="i26.11" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a26.11" href="extractnumberfromstreetandnum.htm" target="hmcontent"><span class="heading2" id="s26.11">ExtractNumberFromStreetAndNum</span></a>
+</li>
+<li class="heading2" id="i26.12" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a26.12" href="normalzipcodeczech.htm" target="hmcontent"><span class="heading2" id="s26.12">NormalZipCodeCzech</span></a>
+</li>
+</ul>
+</li>
+<li class="heading1" id="i27" data-bg="cicon1.gif;cicon2.gif" style="background:url(cicon2.gif) no-repeat;cursor:pointer;padding-left:20px" onclick="return clicked(this,event)"><a class="heading1" id="a27" href="formular_a_data_formulare.htm" target="hmcontent"><span class="heading1" id="s27" ondblclick="return dblclicked(this)">Formulář a data formuláře</span></a>
+<ul id="ul27" style="list-style-type:none">
+<li class="heading2" id="i27.1" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a27.1" href="getformdatatext.htm" target="hmcontent"><span class="heading2" id="s27.1">GetFormDataText</span></a>
+</li>
+<li class="heading2" id="i27.2" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a27.2" href="getformfield.htm" target="hmcontent"><span class="heading2" id="s27.2">GetFormField</span></a>
+</li>
+<li class="heading2" id="i27.3" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a27.3" href="setdataformfield.htm" target="hmcontent"><span class="heading2" id="s27.3">SetDataFormField</span></a>
+</li>
+<li class="heading2" id="i27.4" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a27.4" href="takeformfields.htm" target="hmcontent"><span class="heading2" id="s27.4">TakeFormFields</span></a>
+</li>
+<li class="heading2" id="i27.5" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a27.5" href="getformcount.htm" target="hmcontent"><span class="heading2" id="s27.5">GetFormCount</span></a>
+</li>
+<li class="heading2" id="i27.6" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a27.6" href="formexists.htm" target="hmcontent"><span class="heading2" id="s27.6">FormExists</span></a>
+</li>
+<li class="heading2" id="i27.7" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a27.7" href="formbind.htm" target="hmcontent"><span class="heading2" id="s27.7">FormBind</span></a>
+</li>
+<li class="heading2" id="i27.8" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a27.8" href="writevalue2form.htm" target="hmcontent"><span class="heading2" id="s27.8">WriteValue2Form</span></a>
+</li>
+<li class="heading2" id="i27.9" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a27.9" href="initscriptgvariables.htm" target="hmcontent"><span class="heading2" id="s27.9">InitScriptGVariables</span></a>
+</li>
+<li class="heading2" id="i27.10" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a27.10" href="createprintdatafortable.htm" target="hmcontent"><span class="heading2" id="s27.10">CreatePrintDataForTable</span></a>
+</li>
+<li class="heading2" id="i27.11" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a27.11" href="setformdata.htm" target="hmcontent"><span class="heading2" id="s27.11">SetFormData</span></a>
+</li>
+<li class="heading2" id="i27.12" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a27.12" href="setchangeflag.htm" target="hmcontent"><span class="heading2" id="s27.12">SetChangeFlag</span></a>
+</li>
+<li class="heading2" id="i27.13" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a27.13" href="getchangeflag.htm" target="hmcontent"><span class="heading2" id="s27.13">GetChangeFlag</span></a>
+</li>
+<li class="heading2" id="i27.14" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a27.14" href="setlockflag.htm" target="hmcontent"><span class="heading2" id="s27.14">SetLockFlag</span></a>
+</li>
+<li class="heading2" id="i27.15" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a27.15" href="getlockflag.htm" target="hmcontent"><span class="heading2" id="s27.15">GetLockFlag</span></a>
+</li>
+<li class="heading2" id="i27.16" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a27.16" href="getappendixstring.htm" target="hmcontent"><span class="heading2" id="s27.16">GetAppendixString</span></a>
+</li>
+<li class="heading2" id="i27.17" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a27.17" href="getnotesstring.htm" target="hmcontent"><span class="heading2" id="s27.17">GetNotesString</span></a>
+</li>
+<li class="heading2" id="i27.18" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a27.18" href="getcommentstring.htm" target="hmcontent"><span class="heading2" id="s27.18">GetCommentString</span></a>
+</li>
+<li class="heading2" id="i27.19" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a27.19" href="setdoenableaftercalculate.htm" target="hmcontent"><span class="heading2" id="s27.19">SetDoEnableAfterCalculate</span></a>
+</li>
+<li class="heading2" id="i27.20" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a27.20" href="getmtvfield.htm" target="hmcontent"><span class="heading2" id="s27.20">GetMTVField</span></a>
+</li>
+<li class="heading2" id="i27.21" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a27.21" href="getmtvfieldvalue.htm" target="hmcontent"><span class="heading2" id="s27.21">GetMTVFieldValue</span></a>
+</li>
+<li class="heading2" id="i27.22" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a27.22" href="setgscriptfieldname.htm" target="hmcontent"><span class="heading2" id="s27.22">SetGScriptFieldName</span></a>
+</li>
+<li class="heading2" id="i27.23" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a27.23" href="getfillinginfo.htm" target="hmcontent"><span class="heading2" id="s27.23">GetFillingInfo</span></a>
+</li>
+<li class="heading2" id="i27.24" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a27.24" href="cleartskpfillinginfo.htm" target="hmcontent"><span class="heading2" id="s27.24">ClearTskpFillingInfo</span></a>
+</li>
+<li class="heading2" id="i27.25" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a27.25" href="mtvaluesclearfields.htm" target="hmcontent"><span class="heading2" id="s27.25">mtValuesClearFields</span></a>
+</li>
+<li class="heading2" id="i27.26" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a27.26" href="savenewformtodb.htm" target="hmcontent"><span class="heading2" id="s27.26">SaveNewFormToDB</span></a>
+</li>
+<li class="heading2" id="i27.27" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a27.27" href="forceclosefa.htm" target="hmcontent"><span class="heading2" id="s27.27">ForceCloseFA</span></a>
+</li>
+<li class="heading2" id="i27.28" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a27.28" href="docanceleditform.htm" target="hmcontent"><span class="heading2" id="s27.28">DoCancelEditForm</span></a>
+</li>
+<li class="heading2" id="i27.29" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a27.29" href="evalscript.htm" target="hmcontent"><span class="heading2" id="s27.29">EvalScript</span></a>
+</li>
+<li class="heading2" id="i27.30" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a27.30" href="evalmethod.htm" target="hmcontent"><span class="heading2" id="s27.30">EvalMethod</span></a>
+</li>
+<li class="heading2" id="i27.31" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a27.31" href="evalparammethod.htm" target="hmcontent"><span class="heading2" id="s27.31">EvalParamMethod</span></a>
+</li>
+</ul>
+</li>
+<li class="heading1" id="i28" data-bg="cicon1.gif;cicon2.gif" style="background:url(cicon2.gif) no-repeat;cursor:pointer;padding-left:20px" onclick="return clicked(this,event)"><a class="heading1" id="a28" href="vlozene_formulare.htm" target="hmcontent"><span class="heading1" id="s28" ondblclick="return dblclicked(this)">Vložené formuláře</span></a>
+<ul id="ul28" style="list-style-type:none">
+<li class="heading2" id="i28.1" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a28.1" href="getnestedsection.htm" target="hmcontent"><span class="heading2" id="s28.1">GetNestedSection</span></a>
+</li>
+<li class="heading2" id="i28.2" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a28.2" href="addnestedsection.htm" target="hmcontent"><span class="heading2" id="s28.2">AddNestedSection</span></a>
+</li>
+<li class="heading2" id="i28.3" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a28.3" href="replacenestedsection.htm" target="hmcontent"><span class="heading2" id="s28.3">ReplaceNestedSection</span></a>
+</li>
+<li class="heading2" id="i28.4" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a28.4" href="deletenestedsection.htm" target="hmcontent"><span class="heading2" id="s28.4">DeleteNestedSection</span></a>
+</li>
+<li class="heading2" id="i28.5" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a28.5" href="getformfieldcompactnested.htm" target="hmcontent"><span class="heading2" id="s28.5">GetFormFieldCompactNested</span></a>
+</li>
+<li class="heading2" id="i28.6" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a28.6" href="doopennestedform.htm" target="hmcontent"><span class="heading2" id="s28.6">DoOpenNestedForm</span></a>
+</li>
+<li class="heading2" id="i28.7" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a28.7" href="dopreparereportnestedform.htm" target="hmcontent"><span class="heading2" id="s28.7">DoPrepareReportNestedForm</span></a>
+</li>
+<li class="heading2" id="i28.8" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a28.8" href="nestedstate.htm" target="hmcontent"><span class="heading2" id="s28.8">NestedState</span></a>
+</li>
+<li class="heading2" id="i28.9" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a28.9" href="getlistboxitemcount.htm" target="hmcontent"><span class="heading2" id="s28.9">GetListBoxItemCount</span></a>
+</li>
+<li class="heading2" id="i28.10" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a28.10" href="setlistboxitemstring.htm" target="hmcontent"><span class="heading2" id="s28.10">SetListBoxItemString</span></a>
+</li>
+<li class="heading2" id="i28.11" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a28.11" href="getlistboxitemstring.htm" target="hmcontent"><span class="heading2" id="s28.11">GetListBoxItemString</span></a>
+</li>
+<li class="heading2" id="i28.12" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a28.12" href="setlistboxitemindex.htm" target="hmcontent"><span class="heading2" id="s28.12">SetListBoxItemIndex</span></a>
+</li>
+<li class="heading2" id="i28.13" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a28.13" href="getlistboxitemindex.htm" target="hmcontent"><span class="heading2" id="s28.13">GetListBoxItemIndex</span></a>
+</li>
+<li class="heading2" id="i28.14" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a28.14" href="reloadlistboxes.htm" target="hmcontent"><span class="heading2" id="s28.14">ReloadListBoxes</span></a>
+</li>
+<li class="heading2" id="i28.15" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a28.15" href="forcesavenesteddata.htm" target="hmcontent"><span class="heading2" id="s28.15">ForceSaveNestedData</span></a>
+</li>
+</ul>
+</li>
+<li class="heading1" id="i29" data-bg="cicon1.gif;cicon2.gif" style="background:url(cicon2.gif) no-repeat;cursor:pointer;padding-left:20px" onclick="return clicked(this,event)"><a class="heading1" id="a29" href="fields_and_tables.htm" target="hmcontent"><span class="heading1" id="s29" ondblclick="return dblclicked(this)">Fields and tables</span></a>
+<ul id="ul29" style="list-style-type:none">
+<li class="heading2" id="i29.1" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a29.1" href="validvalue.htm" target="hmcontent"><span class="heading2" id="s29.1">ValidValue</span></a>
+</li>
+<li class="heading2" id="i29.2" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a29.2" href="clearfield.htm" target="hmcontent"><span class="heading2" id="s29.2">ClearField</span></a>
+</li>
+<li class="heading2" id="i29.3" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a29.3" href="tryeditvaluesrecord.htm" target="hmcontent"><span class="heading2" id="s29.3">TryEditValuesRecord</span></a>
+</li>
+<li class="heading2" id="i29.4" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a29.4" href="trypostvaluesrecord.htm" target="hmcontent"><span class="heading2" id="s29.4">TryPostValuesRecord</span></a>
+</li>
+<li class="heading2" id="i29.5" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a29.5" href="mtworkloadfromstring.htm" target="hmcontent"><span class="heading2" id="s29.5">mtWorkLoadFromString</span></a>
+</li>
+<li class="heading2" id="i29.6" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a29.6" href="mtworksavetostring.htm" target="hmcontent"><span class="heading2" id="s29.6">mtWorkSaveToString</span></a>
+</li>
+<li class="heading2" id="i29.7" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a29.7" href="loadwtfromstring.htm" target="hmcontent"><span class="heading2" id="s29.7">LoadWtFromString</span></a>
+</li>
+<li class="heading2" id="i29.8" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a29.8" href="savewttostring.htm" target="hmcontent"><span class="heading2" id="s29.8">SaveWtToString</span></a>
+</li>
+<li class="heading2" id="i29.9" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a29.9" href="createwtfields.htm" target="hmcontent"><span class="heading2" id="s29.9">CreateWtFields</span></a>
+</li>
+</ul>
+</li>
+<li class="heading1" id="i30" data-bg="cicon1.gif;cicon2.gif" style="background:url(cicon2.gif) no-repeat;cursor:pointer;padding-left:20px" onclick="return clicked(this,event)"><a class="heading1" id="a30" href="ostatni_funkce_formulare.htm" target="hmcontent"><span class="heading1" id="s30" ondblclick="return dblclicked(this)">Ostatní funkce formuláře</span></a>
+<ul id="ul30" style="list-style-type:none">
+<li class="heading2" id="i30.1" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a30.1" href="runasstandalone.htm" target="hmcontent"><span class="heading2" id="s30.1">RunAsStandalone</span></a>
+</li>
+<li class="heading2" id="i30.2" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a30.2" href="createopennewform.htm" target="hmcontent"><span class="heading2" id="s30.2">CreateOpenNewForm</span></a>
+</li>
+<li class="heading2" id="i30.3" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a30.3" href="opensavedform.htm" target="hmcontent"><span class="heading2" id="s30.3">OpenSavedForm</span></a>
+</li>
+<li class="heading2" id="i30.4" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a30.4" href="saverepresentationrec.htm" target="hmcontent"><span class="heading2" id="s30.4">SaveRepresentationRec</span></a>
+</li>
+<li class="heading2" id="i30.5" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a30.5" href="uniparupdate.htm" target="hmcontent"><span class="heading2" id="s30.5">UniParUpdate</span></a>
+</li>
+<li class="heading2" id="i30.6" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a30.6" href="getalgvykaz.htm" target="hmcontent"><span class="heading2" id="s30.6">GetAlgVykaz</span></a>
+</li>
+<li class="heading2" id="i30.7" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a30.7" href="vykazexists.htm" target="hmcontent"><span class="heading2" id="s30.7">VykazExists</span></a>
+</li>
+<li class="heading2" id="i30.8" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a30.8" href="calcperiod.htm" target="hmcontent"><span class="heading2" id="s30.8">CalcPeriod</span></a>
+</li>
+<li class="heading2" id="i30.9" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a30.9" href="previewsimplereport.htm" target="hmcontent"><span class="heading2" id="s30.9">PreviewSimpleReport</span></a>
+</li>
+<li class="heading2" id="i30.10" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a30.10" href="showinstruction.htm" target="hmcontent"><span class="heading2" id="s30.10">ShowInstruction</span></a>
+</li>
+<li class="heading2" id="i30.11" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a30.11" href="pdfeditorpath.htm" target="hmcontent"><span class="heading2" id="s30.11">PDFEditorPath</span></a>
+</li>
+<li class="heading2" id="i30.12" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a30.12" href="setopenpdfeditorflag.htm" target="hmcontent"><span class="heading2" id="s30.12">SetOpenPDFEditorFlag</span></a>
+</li>
+<li class="heading2" id="i30.13" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a30.13" href="getopenpdfeditorflag.htm" target="hmcontent"><span class="heading2" id="s30.13">GetOpenPDFEditorFlag</span></a>
+</li>
+<li class="heading2" id="i30.14" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a30.14" href="appprocessmessages.htm" target="hmcontent"><span class="heading2" id="s30.14">AppProcessMessages</span></a>
+</li>
+<li class="heading2" id="i30.15" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a30.15" href="showprogress.htm" target="hmcontent"><span class="heading2" id="s30.15">ShowProgress</span></a>
+</li>
+<li class="heading2" id="i30.16" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a30.16" href="checkdotnet.htm" target="hmcontent"><span class="heading2" id="s30.16">CheckDotNet</span></a>
+</li>
+<li class="heading2" id="i30.17" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a30.17" href="rundotnetstript.htm" target="hmcontent"><span class="heading2" id="s30.17">RunDotNetStript</span></a>
+</li>
+<li class="heading2" id="i30.18" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a30.18" href="doprintform.htm" target="hmcontent"><span class="heading2" id="s30.18">DoPrintForm</span></a>
+</li>
+<li class="heading2" id="i30.19" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a30.19" href="getdirworkpath.htm" target="hmcontent"><span class="heading2" id="s30.19">GetDirWorkPath</span></a>
+</li>
+<li class="heading2" id="i30.20" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a30.20" href="getexefilepath.htm" target="hmcontent"><span class="heading2" id="s30.20">GetExeFilePath</span></a>
+</li>
+<li class="heading2" id="i30.21" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a30.21" href="docopyfile.htm" target="hmcontent"><span class="heading2" id="s30.21">DoCopyFile</span></a>
+</li>
+<li class="heading2" id="i30.22" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a30.22" href="vybercertifikat.htm" target="hmcontent"><span class="heading2" id="s30.22">VyberCertifikat</span></a>
+</li>
+<li class="heading2" id="i30.23" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a30.23" href="funcversion.htm" target="hmcontent"><span class="heading2" id="s30.23">FuncVersion</span></a>
+</li>
+<li class="heading2" id="i30.24" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a30.24" href="getadrclip.htm" target="hmcontent"><span class="heading2" id="s30.24">GetAdrClip</span></a>
+</li>
+<li class="heading2" id="i30.25" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a30.25" href="ispaymentindb.htm" target="hmcontent"><span class="heading2" id="s30.25">IsPaymentInDB</span></a>
+</li>
+<li class="heading2" id="i30.26" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a30.26" href="delpaymentindb.htm" target="hmcontent"><span class="heading2" id="s30.26">DelPaymentInDB</span></a>
+</li>
+<li class="heading2" id="i30.27" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a30.27" href="savedocumenttodb.htm" target="hmcontent"><span class="heading2" id="s30.27">SaveDocumentToDB</span></a>
+</li>
+<li class="heading2" id="i30.28" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a30.28" href="sendfilesbyemailords.htm" target="hmcontent"><span class="heading2" id="s30.28">SendFilesByEmailOrDS</span></a>
+</li>
+<li class="heading2" id="i30.29" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a30.29" href="selectattachments.htm" target="hmcontent"><span class="heading2" id="s30.29">SelectAttachments</span></a>
+</li>
+<li class="heading2" id="i30.30" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a30.30" href="selectdir.htm" target="hmcontent"><span class="heading2" id="s30.30">SelectDir</span></a>
+</li>
+<li class="heading2" id="i30.31" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a30.31" href="scheckvat.htm" target="hmcontent"><span class="heading2" id="s30.31">SCheckVAT</span></a>
+</li>
+<li class="heading2" id="i30.32" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a30.32" href="scheckplatce.htm" target="hmcontent"><span class="heading2" id="s30.32">SCheckPlatce</span></a>
+</li>
+<li class="heading2" id="i30.33" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a30.33" href="snactiadresuzares.htm" target="hmcontent"><span class="heading2" id="s30.33">SNactiAdresuZARES</span></a>
+</li>
+<li class="heading2" id="i30.34" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a30.34" href="snactiadresuzaresd.htm" target="hmcontent"><span class="heading2" id="s30.34">SNactiAdresuZARESD</span></a>
+</li>
+<li class="heading2" id="i30.35" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a30.35" href="startcounterzero.htm" target="hmcontent"><span class="heading2" id="s30.35">StartCounterZero</span></a>
+</li>
+<li class="heading2" id="i30.36" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a30.36" href="controlandsendform.htm" target="hmcontent"><span class="heading2" id="s30.36">ControlAndSendForm</span></a>
+</li>
+<li class="heading2" id="i30.37" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a30.37" href="saveformwithoutcheck.htm" target="hmcontent"><span class="heading2" id="s30.37">SaveFormWithoutCheck</span></a>
+</li>
+<li class="heading2" id="i30.38" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a30.38" href="sizeoffile.htm" target="hmcontent"><span class="heading2" id="s30.38">SizeOfFile</span></a>
+</li>
+<li class="heading2" id="i30.39" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a30.39" href="getlogopath.htm" target="hmcontent"><span class="heading2" id="s30.39">GetLogoPath</span></a>
+</li>
+<li class="heading2" id="i30.40" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a30.40" href="insertqrcodetopdf.htm" target="hmcontent"><span class="heading2" id="s30.40">InsertQRCodeToPDF</span></a>
+</li>
+<li class="heading2" id="i30.41" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a30.41" href="insertqrcodetexttopdf.htm" target="hmcontent"><span class="heading2" id="s30.41">InsertQRCodeTextToPDF</span></a>
+</li>
+<li class="heading2" id="i30.42" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a30.42" href="insertbarcodetopdf.htm" target="hmcontent"><span class="heading2" id="s30.42">InsertBarCodeToPDF</span></a>
+</li>
+<li class="heading2" id="i30.43" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a30.43" href="insertlogotopdf.htm" target="hmcontent"><span class="heading2" id="s30.43">InsertLogoToPDF</span></a>
+</li>
+<li class="heading2" id="i30.44" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a30.44" href="openwebportalcssz.htm" target="hmcontent"><span class="heading2" id="s30.44">OpenWebPortalCSSZ</span></a>
+</li>
+<li class="heading2" id="i30.45" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a30.45" href="convertfr3topdf.htm" target="hmcontent"><span class="heading2" id="s30.45">ConvertFR3ToPDF</span></a>
+</li>
+<li class="heading2" id="i30.46" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a30.46" href="createhbwithimportcsv.htm" target="hmcontent"><span class="heading2" id="s30.46">CreateHBWithImportCSV</span></a>
+</li>
+<li class="heading2" id="i30.47" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a30.47" href="sendorderfioapi.htm" target="hmcontent"><span class="heading2" id="s30.47">SendOrderFioAPI</span></a>
+</li>
+<li class="heading2" id="i30.48" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a30.48" href="saveappendixtopdf.htm" target="hmcontent"><span class="heading2" id="s30.48">SaveAppendixToPDF</span></a>
+</li>
+<li class="heading2" id="i30.49" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a30.49" href="setformusersettingprintfrompage.htm" target="hmcontent"><span class="heading2" id="s30.49">SetFormUserSettingPrintFromPage</span></a>
+</li>
+<li class="heading2" id="i30.50" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a30.50" href="gettxtfilefromfdr.htm" target="hmcontent"><span class="heading2" id="s30.50">GetTxtFileFromFDR</span></a>
+</li>
+</ul>
+</li>
+<li class="heading1" id="i31" data-bg="cicon1.gif;cicon2.gif" style="background:url(cicon2.gif) no-repeat;cursor:pointer;padding-left:20px" onclick="return clicked(this,event)"><a class="heading1" id="a31" href="system_function.htm" target="hmcontent"><span class="heading1" id="s31" ondblclick="return dblclicked(this)">Systémové funkce</span></a>
+<ul id="ul31" style="list-style-type:none">
+<li class="heading2" id="i31.1" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a31.1" href="getwinusername.htm" target="hmcontent"><span class="heading2" id="s31.1">GetWinUserName</span></a>
+</li>
+<li class="heading2" id="i31.2" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a31.2" href="checkformposition.htm" target="hmcontent"><span class="heading2" id="s31.2">CheckFormPosition</span></a>
+</li>
+<li class="heading2" id="i31.3" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a31.3" href="getfonttypes.htm" target="hmcontent"><span class="heading2" id="s31.3">GetFontTypes</span></a>
+</li>
+<li class="heading2" id="i31.4" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a31.4" href="getdpiforpdfrender.htm" target="hmcontent"><span class="heading2" id="s31.4">GetDPIForPDFRender</span></a>
+</li>
+<li class="heading2" id="i31.5" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a31.5" href="sendemail.htm" target="hmcontent"><span class="heading2" id="s31.5">SendEmail</span></a>
+</li>
+<li class="heading2" id="i31.6" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a31.6" href="isemailvalid.htm" target="hmcontent"><span class="heading2" id="s31.6">IsEmailValid</span></a>
+</li>
+<li class="heading2" id="i31.7" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a31.7" href="startwait.htm" target="hmcontent"><span class="heading2" id="s31.7">StartWait</span></a>
+</li>
+<li class="heading2" id="i31.8" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a31.8" href="stopwait.htm" target="hmcontent"><span class="heading2" id="s31.8">StopWait</span></a>
+</li>
+<li class="heading2" id="i31.9" style="background:url(cicon9.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a31.9" href="defaultprinter.htm" target="hmcontent"><span class="heading2" id="s31.9">DefaultPrinter</span></a>
+</li>
+</ul>
+</li>
+<li class="heading1" id="i32" data-bg="cicon1.gif;cicon2.gif" style="background:url(cicon2.gif) no-repeat;cursor:pointer;padding-left:20px" onclick="return clicked(this,event)"><a class="heading1" id="a32" href="fuknkce_pro_ladeni.htm" target="hmcontent"><span class="heading1" id="s32" ondblclick="return dblclicked(this)">Fuknkce pro ladění</span></a>
+<ul id="ul32" style="list-style-type:none">
+<li class="heading2" id="i32.1" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a32.1" href="breakpoint_do_script_editoru.htm" target="hmcontent"><span class="heading2" id="s32.1">BP</span></a>
+</li>
+<li class="heading2" id="i32.2" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a32.2" href="msgv.htm" target="hmcontent"><span class="heading2" id="s32.2">Msgv</span></a>
+</li>
+<li class="heading2" id="i32.3" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a32.3" href="msg.htm" target="hmcontent"><span class="heading2" id="s32.3">Msg</span></a>
+</li>
+</ul>
+</li>
+<li class="heading1" id="i33" data-bg="cicon1.gif;cicon2.gif" style="background:url(cicon2.gif) no-repeat;cursor:pointer;padding-left:20px" onclick="return clicked(this,event)"><a class="heading1" id="a33" href="loading_dialog.htm" target="hmcontent"><span class="heading1" id="s33" ondblclick="return dblclicked(this)">Loading dialog</span></a>
+<ul id="ul33" style="list-style-type:none">
+<li class="heading2" id="i33.1" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a33.1" href="loadingstart.htm" target="hmcontent"><span class="heading2" id="s33.1">LoadingStart</span></a>
+</li>
+<li class="heading2" id="i33.2" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a33.2" href="loadingstop.htm" target="hmcontent"><span class="heading2" id="s33.2">LoadingStop</span></a>
+</li>
+<li class="heading2" id="i33.3" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a33.3" href="loadingstep.htm" target="hmcontent"><span class="heading2" id="s33.3">LoadingStep</span></a>
+</li>
+<li class="heading2" id="i33.4" style="background:url(cicon11.gif) no-repeat;padding-left:20px" onclick="return clicked(this,event)"><a class="heading2" id="a33.4" href="loadingbreakrequest.htm" target="hmcontent"><span class="heading2" id="s33.4">LoadingBreakRequest</span></a>
+</li>
+</ul>
+</li>
+</ul>
+<script type="text/javascript">loadicons('cicon9.gif','cicon2.gif','cicon1.gif','cicon11.gif','cicon41.gif','cicon19.gif');</script>
+</body>
+</html>

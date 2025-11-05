@@ -3,7 +3,7 @@
   "displayName": "FA Bridge",
   "publisher": "fa-dev",
   "description": "Propojení Cursor/VS Code s editorem FormStudio (FA)",
-	"version": "0.5.3",
+	"version": "0.5.17",
   "engines": {
     "vscode": "^1.85.0"
   },
@@ -43,34 +43,28 @@
         "title": "FA Bridge: Přepnout na tmavý motiv"
       },
       {
-        "command": "faBridge.provestInit",
-        "title": "FA Návrh: Provést Init (Shift+Alt+I)",
-        "icon": "$(symbol-method)"
+        "command": "faBridge.ulozitSoubor",
+        "title": "FA Bridge: Uložit soubor"
       },
       {
-        "command": "faBridge.provestCalculate",
-        "title": "FA Návrh: Provést Calculate (Shift+Alt+E)",
-        "icon": "$(refresh)"
+        "command": "faBridge.toggleMsgv",
+        "title": "FA Bridge: Toggle msgv"
       },
       {
-        "command": "faBridge.provestEnable",
-        "title": "FA Návrh: Provést Enable (Shift+Alt+N)",
-        "icon": "$(check)"
+        "command": "faBridge.toggleField",
+        "title": "FA Bridge: Toggle field"
       },
       {
-        "command": "faBridge.zobrazitInfo",
-        "title": "FA Návrh: Zobrazit Info (Shift+Alt+B)",
-        "icon": "$(info)"
+        "command": "faBridge.vlozitUdajSBody",
+        "title": "FA Bridge: Vložit [.udaj.]"
       },
       {
-        "command": "faBridge.zobrazitPlatebniInformace",
-        "title": "FA Návrh: Zobrazit Platební informace (Shift+Alt+P)",
-        "icon": "$(credit-card)"
+        "command": "faBridge.vlozitUdajSDvojteckami",
+        "title": "FA Bridge: Vložit [:udaj:]"
       },
       {
-        "command": "faBridge.zobrazitPeriod",
-        "title": "FA Návrh: Zobrazit Period (Shift+Alt+R)",
-        "icon": "$(calendar)"
+        "command": "faBridge.hledatOdZacatku",
+        "title": "FA Bridge: Hledat od začátku"
       }
     ],
     "languages": [
@@ -119,11 +113,6 @@
           "id": "faBridgeMsgWatch",
           "name": "Msg Watch",
           "when": "true"
-        },
-        {
-          "id": "faBridgeCommunicationStatus",
-          "name": "Stav komunikace",
-          "when": "true"
         }
       ]
     },
@@ -134,14 +123,24 @@
         "mac": "shift+alt+f"
       },
       {
-        "command": "workbench.action.files.save",
+        "command": "faBridge.ulozitSoubor",
         "key": "alt+q",
         "mac": "alt+q"
       },
       {
+        "command": "faBridge.ulozitSoubor",
+        "key": "ctrl+s",
+        "mac": "cmd+s"
+      },
+      {
         "command": "faBridge.vlozitNazevUdaje",
-        "key": "shift+alt+v",
-        "mac": "shift+alt+v"
+        "key": "alt+x",
+        "mac": "alt+x"
+      },
+      {
+        "command": "faBridge.vlozitNazevUdaje",
+        "key": "ctrl+shift+v",
+        "mac": "cmd+shift+v"
       },
       {
         "command": "faBridge.kopirovatNazevUdaje",
@@ -154,34 +153,34 @@
         "mac": "shift+alt+l"
       },
       {
-        "command": "faBridge.provestInit",
-        "key": "shift+alt+i",
-        "mac": "shift+alt+i"
+        "command": "faBridge.hledatPodleAktUdaje",
+        "key": "shift+alt+f",
+        "mac": "shift+alt+f"
       },
       {
-        "command": "faBridge.provestCalculate",
-        "key": "shift+alt+e",
-        "mac": "shift+alt+e"
+        "command": "faBridge.toggleMsgv",
+        "key": "alt+f9",
+        "mac": "alt+f9"
       },
       {
-        "command": "faBridge.provestEnable",
-        "key": "shift+alt+n",
-        "mac": "shift+alt+n"
+        "command": "faBridge.toggleField",
+        "key": "alt+a",
+        "mac": "alt+a"
       },
       {
-        "command": "faBridge.zobrazitInfo",
-        "key": "shift+alt+b",
-        "mac": "shift+alt+b"
+        "command": "faBridge.vlozitUdajSBody",
+        "key": "shift+ctrl+[",
+        "mac": "shift+cmd+["
       },
       {
-        "command": "faBridge.zobrazitPlatebniInformace",
-        "key": "shift+alt+p",
-        "mac": "shift+alt+p"
+        "command": "faBridge.vlozitUdajSDvojteckami",
+        "key": "shift+ctrl+]",
+        "mac": "shift+cmd+]"
       },
       {
-        "command": "faBridge.zobrazitPeriod",
-        "key": "shift+alt+r",
-        "mac": "shift+alt+r"
+        "command": "faBridge.hledatOdZacatku",
+        "key": "alt+z",
+        "mac": "alt+z"
       }
     ]
   },

@@ -63,25 +63,16 @@ export class FABridgeTreeProvider implements vscode.TreeDataProvider<CategoryTre
 		// Root level - vrať kategorie
 		const faCommands: CommandTreeItem[] = [
 			new CommandTreeItem(
-				'Uložit soubor (Ctrl+S)',
+				'Uložit soubor (Ctrl+S, Alt+Q)',
 				{
-					command: 'workbench.action.files.save',
+					command: 'faBridge.ulozitSoubor',
 					title: 'Uložit soubor',
 				},
 				new vscode.ThemeIcon('save'),
-				'Uloží aktuální soubor'
+				'Uloží aktuální soubor (triggeruje Local History)'
 			),
 		new CommandTreeItem(
-			'Aktivovat FA (Alt+Q)',
-			{
-				command: 'workbench.action.files.save',
-				title: 'Uložit soubor',
-			},
-			new vscode.ThemeIcon('save'),
-			'Uloží aktuální soubor (jako Ctrl+S)'
-		),
-		new CommandTreeItem(
-				'Vložit název údaje (Shift+Alt+V)',
+				'Vložit název údaje (Alt+X, Ctrl+Shift+V)',
 				{
 					command: 'faBridge.vlozitNazevUdaje',
 					title: 'Vložit název údaje',
@@ -107,70 +98,65 @@ export class FABridgeTreeProvider implements vscode.TreeDataProvider<CategoryTre
 				new vscode.ThemeIcon('search'),
 				'Najde údaj podle slova pod kurzorem'
 			),
-		];
-
-		// Návrh příkazy
-		const navrhCommands: CommandTreeItem[] = [
 			new CommandTreeItem(
-				'Provést Init (Shift+Alt+I)',
+				'Hledat podle akt. údaje (Shift+Alt+F)',
 				{
-					command: 'faBridge.provestInit',
-					title: 'Provést Init',
+					command: 'faBridge.hledatPodleAktUdaje',
+					title: 'Hledat podle akt. údaje',
 				},
-				new vscode.ThemeIcon('symbol-method'),
-				'Spustí funkci Init v návrhu formuláře'
+				new vscode.ThemeIcon('search'),
+				'Otevře Find dialog s názvem aktuálního údaje z FA'
 			),
 			new CommandTreeItem(
-				'Provést Calculate (Shift+Alt+E)',
+				'Hledat od začátku (Alt+Z)',
 				{
-					command: 'faBridge.provestCalculate',
-					title: 'Provést Calculate',
+					command: 'faBridge.hledatOdZacatku',
+					title: 'Hledat od začátku',
 				},
-				new vscode.ThemeIcon('refresh'),
-				'Spustí funkci Calculate v návrhu formuláře'
+				new vscode.ThemeIcon('search'),
+				'Otevře Find dialog, přesune kurzor na začátek dokumentu a znovu otevře Find dialog'
 			),
 			new CommandTreeItem(
-				'Provést Enable (Shift+Alt+N)',
+				'Toggle msgv (Alt+F9)',
 				{
-					command: 'faBridge.provestEnable',
-					title: 'Provést Enable',
+					command: 'faBridge.toggleMsgv',
+					title: 'Toggle msgv',
 				},
-				new vscode.ThemeIcon('check'),
-				'Spustí funkci Enable v návrhu formuláře'
+				new vscode.ThemeIcon('bookmark'),
+				'Vloží msgv(\'\') nebo smaže řádek s msgv('
 			),
 			new CommandTreeItem(
-				'Zobrazit Info (Shift+Alt+B)',
+				'Toggle field (Alt+A)',
 				{
-					command: 'faBridge.zobrazitInfo',
-					title: 'Zobrazit Info',
+					command: 'faBridge.toggleField',
+					title: 'Toggle field',
 				},
-				new vscode.ThemeIcon('info'),
-				'Zobrazí informace o formuláři'
+				new vscode.ThemeIcon('git-compare'),
+				'Mění formát: \'slovo\' → [:slovo:] → [.slovo.] → \'slovo\''
 			),
 			new CommandTreeItem(
-				'Zobrazit Platební informace (Shift+Alt+P)',
+				'Vložit [.udaj.] (Shift+Ctrl+[)',
 				{
-					command: 'faBridge.zobrazitPlatebniInformace',
-					title: 'Zobrazit Platební informace',
+					command: 'faBridge.vlozitUdajSBody',
+					title: 'Vložit [.udaj.]',
 				},
-				new vscode.ThemeIcon('credit-card'),
-				'Zobrazí platební informace'
+				new vscode.ThemeIcon('symbol-array'),
+				'Vloží údaj z FA ve formátu [.názevÚdaje.]'
 			),
 			new CommandTreeItem(
-				'Zobrazit Period (Shift+Alt+R)',
+				'Vložit [:udaj:] (Shift+Ctrl+])',
 				{
-					command: 'faBridge.zobrazitPeriod',
-					title: 'Zobrazit Period',
+					command: 'faBridge.vlozitUdajSDvojteckami',
+					title: 'Vložit [:udaj:]',
 				},
-				new vscode.ThemeIcon('calendar'),
-				'Zobrazí aktuální období'
+				new vscode.ThemeIcon('symbol-array'),
+				'Vloží údaj z FA ve formátu [:názevÚdaje:]'
 			),
 		];
 
 		// Vytvoř kategorie
 		const categories = [
 			new CategoryTreeItem('FA Příkazy', 'Příkazy pro práci s FA', faCommands),
-			new CategoryTreeItem('Návrh Příkazy', 'Příkazy pro testování návrhu formuláře', navrhCommands),
 		];
 
 		return Promise.resolve(categories);

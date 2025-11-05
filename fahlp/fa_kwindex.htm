@@ -1,0 +1,775 @@
+<!DOCTYPE HTML>
+<html><head>
+   <title>FORM asistent - funkce</title>
+   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />   
+   <meta name="robots" content="noindex,follow" />
+   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+ 
+   <!-- This line includes the general project style sheet (not required) -->
+   <link type="text/css" href="default.css" rel="stylesheet" />
+
+   <script type="text/javascript">isIE=false</script>
+   <!--[if IE]>
+   <script type="text/javascript">isIE=true</script>
+   <![endif]-->
+
+   <!--HM_KEYWORD_INDEX_AS_LIST-->
+   <style type="text/css">
+       body { 
+        margin: 0; 
+        padding: 0; 
+        }
+       #keyword_entry_div {
+       	position: absolute;
+       	left: 5px;
+       	top: 5px;
+       	right: 5px;
+       	} 
+       #keyword_entry_div p {
+       	font-weight: bold;
+       }
+       #keyword_list_div {
+       	position: absolute;
+       	left: 5px;
+       	top: 45px;
+       	right: 5px;
+       	bottom: 5px;
+       	padding:0;
+       	} 
+       #keyword_entry {
+       	border: 1px solid silver;
+       	width: 100px;
+       	}
+       #keyword_list {
+       	border: 1px solid silver;
+       	width: 100%;
+      	height: 100%; 
+       	}
+       #keyword_menu {
+        display: none;
+	background: #fff;
+       	border: 1px solid silver;
+	padding: 10px;
+	box-shadow: 4px 4px 8px #888;
+	border-radius: 6px 6px;
+       	}
+       #keyword_menu a {
+       	display: block;
+        text-decoration: none;
+	color: #000;
+	padding: 2px 2px 2px 18px;
+	background: url(hm-keyword-page-icon.gif) top left no-repeat;
+       	}
+       #keyword_menu a:hover {
+       	background: #225687 url(hm-keyword-page-icon.gif) top left no-repeat;
+        text-decoration: none;
+	color: #fff;
+       	}               
+       #keyword_menu_no_entry {
+        display: none;
+	    background: #fff;
+       	border: 1px solid silver;
+	    padding: 5px;
+	    box-shadow: 4px 4px 8px #888;
+	    border-radius: 6px 6px;
+	    width: 50%;
+	    font-size:80%;
+       	}
+   </style>       
+   <script type="text/javascript" src="jquery.js"></script>
+   <script type="text/javascript" src="helpman_settings.js"></script>
+   <script type="text/javascript" src="fa_contextids.js"></script>
+</head>
+<body>
+<div id="keyword_menu"></div>
+<div id="keyword_menu_no_entry">To locate information about this keyword, please select one of the subentries in the list.</div>
+<div id="keyword_entry_div"><p>Enter keyword:</p><input type="text" id="keyword_entry" onkeyup="keywordEntryKey()" /></div>
+<div id="keyword_list_div">
+  <select id="keyword_list" size="2">
+  <option value="abs.htm">Abs</option>
+  <option value="addnestedsection.htm">AddNestedSection</option>
+  <option value="addstringline.htm">AddStringLine</option>
+  <option value="addstrline.htm">AddStrLine</option>
+  <option value="addvaluetolist.htm">AddValueToList</option>
+  <option value="addxmlstrvalue.htm">AddXMLStrValue</option>
+  <option value="hlavni_funkce.htm">AfterLoadPage</option>
+  <option value="hlavni_funkce.htm">AfterOpen</option>
+  <option value="amountbywords.htm">AmountByWords</option>
+  <option value="ansilowercase.htm">AnsiLowerCase</option>
+  <option value="ansisametext.htm">AnsiSameText</option>
+  <option value="ansitoutf8.htm">AnsiToUTF8</option>
+  <option value="ansiuppercase.htm">AnsiUpperCase</option>
+  <option value="appprocessmessages.htm">AppProcessMessages</option>
+  <option value="askdate.htm">AskDate</option>
+  <option value="askdatedate.htm">AskDateDate</option>
+  <option value="askfloat.htm">AskFloat</option>
+  <option value="askint.htm">AskInt</option>
+  <option value="askintint.htm">AskIntInt</option>
+  <option value="askmemo.htm">AskMemo</option>
+  <option value="askmemov.htm">AskMemoV</option>
+  <option value="askstr.htm">AskStr</option>
+  <option value="askstrv.htm">AskStrV</option>
+  <option value="bank_function.htm">Bankovní a platební funkce</option>
+  <option value="hlavni_funkce.htm">BeforeInit</option>
+  <option value="hlavni_funkce.htm">BeforePrint</option>
+  <option value="hlavni_funkce.htm">BeforeSave</option>
+  <option value="if_then.htm">begin</option>
+  <option value="binaryfiletostringbase64.htm">BinaryFileToStringBase64</option>
+  <option value="binaryfiletostringmime.htm">BinaryFileToStringMime</option>
+  <option value="booltostr.htm">BoolToStr</option>
+  <option value="breakpoint_do_script_editoru.htm">breakpoint do script editoru</option>
+  <option value="hlavni_funkce.htm">Cal</option>
+  <option value="calcfulladdress.htm">CalcFullAddress</option>
+  <option value="calcfullbaaccount.htm">CalcFullBaAccount</option>
+  <option value="calcfullname.htm">CalcFullName</option>
+  <option value="calcperiod.htm">CalcPeriod</option>
+  <option value="calcphonemobil.htm">CalcPhoneMobil</option>
+  <option value="calcqrcodetext.htm">CalcQRCodeText</option>
+  <option value="hlavni_funkce.htm">Calculate</option>
+  <option value="case.htm">case</option>
+  <option value="globalni_konstanty_a_promenne.htm">cCRLF</option>
+  <option value="globalni_konstanty_a_promenne.htm">cCRLFAlternate</option>
+  <option value="globalni_konstanty_a_promenne.htm">cFADecimalSeparator</option>
+  <option value="cityfromaddress.htm">CityFromAddress</option>
+  <option value="clearfield.htm">ClearField</option>
+  <option value="cleartskpfillinginfo.htm">ClearTskpFillingInfo</option>
+  <option value="clientparam.htm">ClientParam</option>
+  <option value="globalni_konstanty_a_promenne.htm">cMaxInt</option>
+  <option value="colortohexstr.htm">ColorToHexStr</option>
+  <option value="colortostr.htm">ColorToStr</option>
+  <option value="compareversion.htm">CompareVersion</option>
+  <option value="concatstr.htm">ConCatStr</option>
+  <option value="cond.htm">Cond</option>
+  <option value="cond2.htm">Cond2</option>
+  <option value="cond3.htm">Cond3</option>
+  <option value="cond4.htm">Cond4</option>
+  <option value="cond5.htm">Cond5</option>
+  <option value="controlandsendform.htm">ControlAndSendForm</option>
+  <option value="convertbu2iban.htm">ConvertBU2IBAN</option>
+  <option value="convertfr3topdf.htm">ConvertFR3ToPDF</option>
+  <option value="copy.htm">Copy</option>
+  <option value="correctdatestring.htm">CorrectDateString</option>
+  <option value="correctnumberstring.htm">CorrectNumberString</option>
+  <option value="countlistitems.htm">CountListItems</option>
+  <option value="createguidstring.htm">CreateGUIDString</option>
+  <option value="createhbwithimportcsv.htm">CreateHBWithImportCSV</option>
+  <option value="createopennewform.htm">CreateOpenNewForm</option>
+  <option value="'Hlavní funkce skriptu','hlavni_funkce.htm','CreatePaymentOrder','createpaymentorder.htm'">CreatePaymentOrder</option>
+  <option value="createpaymentordersepa.htm">CreatePaymentOrderSEPA</option>
+  <option value="createprintdatafortable.htm">CreatePrintDataForTable</option>
+  <option value="createwtfields.htm">CreateWtFields</option>
+  <option value="csv_strings_functions.htm">CSV strings funkce</option>
+  <option value="globalni_konstanty_a_promenne.htm">CurrencyDecimals</option>
+  <option value="globalni_konstanty_a_promenne.htm">CurrencyFormat</option>
+  <option value="globalni_konstanty_a_promenne.htm">CurrencyString</option>
+  <option value="currentyear.htm">CurrentYear</option>
+  <option value="number_functions.htm">Číselné funkce</option>
+  <option value="date.htm">Date</option>
+  <option value="globalni_konstanty_a_promenne.htm">DateSeparator</option>
+  <option value="datetimestreval.htm">DateTimeStrEval</option>
+  <option value="datetimetostr.htm">DateTimeToStr</option>
+  <option value="datetostr.htm">DateToStr</option>
+  <option value="datetostrnorm.htm">DateToStrNorm</option>
+  <option value="'CheckRodneCisloDatNar','checkrodnecislodatnar.htm','RCDatNar','rcdatnar.htm'">datum narození</option>
+  <option value="datetime_functions.htm">Datumové funkce</option>
+  <option value="dayof.htm">DayOf</option>
+  <option value="daysbetween.htm">DaysBetween</option>
+  <option value="daysinamonth.htm">DaysInAMonth</option>
+  <option value="daysinayear.htm">DaysInAYear</option>
+  <option value="daysinmonth.htm">DaysInMonth</option>
+  <option value="dec.htm">Dec</option>
+  <option value="globalni_konstanty_a_promenne.htm">DecimalSeparator</option>
+  <option value="decodedate.htm">DecodeDate</option>
+  <option value="decodedatefully.htm">DecodeDateFully</option>
+  <option value="decodeintegerlist.htm">DecodeIntegerList</option>
+  <option value="hlavni_funkce.htm">Def</option>
+  <option value="defaultprinter.htm">DefaultPrinter</option>
+  <option value="delete.htm">Delete</option>
+  <option value="deletefile.htm">DeleteFile</option>
+  <option value="deletefiles.htm">DeleteFiles</option>
+  <option value="deletenestedsection.htm">DeleteNestedSection</option>
+  <option value="deletestringline.htm">DeleteStringLine</option>
+  <option value="delpaymentindb.htm">DelPaymentInDB</option>
+  <option value="directoryexists.htm">DirectoryExists</option>
+  <option value="displaycheck.htm">DisplayCheck</option>
+  <option value="div.htm">div</option>
+  <option value="'For ... to ... do','for_to_do.htm','While ... do','while_do.htm'">do</option>
+  <option value="docanceleditform.htm">DoCancelEditForm</option>
+  <option value="docopyfile.htm">DoCopyFile</option>
+  <option value="doopennestedform.htm">DoOpenNestedForm</option>
+  <option value="doopensimplelist.htm">DoOpenSimpleList</option>
+  <option value="dopreparereportnestedform.htm">DoPrepareReportNestedForm</option>
+  <option value="doprintform.htm">DoPrintForm</option>
+  <option value="for_to_do.htm">downto</option>
+  <option value="hlavni_funkce.htm">DSFilling</option>
+  <option value="rcdatnar.htm">EČP</option>
+  <option value="hlavni_funkce.htm">Ena</option>
+  <option value="hlavni_funkce.htm">Enable</option>
+  <option value="encdate.htm">EncDate</option>
+  <option value="encodedate.htm">EncodeDate</option>
+  <option value="encodefdfstring.htm">EncodeFDFString</option>
+  <option value="'If ... then','if_then.htm','Try ... finally','try_finally.htm'">end</option>
+  <option value="direktivy.htm">EPOPOVINNOST</option>
+  <option value="direktivy.htm">EPO-POVINNOST</option>
+  <option value="evalmethod.htm">EvalMethod</option>
+  <option value="evalparammethod.htm">EvalParamMethod</option>
+  <option value="evalscript.htm">EvalScript</option>
+  <option value="extractafterchar.htm">ExtractAfterChar</option>
+  <option value="extractbankaccount.htm">ExtractBankAccount</option>
+  <option value="extractbankcode.htm">ExtractBankCode</option>
+  <option value="extractbeforechar.htm">ExtractBeforeChar</option>
+  <option value="extractfiledir.htm">ExtractFileDir</option>
+  <option value="extractfileext.htm">ExtractFileExt</option>
+  <option value="extractfilename.htm">ExtractFileName</option>
+  <option value="extractfilepath.htm">ExtractFilePath</option>
+  <option value="extractnumberfromstreetandnum.htm">ExtractNumberFromStreetAndNum</option>
+  <option value="extractstreetfromstreetandnum.htm">ExtractStreetFromStreetAndNum</option>
+  <option value="fileexists.htm">FileExists</option>
+  <option value="hlavni_funkce.htm">FileFunction</option>
+  <option value="hlavni_funkce.htm">Filling</option>
+  <option value="try_finally.htm">finally</option>
+  <option value="floatfieldfracpartstr.htm">FloatFieldFracPartStr</option>
+  <option value="floatfieldintpartstr.htm">FloatFieldIntPartStr</option>
+  <option value="floattostr.htm">FloatToStr</option>
+  <option value="for_to_do.htm">for</option>
+  <option value="forceclosefa.htm">ForceCloseFA</option>
+  <option value="forcedirectories.htm">ForceDirectories</option>
+  <option value="forcesavenesteddata.htm">ForceSaveNestedData</option>
+  <option value="format.htm">Format</option>
+  <option value="formatdatetime.htm">FormatDateTime</option>
+  <option value="formatfloat.htm">FormatFloat</option>
+  <option value="formatiban.htm">FormatIBAN</option>
+  <option value="formbind.htm">FormBind</option>
+  <option value="formexists.htm">FormExists</option>
+  <option value="frac.htm">Frac</option>
+  <option value="frac2str.htm">Frac2Str</option>
+  <option value="globalni_konstanty_a_promenne.htm">FSelectedDir</option>
+  <option value="funcversion.htm">FuncVersion</option>
+  <option value="globalni_konstanty_a_promenne.htm">GEPOFilePath</option>
+  <option value="getadrclip.htm">GetAdrClip</option>
+  <option value="getalgvykaz.htm">GetAlgVykaz</option>
+  <option value="getappendixstring.htm">GetAppendixString</option>
+  <option value="getclientparams.htm">GetClientParams</option>
+  <option value="getcommentstring.htm">GetCommentString</option>
+  <option value="getcsvfieldbyname.htm">GetCsvFieldByName</option>
+  <option value="getdirworkpath.htm">GetDirWorkPath</option>
+  <option value="getdoc.htm">GetDoc</option>
+  <option value="getdpiforpdfrender.htm">GetDPIForPDFRender</option>
+  <option value="getexefilepath.htm">GetExeFilePath</option>
+  <option value="getfillinginfo.htm">GetFillingInfo</option>
+  <option value="getfonttypes.htm">GetFontTypes</option>
+  <option value="getformcount.htm">GetFormCount</option>
+  <option value="getformdatatext.htm">GetFormDataText</option>
+  <option value="getformfield.htm">GetFormField</option>
+  <option value="getformfieldcompactnested.htm">GetFormFieldCompactNested</option>
+  <option value="getforms.htm">GetForms</option>
+  <option value="getformsordocuments.htm">GetFormsOrDocuments</option>
+  <option value="gethttpdocument.htm">GetHTTPDocument</option>
+  <option value="getchangeflag.htm">GetChangeFlag</option>
+  <option value="getitemposition.htm">GetItemPosition</option>
+  <option value="getlistboxitemcount.htm">GetListBoxItemCount</option>
+  <option value="getlistboxitemindex.htm">GetListBoxItemIndex</option>
+  <option value="getlistboxitemstring.htm">GetListBoxItemString</option>
+  <option value="getlistitem.htm">GetListItem</option>
+  <option value="getlockflag.htm">GetLockFlag</option>
+  <option value="getlogopath.htm">GetLogoPath</option>
+  <option value="getmtvfield.htm">GetMTVField</option>
+  <option value="getmtvfieldvalue.htm">GetMTVFieldValue</option>
+  <option value="getnestedsection.htm">GetNestedSection</option>
+  <option value="getnotesstring.htm">GetNotesString</option>
+  <option value="getopenpdfeditorflag.htm">GetOpenPDFEditorFlag</option>
+  <option value="getprgversion.htm">GetPrgVersion</option>
+  <option value="getsection.htm">GetSection</option>
+  <option value="getstringline.htm">GetStringLine</option>
+  <option value="getstringlinename.htm">GetStringLineName</option>
+  <option value="getstringlinescount.htm">GetStringLinesCount</option>
+  <option value="getstringlinevalue.htm">GetStringLineValue</option>
+  <option value="gettxtfilefromfdr.htm">GetTxtFileFromFDR</option>
+  <option value="getuniquefilename.htm">GetUniqueFileName</option>
+  <option value="getvaliddatestr.htm">GetValidDateStr</option>
+  <option value="getvaliddatestrfmt.htm">GetValidDateStrFmt</option>
+  <option value="getwinusername.htm">GetWinUserName</option>
+  <option value="getzipfilecomment.htm">GetZipFileComment</option>
+  <option value="globalni_funkce.htm">GFillMemo</option>
+  <option value="globalni_funkce.htm">GfodDocId</option>
+  <option value="globalni_funkce.htm">GfodFiles</option>
+  <option value="globalni_funkce.htm">GfodFrmDefID</option>
+  <option value="globalni_funkce.htm">GfodFrmID</option>
+  <option value="globalni_funkce.htm">GfodGUID</option>
+  <option value="globalni_funkce.htm">GGotoFieldName</option>
+  <option value="globalni_funkce.htm">GCheckGotoFldName</option>
+  <option value="globalni_konstanty_a_promenne.htm">GInternalDataForPrint</option>
+  <option value="globalni_konstanty_a_promenne.htm">GLoadingBreak</option>
+  <option value="gotoappendix.htm">GotoAppendix</option>
+  <option value="gotofld.htm">GotoFld</option>
+  <option value="hlavni_funkce.htm">Groups</option>
+  <option value="globalni_funkce.htm">GScriptFieldName</option>
+  <option value="globalni_funkce.htm">GScriptFillingInfo</option>
+  <option value="globalni_funkce.htm">GScriptFillingZip</option>
+  <option value="globalni_funkce.htm">GScriptFldDisplayValue</option>
+  <option value="globalni_funkce.htm">GScriptGetFormsIDDefs</option>
+  <option value="globalni_funkce.htm">GScriptOldFieldName</option>
+  <option value="globalni_funkce.htm">GScriptPreparedLists</option>
+  <option value="globalni_funkce.htm">GScriptState</option>
+  <option value="globalni_funkce.htm">GScriptZeroValueClear</option>
+  <option value="globalni_funkce.htm">GShowThousandSeparator</option>
+  <option value="globalni_konstanty_a_promenne.htm">Gsl</option>
+  <option value="globalni_funkce.htm">GSlaveState</option>
+  <option value="hexstrtocolor.htm">HexStrToColor</option>
+  <option value="hexstrtoint.htm">HexStrToInt</option>
+  <option value="changediakritic.htm">ChangeDiakritic</option>
+  <option value="changefileext.htm">ChangeFileExt</option>
+  <option value="changestringcase.htm">ChangeStringCase</option>
+  <option value="hlavni_funkce.htm">Characteristics</option>
+  <option value="hlavni_funkce.htm">Check</option>
+  <option value="checkbu.htm">CheckBU</option>
+  <option value="checkdic.htm">CheckDIC</option>
+  <option value="checkdotnet.htm">CheckDotNet</option>
+  <option value="checkformposition.htm">CheckFormPosition</option>
+  <option value="checkiban.htm">CheckIBAN</option>
+  <option value="checkico.htm">CheckICO</option>
+  <option value="checkidds.htm">CheckIDDS</option>
+  <option value="checkrodnecislo.htm">CheckRodneCislo</option>
+  <option value="checkrodnecislodatnar.htm">CheckRodneCisloDatNar</option>
+  <option value="checkrodnecislomsg.htm">CheckRodneCisloMsg</option>
+  <option value="checkskdic.htm">CheckSkDIC</option>
+  <option value="checkskicdph.htm">CheckSkICDPH</option>
+  <option value="checkvalidintegerlist.htm">CheckValidIntegerList</option>
+  <option value="hlavni_funkce.htm">Chk</option>
+  <option value="chr.htm">Chr</option>
+  <option value="hlavni_funkce.htm">IDDSForFilling</option>
+  <option value="if_then.htm">if</option>
+  <option value="inc.htm">Inc</option>
+  <option value="incday.htm">IncDay</option>
+  <option value="incmonth.htm">IncMonth</option>
+  <option value="direktivy.htm">INCSTART</option>
+  <option value="direktivy.htm">INCSTOP</option>
+  <option value="incyear.htm">IncYear</option>
+  <option value="hlavni_funkce.htm">Ini</option>
+  <option value="hlavni_funkce.htm">Init</option>
+  <option value="initscriptgvariables.htm">InitScriptGVariables</option>
+  <option value="hlavni_funkce.htm">Ino</option>
+  <option value="insertbarcodetopdf.htm">InsertBarCodeToPDF</option>
+  <option value="insertlogotopdf.htm">InsertLogoToPDF</option>
+  <option value="insertqrcodetexttopdf.htm">InsertQRCodeTextToPDF</option>
+  <option value="insertqrcodetopdf.htm">InsertQRCodeToPDF</option>
+  <option value="int.htm">Int</option>
+  <option value="intpart2str.htm">IntPart2Str</option>
+  <option value="inttohexstr.htm">IntToHexStr</option>
+  <option value="inttostr.htm">IntToStr</option>
+  <option value="isboolean.htm">IsBoolean</option>
+  <option value="isconnectedtointernet.htm">IsConnectedToInternet</option>
+  <option value="iscurrencyint.htm">IsCurrencyInt</option>
+  <option value="isdate.htm">IsDate</option>
+  <option value="isdigit.htm">IsDigit</option>
+  <option value="isdots.htm">IsDots</option>
+  <option value="isemailvalid.htm">IsEmailValid</option>
+  <option value="isfloat.htm">IsFloat</option>
+  <option value="isinteger.htm">IsInteger</option>
+  <option value="isiteminlist.htm">IsItemInList</option>
+  <option value="islogiccolor.htm">IsLogicColor</option>
+  <option value="ispaymentindb.htm">IsPaymentInDB</option>
+  <option value="isstringfirstuppercase.htm">IsStringFirstUpperCase</option>
+  <option value="isstringlowercase.htm">IsStringLowerCase</option>
+  <option value="isstringuppercase.htm">IsStringUpperCase</option>
+  <option value="isvalidhexstrcolor.htm">IsValidHexStrColor</option>
+  <option value="isvalidstrlogiccolor.htm">IsValidStrLogicColor</option>
+  <option value="isvalueinsimplelist.htm">IsValueInSimpleList</option>
+  <option value="kontroly_function.htm">Kontroly</option>
+  <option value="length.htm">Length</option>
+  <option value="hlavni_funkce.htm">Lists</option>
+  <option value="globalni_konstanty_a_promenne.htm">ListSeparator</option>
+  <option value="loadingbreakrequest.htm">LoadingBreakRequest</option>
+  <option value="loadingstart.htm">LoadingStart</option>
+  <option value="loadingstep.htm">LoadingStep</option>
+  <option value="loadingstop.htm">LoadingStop</option>
+  <option value="loadlisttowt.htm">LoadListToWT</option>
+  <option value="loadmemtablefromzip.htm">LoadMemTableFromZip</option>
+  <option value="loadstringfromfile.htm">LoadStringFromFile</option>
+  <option value="loadstringsfromini.htm">LoadStringsFromIni</option>
+  <option value="loadtextfromzip.htm">LoadTextFromZip</option>
+  <option value="loadwtfromstring.htm">LoadWtFromString</option>
+  <option value="logiccolortostr.htm">LogicColorToStr</option>
+  <option value="globalni_konstanty_a_promenne.htm">LongDateFormat</option>
+  <option value="globalni_konstanty_a_promenne.htm">LongTimeFormat</option>
+  <option value="lowercase.htm">LowerCase</option>
+  <option value="'Hlavní funkce skriptu','hlavni_funkce.htm','Lst','lst.htm'">Lst</option>
+  <option value="lstlookup.htm">LstLookup</option>
+  <option value="lstlookupnear.htm">LstLookupNear</option>
+  <option value="lstlookupnearascending.htm">LstLookupNearAscending</option>
+  <option value="lstlookupnearest.htm">LstLookupNearest</option>
+  <option value="max.htm">Max</option>
+  <option value="maxfloat.htm">MaxFloat</option>
+  <option value="hlavni_funkce.htm">MenuFunction</option>
+  <option value="message_functions.htm">Message funkce</option>
+  <option value="min.htm">Min</option>
+  <option value="minfloat.htm">MinFloat</option>
+  <option value="mod.htm">mod</option>
+  <option value="mod.htm">modulo</option>
+  <option value="monthof.htm">MonthOf</option>
+  <option value="msg.htm">Msg</option>
+  <option value="msgaskyesnocancel.htm">MsgAskYesNoCancel</option>
+  <option value="msgboxask.htm">MsgBoxAsk</option>
+  <option value="msgboxaskbuttons.htm">MsgBoxAskButtons</option>
+  <option value="msgboxerr.htm">MsgBoxErr</option>
+  <option value="msgboxinfo.htm">MsgBoxInfo</option>
+  <option value="msgboxwarn.htm">MsgBoxWarn</option>
+  <option value="msgv.htm">Msgv</option>
+  <option value="mtvaluesclearfields.htm">mtValuesClearFields</option>
+  <option value="mtworkloadfromstring.htm">mtWorkLoadFromString</option>
+  <option value="mtworksavetostring.htm">mtWorkSaveToString</option>
+  <option value="nactiadresuzares.htm">NactiAdresuZARES</option>
+  <option value="nactiadresuzaresd.htm">NactiAdresuZARESD</option>
+  <option value="nacitani_z_webu.htm">Načítání z webu</option>
+  <option value="nameofmonth.htm">NameOfMonth</option>
+  <option value="nameofmonth2.htm">NameOfMonth2</option>
+  <option value="direktivy.htm">NEEDVER</option>
+  <option value="globalni_konstanty_a_promenne.htm">NegCurrFormat</option>
+  <option value="funkce_skriptu_sestavy.htm">NestedReportFiles</option>
+  <option value="nestedstate.htm">NestedState</option>
+  <option value="funkce_skriptu_sestavy.htm">NOBGD</option>
+  <option value="funkce_skriptu_sestavy.htm">NOREMOVEBG</option>
+  <option value="normalizedatestr.htm">NormalizeDateStr</option>
+  <option value="normalpath.htm">NormalPath</option>
+  <option value="normalzipcodeczech.htm">NormalZipCodeCzech</option>
+  <option value="now.htm">Now</option>
+  <option value="case.htm">of</option>
+  <option value="hlavni_funkce.htm">OnActivate</option>
+  <option value="hlavni_funkce.htm">OnClick</option>
+  <option value="hlavni_funkce.htm">OnEndShowChecking</option>
+  <option value="hlavni_funkce.htm">OnChangeExit</option>
+  <option value="direktivy.htm">ONLYCERTFILLING</option>
+  <option value="hlavni_funkce.htm">OnValidate</option>
+  <option value="openlst.htm">OpenLst</option>
+  <option value="opensavedform.htm">OpenSavedForm</option>
+  <option value="openwebportalcssz.htm">OpenWebPortalCSSZ</option>
+  <option value="ord.htm">Ord</option>
+  <option value="other_function.htm">Ostatní funkce</option>
+  <option value="conversion_functions_other.htm">Ostatní konverzní funkce</option>
+  <option value="hlavni_funkce.htm">PaymentInfo</option>
+  <option value="hlavni_funkce.htm">PaymentOrder</option>
+  <option value="pdfeditorpath.htm">PDFEditorPath</option>
+  <option value="hlavni_funkce.htm">Period</option>
+  <option value="pos.htm">Pos</option>
+  <option value="hlavni_funkce.htm">PredmetForDSEPO</option>
+  <option value="hlavni_funkce.htm">PreparedLists</option>
+  <option value="previewsimplereport.htm">PreviewSimpleReport</option>
+  <option value="hlavni_funkce.htm">PrilohyForDSEPO</option>
+  <option value="breakpoint_do_script_editoru.htm">procedure BP</option>
+  <option value="quotedstr.htm">QuotedStr</option>
+  <option value="rcdatnar.htm">RCDatNar</option>
+  <option value="rctosexcode.htm">RCToSexCode</option>
+  <option value="reloadlistboxes.htm">ReloadListBoxes</option>
+  <option value="removechars.htm">RemoveChars</option>
+  <option value="removenonlicchar.htm">RemoveNonLicChar</option>
+  <option value="removevaluefromlist.htm">RemoveValueFromList</option>
+  <option value="repeat_until.htm">repeat</option>
+  <option value="replace.htm">Replace</option>
+  <option value="replacelatin2invalidchar.htm">ReplaceLatin2InvalidChar</option>
+  <option value="replacenestedsection.htm">ReplaceNestedSection</option>
+  <option value="replacexmlstr.htm">ReplaceXmlStr</option>
+  <option value="funkce_skriptu_sestavy.htm">reportdisabled</option>
+  <option value="funkce_skriptu_sestavy.htm">ReportFiles</option>
+  <option value="funkce_skriptu_sestavy.htm">RestrictReportOptions</option>
+  <option value="'CheckRodneCisloDatNar','checkrodnecislodatnar.htm','CheckRodneCislo','checkrodnecislo.htm','CheckRodneCisloMsg','checkrodnecislomsg.htm','RCDatNar','rcdatnar.htm'">rodné číslo</option>
+  <option value="round.htm">Round</option>
+  <option value="roundari.htm">RoundAri</option>
+  <option value="rounddown.htm">RoundDown</option>
+  <option value="roundhalfari.htm">RoundHalfAri</option>
+  <option value="roundhalfup.htm">RoundHalfUp</option>
+  <option value="roundup.htm">RoundUp</option>
+  <option value="runasstandalone.htm">RunAsStandalone</option>
+  <option value="rundotnetstript.htm">RunDotNetStript</option>
+  <option value="sametext.htm">SameText</option>
+  <option value="saveappendixtopdf.htm">SaveAppendixToPDF</option>
+  <option value="direktivy.htm">SaveCompiled</option>
+  <option value="savedocumenttodb.htm">SaveDocumentToDB</option>
+  <option value="saveformwithoutcheck.htm">SaveFormWithoutCheck</option>
+  <option value="savenewformtodb.htm">SaveNewFormToDB</option>
+  <option value="'Hlavní funkce skriptu','hlavni_funkce.htm','SavePaymentRec','savepaymentrec.htm'">SavePaymentRec</option>
+  <option value="saverepresentationrec.htm">SaveRepresentationRec</option>
+  <option value="savestringstoini.htm">SaveStringsToIni</option>
+  <option value="savestringtofile.htm">SaveStringToFile</option>
+  <option value="savewttostring.htm">SaveWtToString</option>
+  <option value="searchfiles.htm">SearchFiles</option>
+  <option value="selectattachments.htm">SelectAttachments</option>
+  <option value="selectclientadress.htm">SelectClientAdress</option>
+  <option value="selectclientbankaccount.htm">SelectClientBankAccount</option>
+  <option value="selectclientperson.htm">SelectClientPerson</option>
+  <option value="selectdir.htm">SelectDir</option>
+  <option value="selectemailords.htm">SelectEmailOrDS</option>
+  <option value="sendemail.htm">SendEmail</option>
+  <option value="sendfilesbyemailords.htm">SendFilesByEmailOrDS</option>
+  <option value="sendorderfioapi.htm">SendOrderFioAPI</option>
+  <option value="setdataformfield.htm">SetDataFormField</option>
+  <option value="setdoenableaftercalculate.htm">SetDoEnableAfterCalculate</option>
+  <option value="setformdata.htm">SetFormData</option>
+  <option value="setformusersettingprintfrompage.htm">SetFormUserSettingPrintFromPage</option>
+  <option value="setgscriptfieldname.htm">SetGScriptFieldName</option>
+  <option value="setchangeflag.htm">SetChangeFlag</option>
+  <option value="setlistboxitemindex.htm">SetListBoxItemIndex</option>
+  <option value="setlistboxitemstring.htm">SetListBoxItemString</option>
+  <option value="setlockflag.htm">SetLockFlag</option>
+  <option value="hlavni_funkce.htm">SetMenuFunctions</option>
+  <option value="const_astring__afilename_strin.htm">SetMultilineOpenDialog</option>
+  <option value="setopenpdfeditorflag.htm">SetOpenPDFEditorFlag</option>
+  <option value="setsection.htm">SetSection</option>
+  <option value="setvalidfilename.htm">SetValidFileName</option>
+  <option value="setvalidfilenametrim.htm">SetValidFileNameTrim</option>
+  <option value="globalni_funkce.htm">SetValueGfodDocId</option>
+  <option value="globalni_funkce.htm">SetValueGfodFiles</option>
+  <option value="globalni_funkce.htm">SetValueGfodFrmDefID</option>
+  <option value="globalni_funkce.htm">SetValueGfodFrmID</option>
+  <option value="globalni_funkce.htm">SetValueGfodGUID</option>
+  <option value="globalni_funkce.htm">SetValueGScriptFieldName</option>
+  <option value="globalni_funkce.htm">SetValueGScriptFillingZip</option>
+  <option value="globalni_funkce.htm">SetValueGScriptOldFieldName</option>
+  <option value="globalni_funkce.htm">SetValueGScriptState</option>
+  <option value="shell_functions.htm">Shell funkce</option>
+  <option value="shellexec.htm">ShellExec</option>
+  <option value="shellopen.htm">ShellOpen</option>
+  <option value="shellopenandwait.htm">ShellOpenAndWait</option>
+  <option value="shellopenpdf.htm">ShellOpenPdf</option>
+  <option value="globalni_konstanty_a_promenne.htm">ShortDateFormat</option>
+  <option value="globalni_konstanty_a_promenne.htm">ShortTimeFormat</option>
+  <option value="showchecking.htm">ShowChecking</option>
+  <option value="showinfoares.htm">ShowInfoARES</option>
+  <option value="showinstruction.htm">ShowInstruction</option>
+  <option value="showmessage.htm">ShowMessage</option>
+  <option value="showprogress.htm">ShowProgress</option>
+  <option value="scheckplatce.htm">SCheckPlatce</option>
+  <option value="scheckvat.htm">SCheckVAT</option>
+  <option value="'Hlavní funkce skriptu','hlavni_funkce.htm','SimpleLst','simplelst.htm'">SimpleLst</option>
+  <option value="sizeoffile.htm">SizeOfFile</option>
+  <option value="snactiadresuzares.htm">SNactiAdresuZARES</option>
+  <option value="snactiadresuzaresd.htm">SNactiAdresuZARESD</option>
+  <option value="fileandpath_functions.htm">Soubory a složky</option>
+  <option value="splitaddress.htm">SplitAddress</option>
+  <option value="startcounterzero.htm">StartCounterZero</option>
+  <option value="startwait.htm">StartWait</option>
+  <option value="stopwait.htm">StopWait</option>
+  <option value="str1250toansi.htm">Str1250ToANSI</option>
+  <option value="strafter.htm">StrAfter</option>
+  <option value="strbefore.htm">StrBefore</option>
+  <option value="streetfromaddress.htm">StreetFromAddress</option>
+  <option value="strcharsetconversion.htm">StrCharsetConversion</option>
+  <option value="stringbase64tobinaryfile.htm">StringBase64ToBinaryFile</option>
+  <option value="stringfirstuppercase.htm">StringFirstUpperCase</option>
+  <option value="stringlist.htm">StringList funkce</option>
+  <option value="stringmimetobinaryfile.htm">StringMimeToBinaryFile</option>
+  <option value="strisalpha.htm">StrIsAlpha</option>
+  <option value="strisalphanum.htm">StrIsAlphaNum</option>
+  <option value="strisalphanumunderscore.htm">StrIsAlphaNumUnderscore</option>
+  <option value="strleft.htm">StrLeft</option>
+  <option value="strnpos.htm">StrNPos</option>
+  <option value="strpadleft.htm">StrPadLeft</option>
+  <option value="strpadright.htm">StrPadRight</option>
+  <option value="strrepeat.htm">StrRepeat</option>
+  <option value="strright.htm">StrRight</option>
+  <option value="strstrcount.htm">StrStrCount</option>
+  <option value="strtobool.htm">StrToBool</option>
+  <option value="strtoboolsafe.htm">StrToBoolSafe</option>
+  <option value="strtocolor.htm">StrToColor</option>
+  <option value="strtocurr.htm">StrToCurr</option>
+  <option value="strtodate.htm">StrToDate</option>
+  <option value="strtodatesafe.htm">StrToDateSafe</option>
+  <option value="strtofloat.htm">StrToFloat</option>
+  <option value="strtofloatsafe.htm">StrToFloatSafe</option>
+  <option value="strtoint.htm">StrToInt</option>
+  <option value="strtointsafe.htm">StrToIntSafe</option>
+  <option value="strtologiccolor.htm">StrToLogicColor</option>
+  <option value="strtrimcharleft.htm">StrTrimCharLeft</option>
+  <option value="strtrimcharright.htm">StrTrimCharRight</option>
+  <option value="hlavni_funkce.htm">SysComment</option>
+  <option value="takeformfields.htm">TakeFormFields</option>
+  <option value="string_functions.htm">Textové funkce</option>
+  <option value="if_then.htm">then</option>
+  <option value="globalni_konstanty_a_promenne.htm">ThousandSeparator</option>
+  <option value="globalni_konstanty_a_promenne.htm">TimeAMString</option>
+  <option value="globalni_konstanty_a_promenne.htm">TimePMString</option>
+  <option value="globalni_konstanty_a_promenne.htm">TimeSeparator</option>
+  <option value="for_to_do.htm">to</option>
+  <option value="trim.htm">Trim</option>
+  <option value="trimchars.htm">TrimChars</option>
+  <option value="trimcharsleft.htm">TrimCharsLeft</option>
+  <option value="trimcharsright.htm">TrimCharsRight</option>
+  <option value="trimleft.htm">TrimLeft</option>
+  <option value="trimright.htm">TrimRight</option>
+  <option value="trimstringlisttext.htm">TrimStringListText</option>
+  <option value="trunc.htm">Trunc</option>
+  <option value="try_finally.htm">try</option>
+  <option value="trydeletedirectory.htm">TryDeleteDirectory</option>
+  <option value="tryeditvaluesrecord.htm">TryEditValuesRecord</option>
+  <option value="tryencodedatetimeex.htm">TryEncodeDateTimeEx</option>
+  <option value="trypostvaluesrecord.htm">TryPostValuesRecord</option>
+  <option value="globalni_konstanty_a_promenne.htm">TwoDigitYearCenturyWindow</option>
+  <option value="uniparupdate.htm">UniParUpdate</option>
+  <option value="repeat_until.htm">until</option>
+  <option value="unzipfile.htm">UnzipFile</option>
+  <option value="uppercase.htm">UpperCase</option>
+  <option value="utf8toansi.htm">UTF8ToAnsi</option>
+  <option value="utf8toansistring.htm">Utf8ToAnsiString</option>
+  <option value="validvalue.htm">ValidValue</option>
+  <option value="vararrayof.htm">VarArrayOf</option>
+  <option value="variant_functions.htm">Variant funkce</option>
+  <option value="varisne.htm">VarIsNE</option>
+  <option value="vartobool.htm">VarToBool</option>
+  <option value="vartodatetime.htm">VarToDateTime</option>
+  <option value="vartodouble.htm">VarToDouble</option>
+  <option value="vartoint.htm">VarToInt</option>
+  <option value="vartostr.htm">VarToStr</option>
+  <option value="vybercertifikat.htm">VyberCertifikat</option>
+  <option value="vykazexists.htm">VykazExists</option>
+  <option value="weblist2csv.htm">WebList2CSV</option>
+  <option value="while_do.htm">while</option>
+  <option value="writevalue2form.htm">WriteValue2Form</option>
+  <option value="xmlnormchars.htm">XMLNormChars</option>
+  <option value="xmlstrtowindows1250.htm">XMLStrToWindows1250</option>
+  <option value="yearof.htm">YearOf</option>
+  <option value="zip_function.htm">ZIP funkce</option>
+  <option value="zipcodefromaddress.htm">ZipCodeFromAddress</option>
+  <option value="zipfile.htm">ZipFile</option>
+</select>
+
+  <select id="keyword_list_dummy" size="5" style="display:none"></select>
+</div>
+
+   <script type="text/javascript">
+     /* Script for keyword listbox */
+     var idxMenu = null;
+     var idxEntries = new Array(); 
+     var idxEntryHeight = 0;
+
+     function keywordHideMenu() {	
+        if (idxMenu!=null) {
+          idxMenu.stop();
+          idxMenu.hide();
+          idxMenu = null;
+        }
+     }     	
+
+     function keywordEntryKey(value) {
+    	var aKeyword = $('#keyword_entry').attr('value').toLowerCase();
+     	var list = document.getElementById('keyword_list');
+    	var idx1 = 0;
+    	var idx2 = idxEntries.length-1;
+    	while (idx2>idx1+1) {
+    	  var delta = parseInt((idx2-idx1)/2) + idx1;
+    	  if (aKeyword > idxEntries[delta]) idx1 = delta;
+    	  else idx2 = delta;  
+        }
+    	$('#keyword_entry').unbind('onkeyup');
+    	if (aKeyword < idxEntries[idx1]) idx2 = idx1;
+        list.selectedIndex = idx2;
+        if ((idxEntryHeight>0) && (idx2<idxEntries.length-1)) {
+          $(list).stop();	
+          idx1 = idx2 * idxEntryHeight;
+          if (idx1 > ((idxEntryHeight*idxEntries.length)-$(list).innerHeight())) idx1 = (idxEntryHeight*idxEntries.length)-$(list).innerHeight(); 
+          $(list).scrollTop(idx1);
+        } 
+    	$('#keyword_entry').bind('keywordEntryKey');
+        keywordHideMenu();
+     }
+    
+     function keywordListClick(event) {
+     	var list = document.getElementById('keyword_list');
+        var aKeyword = list.options[list.selectedIndex].text;
+        var aTarget = list.options[list.selectedIndex].value; 
+
+        if (aKeyword.substr(0,1)==String.fromCharCode(160)) {
+          var i = list.selectedIndex-1;
+          var aKw = '';
+          while (i>0) {
+          	aKw = list.options[i].text;
+          	if (aKw.substr(0,1)!=String.fromCharCode(160)) { 
+          	  aKeyword = aKw + ', ' + $.trim(aKeyword);
+          	  break;
+          	}
+          	i--;
+          }
+        }
+
+        $('#keyword_entry').attr('value', aKeyword);        
+        keywordHideMenu();
+
+        //if option.value starts with an "'", it's a list of entries => display menu 
+     	if (aTarget.substring(0,1)==String.fromCharCode(39)) {
+     	  var links = aTarget.substring(1,aTarget.length-1).split("','");
+          var i = 0;
+          var aCode = '';
+          while (i<links.length-1) {
+          	aCode = aCode + '<p><a href="javascript:keywordListJump(' + "'" + links[i+1] + "'" + ')">' + links[i] + '</a></p>';
+          	i = i+2;
+          }
+          
+          idxMenu = $('#keyword_menu');
+          idxMenu.html(aCode);
+          idxMenu.css({'z-index':99, 'position':'absolute', 'right':'4px'});
+          var ypos = event.clientY;
+          if ((ypos + idxMenu.outerHeight()) > $(window).height()) ypos = event.clientY - idxMenu.outerHeight();
+          idxMenu.css('top', ypos + 'px');
+          if (hmAnimate) idxMenu.show('fast');
+          else idxMenu.show();
+     	}
+     	else if ((aTarget=='undefined')||(aTarget=='')) {
+          idxMenu = $('#keyword_menu_no_entry');
+          idxMenu.css({'z-index':99, 'position':'absolute', 'right':'4px', 'opacity':1});
+          var ypos = event.clientY;
+          if ((ypos + idxMenu.outerHeight()) > $(window).height()) ypos = event.clientY - idxMenu.outerHeight();
+          idxMenu.css('top', ypos + 'px');
+          if (hmAnimate) idxMenu.show('fast');
+          else idxMenu.show();
+          idxMenu.fadeOut(5000);
+     	}
+     	else {
+     	  keywordListJump(aTarget);
+     	}	
+     }
+     
+     function keywordListJump(aTarget) {
+        parent.document.getElementById("hmcontent").src = aTarget;
+
+        //Google adwords tracking, if enabled:
+        if (parent.frames.length>0) {
+          if (parent.gaaccount) { 
+            var list = document.getElementById('keyword_list');
+            parent.track("index", idxEntries[list.selectedIndex]); 
+          }
+        }          
+     }
+     
+     $(document).ready( function() {
+       idxEntryHeight = parseInt(($('#keyword_list_dummy').innerHeight()/5)+0.5);
+       if (isIE) idxEntryHeight = 0; //autoscrolling in keyword list works well in IE
+       var kwmain = '';
+       var kw = '';
+       var list = document.getElementById('keyword_list');
+       $(list).click(function(event) { keywordListClick(event) });
+       	
+       for (var i=0; i < list.options.length; i++) {
+         kw = list.options[i].text;
+         
+         if ( (kw.substring(0,3)==String.fromCharCode(160,160,160)) || (kw.substring(0,3)==String.fromCharCode(32,32,32)) ) {
+           kw = kw.substr(3);	
+           idxEntries.push( kwmain+', '+kw.toLowerCase() );
+         }            
+         else {  
+           kwmain = kw.toLowerCase();
+           idxEntries.push(kwmain); 
+         }            
+       }
+
+       $(list).scroll(keywordHideMenu);
+       	
+       $(window).resize(function() { 
+         $('#keyword_entry').css('width', $('#keyword_list').width()+'px');
+	     $('#keyword_list_div').css('top', $('#keyword_entry_div').offset().top + $('#keyword_entry_div').outerHeight() + 5 + 'px');
+       });
+	 
+	   $(window).resize();
+	   
+     });
+   </script>
+ 
+</body>
+</html>

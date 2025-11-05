@@ -19,9 +19,11 @@ Extension přidává vlastní panel do Activity Bar (levý panel). Kliknutím na
 | **Uložit soubor** | <kbd>Ctrl</kbd>+<kbd>S</kbd> | Uloží aktuální soubor |
 | **Aktivovat FA** | <kbd>Alt</kbd>+<kbd>Q</kbd> | Uloží aktuální soubor (jako Ctrl+S) |
 | **Otevřít FA Bridge** | <kbd>Shift</kbd>+<kbd>Alt</kbd>+<kbd>F</kbd> | Otevře/zavře sidebar panel |
-| **Vložit název údaje** | <kbd>Shift</kbd>+<kbd>Alt</kbd>+<kbd>V</kbd> | Vloží název aktuálního údaje na kurzor |
+| **Vložit název údaje** | <kbd>Alt</kbd>+<kbd>X</kbd> | Vloží název aktuálního údaje na kurzor (nebo nahradí označený text) |
 | **Název údaje do clipboardu** | <kbd>Shift</kbd>+<kbd>Alt</kbd>+<kbd>C</kbd> | Zkopíruje název údaje do schránky |
 | **Najít údaj ve formuláři** | <kbd>Shift</kbd>+<kbd>Alt</kbd>+<kbd>L</kbd> | Najde údaj podle slova pod kurzorem |
+| **Toggle msgv** | <kbd>Alt</kbd>+<kbd>F9</kbd> | Vloží `msgv('')` před aktuální řádek nebo smaže řádek s `msgv(` |
+| **Toggle field** | <kbd>Alt</kbd>+<kbd>A</kbd> | Mění formát slova: `'slovo'` → `[:slovo:]` → `[.slovo.]` → `'slovo'` |
 
 > **Tip na macOS:** Nahraď <kbd>Ctrl</kbd> za <kbd>Cmd</kbd>
 
@@ -387,4 +389,4 @@ npm run test
 
 ---
 
-**Vytvořeno:** Říjen 2025 | **Status:** Funkční ✓ | **Verze:** 0.4.5
+**Vytvořeno:** Říjen 2025 | **Status:** Funkční ✓ | **Verze:** 0.5.11

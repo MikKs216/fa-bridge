@@ -2547,6 +2547,9 @@ begin
 end;
 
 procedure Msg(const AMessage: string);
+var
+  Dlg: TForm;
+  DlgLeft, DlgTop: Integer;
 begin
   // Nejdřív shromáždit data a zapsat do Cursor (před blokujícím dialogem)
   {$IFDEF UCURSOR}
@@ -2554,13 +2557,69 @@ begin
     GfaMain.OnMsgCalled(AMessage);
   {$ENDIF UCURSOR}
   
-  // Pak zobrazit zprávu (blokující dialog)
-  ShowMessage(AMessage);
+  // Pak zobrazit zprávu (blokující dialog) uprostřed hlavního okna
+  if Assigned(GfaMain) then
+  begin
+    // Použít MessageDlg a pak přesunout dialog na střed hlavního okna
+    Dlg := CreateMessageDialog(AMessage, mtInformation, [mbOK], mbOK);
+    try
+      // Vypočítat pozici uprostřed hlavního okna
+      DlgLeft := GfaMain.Left + (GfaMain.Width - Dlg.Width) div 2;
+      DlgTop := GfaMain.Top + (GfaMain.Height - Dlg.Height) div 2;
+      
+      // Zajistit, aby dialog nebyl mimo obrazovku
+      if DlgLeft < 0 then
+        DlgLeft := GfaMain.Left + 10;
+      if DlgTop < 0 then
+        DlgTop := GfaMain.Top + 10;
+      
+      Dlg.Left := DlgLeft;
+      Dlg.Top := DlgTop;
+      Dlg.ShowModal;
+    finally
+      Dlg.Free;
+    end;
+  end
+  else
+    ShowMessage(AMessage); // Fallback, pokud není hlavní okno k dispozici
 end;
 
 procedure Msgv(AMessage: variant);
+var
+  Dlg: TForm;
+  DlgLeft, DlgTop: Integer;
 begin
-  ShowMessage(VarToStr(AMessage));
+  // Nejdřív shromáždit data a zapsat do Cursor (před blokujícím dialogem)
+  {$IFDEF UCURSOR}
+  if Assigned(GfaMain) then
+    GfaMain.OnMsgCalled(VarToStr(AMessage));
+  {$ENDIF UCURSOR}
+  
+  // Pak zobrazit zprávu (blokující dialog) uprostřed hlavního okna
+  if Assigned(GfaMain) then
+  begin
+    // Použít MessageDlg a pak přesunout dialog na střed hlavního okna
+    Dlg := CreateMessageDialog(VarToStr(AMessage), mtInformation, [mbOK], mbOK);
+    try
+      // Vypočítat pozici uprostřed hlavního okna
+      DlgLeft := GfaMain.Left + (GfaMain.Width - Dlg.Width) div 2;
+      DlgTop := GfaMain.Top + (GfaMain.Height - Dlg.Height) div 2;
+      
+      // Zajistit, aby dialog nebyl mimo obrazovku
+      if DlgLeft < 0 then
+        DlgLeft := GfaMain.Left + 10;
+      if DlgTop < 0 then
+        DlgTop := GfaMain.Top + 10;
+      
+      Dlg.Left := DlgLeft;
+      Dlg.Top := DlgTop;
+      Dlg.ShowModal;
+    finally
+      Dlg.Free;
+    end;
+  end
+  else
+    ShowMessage(VarToStr(AMessage)); // Fallback, pokud není hlavní okno k dispozici
 end;
 
 procedure InitScriptGVariables;
