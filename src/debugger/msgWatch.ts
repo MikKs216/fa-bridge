@@ -123,13 +123,9 @@ export class MsgWatchProvider implements vscode.TreeDataProvider<MsgWatchTreeIte
 		this.log('[MsgWatch] File exists: ' + fs.existsSync(statePath));
 
 		if (!fs.existsSync(statePath)) {
-			return [
-				new MsgWatchTreeItem(
-					'Žádná data',
-					'Zavolejte Msg() ve skriptu pro zobrazení dat',
-					vscode.TreeItemCollapsibleState.None
-				)
-			];
+			// Vrať prázdný seznam - panel se automaticky skryje, protože nemá obsah
+			this.log('[MsgWatch] Script neběží - panel skrytý (prázdný seznam)');
+			return [];
 		}
 
 		try {

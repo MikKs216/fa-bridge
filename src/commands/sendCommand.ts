@@ -4,11 +4,39 @@ import * as path from 'path';
 import { writeFACommand } from '../utils/fsBridge';
 
 /**
+ * Smaže famsgstate.json pokud existuje
+ */
+function deleteFamsgState(): void {
+	try {
+		const config = vscode.workspace.getConfiguration('faBridge');
+		const fsbridgePath = config.get<string>('fsbridgePath');
+		
+		if (!fsbridgePath || fsbridgePath === '') {
+			return;
+		}
+
+		const statePath = path.join(fsbridgePath, 'famsgstate.json');
+		
+		if (fs.existsSync(statePath)) {
+			fs.unlinkSync(statePath);
+			console.log(`[FA Bridge] Smazán famsgstate.json: ${statePath}`);
+		}
+	} catch (error) {
+		// Tichá chyba - nechceme rušit uživatele při ukládání
+		const msg = error instanceof Error ? error.message : String(error);
+		console.log(`[FA Bridge] Chyba při mazání famsgstate.json: ${msg}`);
+	}
+}
+
+/**
  * Uloží aktuální soubor pomocí VS Code API (zajišťuje trigger Local History)
  * Pokud soubor nemá změny, jen aktivuje FA do popředí
  */
 export async function ulozitSoubor(): Promise<void> {
 	try {
+		// Smaž famsgstate.json při každém volání (Ctrl+S nebo Alt+Q)
+		deleteFamsgState();
+
 		const editor = vscode.window.activeTextEditor;
 		if (!editor) {
 			vscode.window.showErrorMessage('✗ Žádný editor otevřen');
