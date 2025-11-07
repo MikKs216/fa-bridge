@@ -8,25 +8,34 @@ Tato extension poskytuje:
 
 1. **Komunikaci s FormAsistent** přes příkazy do souboru `.fsbridge/facmd.txt`
 2. **Pascal Syntax Highlighting** s podporou FA vlastních funkcí a formulářových odkazů
+3. **IntelliSense podporu** (Completion + Hover) pro Pascal soubory s dokumentací z `FsUtils.pas`
+4. **Msg Watch panel** pro zobrazení zpráv z běžícího skriptu
 
 ### 🎯 Sidebar Panel
 
-Extension přidává vlastní panel do Activity Bar (levý panel). Kliknutím na ikonu FA Bridge zobrazíš seznam všech dostupných příkazů.
+Extension přidává vlastní panel do Activity Bar (levý panel). Panel se automaticky otevře při každém startu Cursoru/VS Code. Kliknutím na ikonu FA Bridge zobrazíš seznam všech dostupných příkazů.
+
+Panel obsahuje dvě sekce:
+- **Příkazy** - Seznam všech dostupných příkazů s klávesovými zkratkami
+- **Msg Watch** - Zobrazuje zprávy z běžícího skriptu (viditelné pouze když skript běží)
 
 ### Dostupné příkazy
 
 | Příkaz                              | Klávesová zkratka                                                  | Popis                                                                             |
 | ------------------------------------- | -------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
-| **Uložit soubor**              | `<kbd>`Ctrl`</kbd>`+`<kbd>`S`</kbd>`                         | Uloží aktuální soubor                                                         |
-| **Aktivovat FA**                | `<kbd>`Alt`</kbd>`+`<kbd>`Q`</kbd>`                          | Uloží aktuální soubor (jako Ctrl+S)                                           |
-| **Otevřít FA Bridge**         | `<kbd>`Shift`</kbd>`+`<kbd>`Alt`</kbd>`+`<kbd>`F`</kbd>` | Otevře/zavře sidebar panel                                                      |
-| **Vložit název údaje**       | `<kbd>`Alt`</kbd>`+`<kbd>`X`</kbd>`                          | Vloží název aktuálního údaje na kurzor (nebo nahradí označený text)      |
-| **Název údaje do clipboardu** | `<kbd>`Shift`</kbd>`+`<kbd>`Alt`</kbd>`+`<kbd>`C`</kbd>` | Zkopíruje název údaje do schránky                                             |
-| **Najít údaj ve formuláři** | `<kbd>`Shift`</kbd>`+`<kbd>`Alt`</kbd>`+`<kbd>`L`</kbd>` | Najde údaj podle slova pod kurzorem                                              |
-| **Toggle msgv**                 | `<kbd>`Alt`</kbd>`+`<kbd>`F9`</kbd>`                         | Vloží `msgv('')` před aktuální řádek nebo smaže řádek s `msgv(`     |
-| **Toggle field**                | `<kbd>`Alt`</kbd>`+`<kbd>`A`</kbd>`                          | Mění formát slova:`'slovo'` → `[:slovo:]` → `[.slovo.]` → `'slovo'` |
+| **Uložit soubor**              | Ctrl+S, Alt+Q                         | Uloží aktuální soubor a aktivuje FA                                                         |
+| **Otevřít FA Bridge**         | Shift+Alt+F | Otevře/zavře sidebar panel                                                      |
+| **Vložit název údaje**       | Alt+X, Ctrl+Shift+V                          | Vloží název aktuálního údaje na kurzor (nebo nahradí označený text)      |
+| **Název údaje do clipboardu** | Shift+Alt+C | Zkopíruje název údaje do schránky                                             |
+| **Najít údaj ve formuláři** | Shift+Alt+L | Najde údaj podle slova pod kurzorem                                              |
+| **Hledat podle akt. údaje** | Shift+Alt+F | Otevře Find dialog s názvem aktuálního údaje z FA |
+| **Hledat od začátku** | Alt+L | Otevře Find dialog, přesune kurzor na začátek dokumentu a znovu otevře Find dialog |
+| **Toggle msgv**                 | Alt+F9                         | Vloží `msgv('')` před aktuální řádek nebo smaže řádek s `msgv(`     |
+| **Toggle field**                | Alt+A                          | Mění formát slova:`'slovo'` → `[:slovo:]` → `[.slovo.]` → `'slovo'` |
+| **Vložit [.udaj.]** | Shift+Ctrl+[ | Vloží údaj z FA ve formátu [.názevÚdaje.] |
+| **Vložit [:udaj:]** | Shift+Ctrl+] | Vloží údaj z FA ve formátu [:názevÚdaje:] |
 
-> **Tip na macOS:** Nahraď `<kbd>`Ctrl`</kbd>` za `<kbd>`Cmd`</kbd>`
+> **Tip na macOS:** Nahraď Ctrl za Cmd
 
 ### 🎨 Pascal Syntax Highlighting
 
@@ -64,10 +73,10 @@ Extension obsahuje 2 optimalizovaná témata:
 
 | Téma                     | Popis                           | Aktivace                                                                                                          |
 | ------------------------- | ------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| **FA Pascal Light** | Světlé téma podle FA editoru | `<kbd>`Ctrl`</kbd>`+`<kbd>`Shift`</kbd>`+`<kbd>`P`</kbd>` → "FA Bridge: Přepnout na světlý motiv" |
-| **FA Pascal Dark**  | Tmavé téma pro pohodlí       | `<kbd>`Ctrl`</kbd>`+`<kbd>`Shift`</kbd>`+`<kbd>`P`</kbd>` → "FA Bridge: Přepnout na tmavý motiv"   |
+| **FA Pascal Light** | Světlé téma podle FA editoru | Ctrl+Shift+P → "FA Bridge: Přepnout na světlý motiv" |
+| **FA Pascal Dark**  | Tmavé téma pro pohodlí       | Ctrl+Shift+P → "FA Bridge: Přepnout na tmavý motiv"   |
 
-Nebo použij standardní výběr themes: `<kbd>`Ctrl`</kbd>`+`<kbd>`K`</kbd>` `<kbd>`Ctrl`</kbd>`+`<kbd>`T`</kbd>` → "FA Pascal Light/Dark"
+Nebo použij standardní výběr themes: Ctrl+K Ctrl+T → "FA Pascal Light/Dark"
 
 > **Tip:** Témata lze aplikovat jen na Pascal soubory nebo nastavit jako globální téma pro celý editor.
 
@@ -89,13 +98,13 @@ Extension obsahuje **11 užitečných snippetů** pro rychlejší psaní kódu:
 | `var`       | TStringList   | TStringList s try-finally a for cyklem |
 | `begin`     | Begin-end     | Jednoduchý begin-end blok             |
 
-**Použití:** Napiš zkratku (např. `function`) a stiskni `<kbd>`Tab`</kbd>` nebo `<kbd>`Enter`</kbd>`. Kurzor se automaticky přesune na místa, která je potřeba vyplnit.
+**Použití:** Napiš zkratku (např. `function`) a stiskni Tab nebo Enter. Kurzor se automaticky přesune na místa, která je potřeba vyplnit.
 
 #### Vypnutí snippetů
 
 Pokud preferuješ vlastní snippety nebo jiné rozšíření, můžeš naše snippety vypnout:
 
-1. Otevři nastavení: `<kbd>`Ctrl`</kbd>`+`<kbd>`,`</kbd>` (nebo File > Preferences > Settings)
+1. Otevři nastavení: Ctrl+, (nebo File > Preferences > Settings)
 2. Vyhledej: `FA Bridge`
 3. Odškrtni: **Enable Snippets**
 
@@ -115,7 +124,7 @@ Nebo přímo v `settings.json`:
 
 #### Jak nastavit cestu:
 
-1. Otevři nastavení: `<kbd>`Ctrl`</kbd>`+`<kbd>`,`</kbd>` (nebo File > Preferences > Settings)
+1. Otevři nastavení: Ctrl+, (nebo File > Preferences > Settings)
 2. Vyhledej: `faBridge.fsbridgePath`
 3. Nastav cestu k `.fsbridge` složce (výchozí: `D:\FA DESIGN\DataPrg\Scripts\.fsbridge`)
 
@@ -217,9 +226,24 @@ Vytvoří se soubor např. `fa-bridge-0.5.11.vsix`, který můžeš nainstalovat
 - **Cursor/VS Code:** Ctrl+Shift+P → "Extensions: Install from VSIX..."
 - **Příkazová řádka:** `code --install-extension fa-bridge-0.5.11.vsix`
 
+## 🧠 IntelliSense pro Pascal
+
+Extension poskytuje **IntelliSense podporu** (Completion + Hover) pro Pascal soubory:
+
+- **Completion** - Automatické doplňování funkcí a procedur (aktivuje se pomocí Ctrl+Space)
+- **Hover** - Zobrazení dokumentace při najetí myší na funkci/proceduru
+
+### Dokumentace
+
+IntelliSense čerpá dokumentaci ze souboru `FsUtils.pas` v workspace. Funkce a procedury s XML dokumentací (`/// <summary>`, `<param>`, `<returns>`) jsou automaticky parsovány a zobrazeny v IntelliSense.
+
+### Statistiky
+
+Pro zobrazení statistik parsování použij příkaz: Ctrl+Shift+P → "FA Bridge: Zobrazit IntelliSense statistiky"
+
 ## Jak to funguje
 
-1. **Uživatel stiskne zkratku** (např. `<kbd>`Alt`</kbd>`+`<kbd>`Q`</kbd>` pro uložení nebo `<kbd>`Alt`</kbd>`+`<kbd>`X`</kbd>` pro vložení názvu údaje)
+1. **Uživatel stiskne zkratku** (např. Alt+Q pro uložení nebo Alt+X pro vložení názvu údaje)
 2. **Extension napíše příkaz** do souboru `.fsbridge/facmd.txt` (UTF-8 s BOM, bez trailing newline)
 3. **FA sleduje tento soubor** a automaticky provede příslušnou akci
 4. **Uživateli se zobrazí potvrzující zpráva** v notifikaci
@@ -236,83 +260,32 @@ Vytvoř si workspace s nějakými soubory a:
 npm run test
 ```
 
-## 🐛 Debugování TMS Scripter
+## 📊 Msg Watch Panel
 
-Extension poskytuje integrovaný debugger pro TMS Scripter v FA aplikaci. Debugger funguje automaticky - sleduje stav běžícího skriptu v FA a zobrazuje ho v Cursoru.
+Extension poskytuje panel **Msg Watch**, který zobrazuje zprávy z běžícího skriptu v FA. Panel je automaticky skrytý, když skript neběží, a zobrazí se pouze když skript běží (když existuje soubor `famsgstate.json`).
 
-### Jak spustit debugování
+### Automatické chování
 
-1. **Otevři Pascal soubor** v Cursoru (např. `.pas` soubor se skriptem)
-2. **Nastav breakpointy** kliknutím na levý okraj editoru nebo stiskem `<kbd>`F9`</kbd>`
-3. **Spusť skript v FA** - běžným způsobem (např. vyplnění formuláře, které spustí skript)
-4. **Debugger se automaticky aktivuje** - když skript dorazí na breakpoint nebo se pozastaví
-
-### Debugger příkazy
-
-| Příkaz                       | Klávesová zkratka                            | Popis                                                              |
-| ------------------------------ | ---------------------------------------------- | ------------------------------------------------------------------ |
-| **Pokračovat**          | `<kbd>`F5`</kbd>`                          | Pokračuje v běhu skriptu (nebo spustí skript pokud je zastaven) |
-| **Krok přes**           | `<kbd>`F10`</kbd>`                         | Provede aktuální řádek a pozastaví na dalším                |
-| **Pozastavit/Zastavit**  | `<kbd>`Shift`</kbd>`+`<kbd>`F5`</kbd>` | Pozastaví běžící skript nebo zastaví debugování            |
-| **Přepnout breakpoint** | `<kbd>`F9`</kbd>`                          | Nastaví/zruší breakpoint na aktuálním řádku                 |
-
-> **Poznámka:** Všechny klávesové zkratky fungují pouze když je otevřený Pascal soubor (`.pas`).
-
-### Debugger rozhraní
-
-**Status Bar:**
-
-- V dolní části Cursoru vidíš stav debuggeru:
-  - `Debug: běží` - skript běží
-  - `Debug: pozastaveno (řádek X)` - skript je pozastaven na řádku X
-  - `Debug: zastaveno` - skript není spuštěn
-
-**Zvýraznění aktuálního řádku:**
-
-- Když je skript pozastaven, aktuální řádek je zvýrazněn v editoru
-- Editor automaticky přejede na pozastavený řádek
-
-**Debug Proměnné panel:**
-
-- V sidebaru FA Bridge → "Debug Proměnné" vidíš aktuální proměnné při debugování
-- Panel se automaticky aktualizuje při změně stavu
-
-### Workflow debugování
-
-1. **Připrav skript v FA:**
-
-   - Otevři formulář v FA
-   - Nastav breakpointy v Cursoru (F9) nebo v FA
-2. **Spusť skript v FA:**
-
-   - Proveď akci, která spustí skript (např. změna hodnoty pole)
-   - Skript se automaticky pozastaví na prvním breakpointu
-3. **Ovládej debugování v Cursoru:**
-
-   - Použij F5 (pokračovat), F10 (krok přes), F9 (přepnout breakpoint)
-   - Sleduj stav v status baru a aktuální řádek v editoru
-4. **Sleduj proměnné:**
-
-   - Otevři panel "Debug Proměnné" v sidebaru FA Bridge
-   - Proměnné se automaticky aktualizují při změně stavu
-
-### Důležité poznámky
-
-- **Debugger je aktivní pouze když není otevřen původní debugger v EScriptEditor**
-
-  - Pokud máš otevřený původní editor skriptu v debug módu, použije se jeho debugger
-  - Jinak se použije debugger z Cursor extension
-- **Komunikace probíhá přes soubory:**
-
-  - Příkazy z Cursoru → `.fsbridge/fadebug.txt`
-  - Stav z FA → `.fsbridge/fadebugstate.json`
-  - Aktualizace probíhá každou sekundu automaticky
-- **Breakpointy:**
-
-  - Breakpointy nastavené v Cursoru se synchronizují s FA
-  - Breakpointy nastavené v FA se zobrazují v Cursoru
+- Panel se zobrazí automaticky, když skript začne běžet
+- Panel se skryje automaticky, když skript skončí
+- Soubor `famsgstate.json` se automaticky maže při startu extension a při uložení souboru
 
 ## Release Notes
+
+### 0.5.26
+
+- 🔧 **Změna hotkey:** "Hledat od začátku" změněno z Shift+Alt+Z na Alt+L
+
+### 0.5.25
+
+- ✨ **Automatické otevírání panelu:** Panel FA Bridge se automaticky otevře při každém startu Cursoru/VS Code
+- 🧠 **IntelliSense podpora:** Přidána podpora Completion a Hover pro Pascal soubory s dokumentací z `FsUtils.pas`
+- 📊 **Msg Watch panel:** Panel se zobrazuje pouze když skript běží, automaticky se skrývá po skončení
+- 🗑️ **Automatické mazání:** Soubor `famsgstate.json` se automaticky maže při startu extension a při uložení souboru
+- ➕ **Nové příkazy:**
+  - Vložit [.udaj.] (Shift+Ctrl+[)
+  - Vložit [:udaj:] (Shift+Ctrl+])
+  - Hledat od začátku (Alt+L)
 
 ### 0.5.11
 
@@ -414,4 +387,4 @@ Extension poskytuje integrovaný debugger pro TMS Scripter v FA aplikaci. Debugg
 
 ---
 
-**Vytvořeno:** Říjen 2025 | **Status:** Funkční ✓ | **Verze:** 0.5.11
+**Vytvořeno:** Říjen 2025 | **Status:** Funkční ✓ | **Verze:** 0.5.26
