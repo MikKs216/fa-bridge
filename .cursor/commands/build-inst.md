@@ -1,0 +1,1 @@
+Proveď build a nainstaluj doplněk

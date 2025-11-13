@@ -48,12 +48,45 @@ function deleteFamsgState(fsbridgePath: string | undefined, outputChannel: vscod
 	}
 }
 
+/**
+ * Zkontroluje, jestli workspace obsahuje .fsbridge složku nebo soubor
+ */
+function hasFsBridgeInWorkspace(): boolean {
+	const workspaceFolders = vscode.workspace.workspaceFolders;
+	if (!workspaceFolders || workspaceFolders.length === 0) {
+		return false;
+	}
+
+	// Zkontroluj každý workspace folder
+	for (const folder of workspaceFolders) {
+		const fsbridgePath = path.join(folder.uri.fsPath, '.fsbridge');
+		// Zkontroluj jestli existuje jako soubor nebo složka
+		if (fs.existsSync(fsbridgePath)) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
 export function activate(context: vscode.ExtensionContext) {
+	// Zkontroluj, jestli workspace obsahuje .fsbridge
+	if (!hasFsBridgeInWorkspace()) {
+		// Workspace neobsahuje .fsbridge - doplněk se neaktivuje
+		// Nastav kontextovou proměnnou na false, aby keybindings nefungovaly
+		vscode.commands.executeCommand('setContext', 'faBridge.isActive', false);
+		console.log('[FA Bridge] Extension neaktivována - workspace neobsahuje .fsbridge');
+		return;
+	}
+
+	// Nastav kontextovou proměnnou pro keybindings (aby fungovaly jen když je doplněk aktivní)
+	vscode.commands.executeCommand('setContext', 'faBridge.isActive', true);
+
 	// Vytvoř Output Channel pro logování
 	outputChannel = vscode.window.createOutputChannel('FA Bridge');
 	context.subscriptions.push(outputChannel);
 	
-	outputChannel.appendLine('[FA Bridge] Extension aktivována');
+	outputChannel.appendLine('[FA Bridge] Extension aktivována (.fsbridge nalezen v workspace)');
 	console.log('[FA Bridge] Extension aktivována');
 
 	// Inicializuj debugger - používá fsbridgePath z konfigurace (ne workspace!)
@@ -169,17 +202,20 @@ export function activate(context: vscode.ExtensionContext) {
 	});
 	context.subscriptions.push(saveListener);
 
-	// Automaticky otevři FA Bridge panel při každém startu
-	setTimeout(async () => {
-		try {
-			await vscode.commands.executeCommand('workbench.view.extension.faBridgeContainer');
-			if (outputChannel) {
-				outputChannel.appendLine('[FA Bridge] FA Bridge panel automaticky otevřen');
+	// Automaticky otevři FA Bridge panel při každém startu (pokud je to povoleno v nastavení)
+	const autoOpenPanel = config.get<boolean>('autoOpenPanel', true);
+	if (autoOpenPanel) {
+		setTimeout(async () => {
+			try {
+				await vscode.commands.executeCommand('workbench.view.extension.faBridgeContainer');
+				if (outputChannel) {
+					outputChannel.appendLine('[FA Bridge] FA Bridge panel automaticky otevřen');
+				}
+			} catch (error) {
+				// Tichá chyba - pokud se nepodaří otevřít, není to kritické
 			}
-		} catch (error) {
-			// Tichá chyba - pokud se nepodaří otevřít, není to kritické
-		}
-	}, 500); // 500ms zpoždění pro zajištění, že VS Code je plně načten
+		}, 500); // 500ms zpoždění pro zajištění, že VS Code je plně načten
+	}
 }
 
 export function deactivate() {

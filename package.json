@@ -3,7 +3,7 @@
   "displayName": "FA Bridge",
   "publisher": "fa-dev",
   "description": "Propojení Cursor/VS Code s editorem FormStudio (FA)",
-	"version": "0.5.26",
+	"version": "0.5.31",
   "engines": {
     "vscode": "^1.85.0"
   },
@@ -14,7 +14,7 @@
   ],
   "icon": "images/icon.png",
   "activationEvents": [
-    "*"
+    "onStartupFinished"
   ],
   "main": "./out/extension.js",
   "contributes": {
@@ -30,6 +30,11 @@
           "type": "string",
           "default": "D:\\FA DESIGN\\DataPrg\\Scripts\\.fsbridge",
           "description": "Cesta k .fsbridge složce pro komunikaci s FA (např. D:\\FA DESIGN\\DataPrg\\Scripts\\.fsbridge)"
+        },
+        "faBridge.autoOpenPanel": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automaticky otevřít FA Bridge panel v levém panelu při spuštění"
         }
       }
     },
@@ -124,67 +129,80 @@
       {
         "command": "workbench.view.extension.faBridgeContainer",
         "key": "shift+alt+f",
-        "mac": "shift+alt+f"
+        "mac": "shift+alt+f",
+        "when": "faBridge.isActive"
       },
       {
         "command": "faBridge.ulozitSoubor",
         "key": "alt+q",
-        "mac": "alt+q"
+        "mac": "alt+q",
+        "when": "faBridge.isActive"
       },
       {
         "command": "faBridge.ulozitSoubor",
         "key": "ctrl+s",
-        "mac": "cmd+s"
+        "mac": "cmd+s",
+        "when": "faBridge.isActive"
       },
       {
         "command": "faBridge.vlozitNazevUdaje",
         "key": "alt+x",
-        "mac": "alt+x"
+        "mac": "alt+x",
+        "when": "faBridge.isActive"
       },
       {
         "command": "faBridge.vlozitNazevUdaje",
         "key": "ctrl+shift+v",
-        "mac": "cmd+shift+v"
+        "mac": "cmd+shift+v",
+        "when": "faBridge.isActive"
       },
       {
         "command": "faBridge.kopirovatNazevUdaje",
         "key": "shift+alt+c",
-        "mac": "shift+alt+c"
+        "mac": "shift+alt+c",
+        "when": "faBridge.isActive"
       },
       {
         "command": "faBridge.najitUdaj",
         "key": "shift+alt+l",
-        "mac": "shift+alt+l"
+        "mac": "shift+alt+l",
+        "when": "faBridge.isActive"
       },
       {
         "command": "faBridge.hledatPodleAktUdaje",
         "key": "shift+alt+f",
-        "mac": "shift+alt+f"
+        "mac": "shift+alt+f",
+        "when": "faBridge.isActive"
       },
       {
         "command": "faBridge.toggleMsgv",
         "key": "alt+f9",
-        "mac": "alt+f9"
+        "mac": "alt+f9",
+        "when": "faBridge.isActive"
       },
       {
         "command": "faBridge.toggleField",
         "key": "alt+a",
-        "mac": "alt+a"
+        "mac": "alt+a",
+        "when": "faBridge.isActive"
       },
       {
         "command": "faBridge.vlozitUdajSBody",
         "key": "shift+ctrl+[",
-        "mac": "shift+cmd+["
+        "mac": "shift+cmd+[",
+        "when": "faBridge.isActive"
       },
       {
         "command": "faBridge.vlozitUdajSDvojteckami",
         "key": "shift+ctrl+]",
-        "mac": "shift+cmd+]"
+        "mac": "shift+cmd+]",
+        "when": "faBridge.isActive"
       },
       {
         "command": "faBridge.hledatOdZacatku",
         "key": "alt+l",
-        "mac": "alt+l"
+        "mac": "alt+l",
+        "when": "faBridge.isActive"
       }
     ]
   },
