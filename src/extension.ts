@@ -206,6 +206,42 @@ export function activate(context: vscode.ExtensionContext) {
 	});
 	context.subscriptions.push(saveListener);
 
+	// Sleduj aktivaci okna Cursoru - když se aktivuje myší, aktualizuj aktuální údaj z FA
+	const windowStateListener = vscode.window.onDidChangeWindowState((state) => {
+		if (state.focused) {
+			// Okno získalo focus - zkontroluj/aktualizuj fafield.txt
+			// Pošleme příkaz do FA, aby aktualizoval aktuální údaj
+			setTimeout(async () => {
+				try {
+					// Zkontroluj, jestli existuje workspace a .fsbridge složka
+					const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+					if (!workspaceRoot) {
+						return;
+					}
+
+					const fsbridgeDir = path.join(workspaceRoot, '.fsbridge');
+					if (!fs.existsSync(fsbridgeDir)) {
+						return;
+					}
+
+					// Pošli příkaz do FA pro aktualizaci aktuálního údaje
+					// FA by mělo aktualizovat fafield.txt když dostane tento příkaz
+					await writeFACommand('GetCurrentField');
+					if (outputChannel) {
+						outputChannel.appendLine('[FA Bridge] Požádáno o aktualizaci aktuálního údaje při aktivaci okna');
+					}
+				} catch (error) {
+					// Tichá chyba - není kritické
+					if (outputChannel) {
+						const msg = error instanceof Error ? error.message : String(error);
+						outputChannel.appendLine(`[FA Bridge] Chyba při aktualizaci údaje: ${msg}`);
+					}
+				}
+			}, 100); // Malé zpoždění pro zajištění, že okno je plně aktivní
+		}
+	});
+	context.subscriptions.push(windowStateListener);
+
 	// Automaticky otevři FA Bridge panel při každém startu (pokud je to povoleno v nastavení)
 	const autoOpenPanel = config.get<boolean>('autoOpenPanel', true);
 	if (autoOpenPanel) {
