@@ -35,6 +35,11 @@
           "type": "boolean",
           "default": true,
           "description": "Automaticky otevřít FA Bridge panel v levém panelu při spuštění"
+        },
+        "faBridge.faCompatibleHotkeys": {
+          "type": "boolean",
+          "default": false,
+          "description": "Horké klávesy kompatibilní s FA (Shift+Ctrl+C/L/F místo Shift+Alt+C/L/F)"
         }
       }
     },
@@ -160,7 +165,13 @@
         "command": "faBridge.kopirovatNazevUdaje",
         "key": "shift+alt+c",
         "mac": "shift+alt+c",
-        "when": "faBridge.isActive"
+        "when": "faBridge.isActive && !config.faBridge.faCompatibleHotkeys"
+      },
+      {
+        "command": "faBridge.kopirovatNazevUdaje",
+        "key": "shift+ctrl+c",
+        "mac": "shift+cmd+c",
+        "when": "faBridge.isActive && config.faBridge.faCompatibleHotkeys"
       },
       {
         "command": "faBridge.najitUdaj",
@@ -172,7 +183,13 @@
         "command": "faBridge.hledatPodleAktUdaje",
         "key": "shift+alt+f",
         "mac": "shift+alt+f",
-        "when": "faBridge.isActive"
+        "when": "faBridge.isActive && !config.faBridge.faCompatibleHotkeys"
+      },
+      {
+        "command": "faBridge.hledatPodleAktUdaje",
+        "key": "shift+ctrl+f",
+        "mac": "shift+cmd+f",
+        "when": "faBridge.isActive && config.faBridge.faCompatibleHotkeys"
       },
       {
         "command": "faBridge.toggleMsgv",

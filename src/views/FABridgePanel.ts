@@ -60,6 +60,15 @@ export class FABridgeTreeProvider implements vscode.TreeDataProvider<CategoryTre
 			return Promise.resolve([]);
 		}
 
+		// Načti konfiguraci pro FA kompatibilní hotkeys
+		const config = vscode.workspace.getConfiguration('faBridge');
+		const faCompatibleHotkeys = config.get<boolean>('faCompatibleHotkeys', false);
+
+		// Urči správné zkratky podle nastavení
+		const copyShortcut = faCompatibleHotkeys ? 'Shift+Ctrl+C' : 'Shift+Alt+C';
+		const findShortcut = 'Shift+Alt+L'; // Vždy Shift+Alt+L (bez ohledu na nastavení)
+		const searchShortcut = faCompatibleHotkeys ? 'Shift+Ctrl+F' : 'Shift+Alt+F';
+
 		// Root level - vrať kategorie
 		const faCommands: CommandTreeItem[] = [
 			new CommandTreeItem(
@@ -81,7 +90,7 @@ export class FABridgeTreeProvider implements vscode.TreeDataProvider<CategoryTre
 				'Vloží název aktuálního údaje na pozici kurzoru'
 			),
 			new CommandTreeItem(
-				'Název údaje do clibboardu (Shift+Alt+C)',
+				`Název údaje do clibboardu (${copyShortcut})`,
 				{
 					command: 'faBridge.kopirovatNazevUdaje',
 					title: 'Kopírovat název údaje',
@@ -90,7 +99,7 @@ export class FABridgeTreeProvider implements vscode.TreeDataProvider<CategoryTre
 				'Zkopíruje název údaje do schránky'
 			),
 			new CommandTreeItem(
-				'Najít údaj ve formuláři (Shift+Alt+L)',
+				`Najít údaj ve formuláři (${findShortcut})`,
 				{
 					command: 'faBridge.najitUdaj',
 					title: 'Najít údaj ve formuláři',
@@ -99,7 +108,7 @@ export class FABridgeTreeProvider implements vscode.TreeDataProvider<CategoryTre
 				'Najde údaj podle slova pod kurzorem'
 			),
 			new CommandTreeItem(
-				'Hledat podle akt. údaje (Shift+Alt+F)',
+				`Hledat podle akt. údaje (${searchShortcut})`,
 				{
 					command: 'faBridge.hledatPodleAktUdaje',
 					title: 'Hledat podle akt. údaje',
@@ -174,6 +183,13 @@ export function registerFABridgePanel(context: vscode.ExtensionContext): void {
 		showCollapseAll: false,
 	});
 
-	context.subscriptions.push(treeView);
+	// Sleduj změny konfigurace a aktualizuj panel
+	const configDisposable = vscode.workspace.onDidChangeConfiguration((e) => {
+		if (e.affectsConfiguration('faBridge.faCompatibleHotkeys')) {
+			treeProvider.refresh();
+		}
+	});
+
+	context.subscriptions.push(treeView, configDisposable);
 }
 

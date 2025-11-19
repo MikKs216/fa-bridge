@@ -1,0 +1,19 @@
+Ctrl+B : Toggle levý panel
+
+Ctrl+Alt+B / Ctrl+L : Toggle pravý panel
+
+Ctrl+/
+- V editoru - zakomentářuej řádek / blok
+- V panelu AI - Otevře výběr modelu AI
+
+Ctrl+. / Shift+Tab
+- Přepíná módy chatu Agent/Ask/Plan
+
+Ctrl+click : Vícenásobný carret (kursor)
+
+Shift+Alt+taženímyší : Sloupcový blok
+
+Ctrl+Shift+P : Příkazy Cursoru
+- Preferences: Color Theme (FA Pascal)
+
+

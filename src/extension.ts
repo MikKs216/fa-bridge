@@ -19,6 +19,7 @@ import { writeFACommand } from './utils/fsBridge';
 import { registerFABridgePanel } from './views/FABridgePanel';
 import { registerSnippetProvider } from './providers/SnippetProvider';
 import { registerMsgWatchPanel } from './debugger/msgWatch';
+import { registerHelpPanel } from './views/HelpPanel';
 import { registerIntelliSenseProvider, getIntelliSenseProvider } from './providers/PascalIntelliSenseProvider';
 
 let outputChannel: vscode.OutputChannel | null = null;
@@ -98,6 +99,9 @@ export function activate(context: vscode.ExtensionContext) {
 
 	// Registruj sidebar panel
 	registerFABridgePanel(context);
+
+	// Registruj Help panel
+	registerHelpPanel(context, outputChannel);
 
 	// Registruj Pascal snippet provider (s nastavením zapnout/vypnout)
 	context.subscriptions.push(registerSnippetProvider(context));

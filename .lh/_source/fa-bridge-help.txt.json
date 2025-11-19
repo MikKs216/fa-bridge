@@ -1,0 +1,38 @@
+{
+    "sourceFile": "_source/fa-bridge-help.txt",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 5,
+            "patches": [
+                {
+                    "date": 1763040034450,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1763040230500,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,26 +1,21 @@\n KLÁVESOVÉ ZKRATKY CURSOR\r\n \r\n-Ctrl+B\r\n-Toggle levý panel\r\n+Ctrl+B : Toggle levý panel\r\n \r\n-Ctrl+Alt+B / Ctrl+L\r\n-Toggle pravý panel\r\n+Ctrl+Alt+B / Ctrl+L : Toggle pravý panel\r\n \r\n Ctrl+/\r\n V editoru - zakomentářuej řádek / blok\r\n V panelu AI - Otevře výběr modelu AI\r\n \r\n Ctrl+. / Shift+Tab\r\n-Přepíná módy chatu Agent / Ask / Plan\r\n+Přepíná módy chatu Agent/Ask/Plan\r\n \r\n-Ctrl+click\r\n-Vícenásobný carret (kursor)\r\n+Ctrl+click : Vícenásobný carret (kursor)\r\n \r\n-Shift+Alt+myš\r\n-Sloupcový blok\r\n+Shift+Alt+taženímyší : Sloupcový blok\r\n \r\n-Ctrl+Shift+P\r\n-Příkazy Cursoru\r\n+Ctrl+Shift+P : Příkazy Cursoru\r\n Preferences: Color Theme (FA Pascal)\r\n \r\n \r\n"
+                },
+                {
+                    "date": 1763040267523,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,6 +1,4 @@\n-KLÁVESOVÉ ZKRATKY CURSOR\r\n-\r\n Ctrl+B : Toggle levý panel\r\n \r\n Ctrl+Alt+B / Ctrl+L : Toggle pravý panel\r\n \r\n"
+                },
+                {
+                    "date": 1763040300195,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -2,18 +2,18 @@\n \r\n Ctrl+Alt+B / Ctrl+L : Toggle pravý panel\r\n \r\n Ctrl+/\r\n-V editoru - zakomentářuej řádek / blok\r\n-V panelu AI - Otevře výběr modelu AI\r\n+    V editoru - zakomentářuej řádek / blok\r\n+    V panelu AI - Otevře výběr modelu AI\r\n \r\n Ctrl+. / Shift+Tab\r\n-Přepíná módy chatu Agent/Ask/Plan\r\n+    Přepíná módy chatu Agent/Ask/Plan\r\n \r\n Ctrl+click : Vícenásobný carret (kursor)\r\n \r\n Shift+Alt+taženímyší : Sloupcový blok\r\n \r\n Ctrl+Shift+P : Příkazy Cursoru\r\n-Preferences: Color Theme (FA Pascal)\r\n+    Preferences: Color Theme (FA Pascal)\r\n \r\n \r\n"
+                },
+                {
+                    "date": 1763040342369,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -2,10 +2,10 @@\n \r\n Ctrl+Alt+B / Ctrl+L : Toggle pravý panel\r\n \r\n Ctrl+/\r\n-    V editoru - zakomentářuej řádek / blok\r\n-    V panelu AI - Otevře výběr modelu AI\r\n+  V editoru - zakomentářuej řádek / blok\r\n+  V panelu AI - Otevře výběr modelu AI\r\n \r\n Ctrl+. / Shift+Tab\r\n     Přepíná módy chatu Agent/Ask/Plan\r\n \r\n"
+                },
+                {
+                    "date": 1763040381868,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -2,18 +2,18 @@\n \r\n Ctrl+Alt+B / Ctrl+L : Toggle pravý panel\r\n \r\n Ctrl+/\r\n-  V editoru - zakomentářuej řádek / blok\r\n-  V panelu AI - Otevře výběr modelu AI\r\n+- V editoru - zakomentářuej řádek / blok\r\n+- V panelu AI - Otevře výběr modelu AI\r\n \r\n Ctrl+. / Shift+Tab\r\n-    Přepíná módy chatu Agent/Ask/Plan\r\n+- Přepíná módy chatu Agent/Ask/Plan\r\n \r\n Ctrl+click : Vícenásobný carret (kursor)\r\n \r\n Shift+Alt+taženímyší : Sloupcový blok\r\n \r\n Ctrl+Shift+P : Příkazy Cursoru\r\n-    Preferences: Color Theme (FA Pascal)\r\n+- Preferences: Color Theme (FA Pascal)\r\n \r\n \r\n"
+                }
+            ],
+            "date": 1763040034450,
+            "name": "Commit-0",
+            "content": "KLÁVESOVÉ ZKRATKY CURSOR\r\n\r\nCtrl+B\r\nToggle levý panel\r\n\r\nCtrl+Alt+B / Ctrl+L\r\nToggle pravý panel\r\n\r\nCtrl+/\r\nV editoru - zakomentářuej řádek / blok\r\nV panelu AI - Otevře výběr modelu AI\r\n\r\nCtrl+. / Shift+Tab\r\nPřepíná módy chatu Agent / Ask / Plan\r\n\r\nCtrl+click\r\nVícenásobný carret (kursor)\r\n\r\nShift+Alt+myš\r\nSloupcový blok\r\n\r\nCtrl+Shift+P\r\nPříkazy Cursoru\r\nPreferences: Color Theme (FA Pascal)\r\n\r\n\r\n"
+        }
+    ]
+}
