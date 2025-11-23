@@ -3,7 +3,7 @@
   "displayName": "FA Bridge",
   "publisher": "fa-dev",
   "description": "Propojení Cursor/VS Code s editorem FormStudio (FA)",
-	"version": "0.5.31",
+	"version": "0.5.33",
   "engines": {
     "vscode": "^1.85.0"
   },
@@ -25,11 +25,6 @@
           "type": "boolean",
           "default": true,
           "description": "Povolit Pascal snippety (function, procedure, if, for, try, atd.)"
-        },
-        "faBridge.fsbridgePath": {
-          "type": "string",
-          "default": "D:\\FA DESIGN\\DataPrg\\Scripts\\.fsbridge",
-          "description": "Cesta k .fsbridge složce pro komunikaci s FA (např. D:\\FA DESIGN\\DataPrg\\Scripts\\.fsbridge)"
         },
         "faBridge.autoOpenPanel": {
           "type": "boolean",
@@ -127,6 +122,10 @@
           "id": "faBridgeMsgWatch",
           "name": "Msg Watch",
           "when": "true"
+        },
+        {
+          "id": "faBridgeHelp",
+          "name": "NÁPOVĚDA"
         }
       ]
     },

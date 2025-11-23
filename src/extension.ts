@@ -26,13 +26,16 @@ let outputChannel: vscode.OutputChannel | null = null;
 
 /**
  * Smaže famsgstate.json pokud existuje
+ * Používá vždy .fsbridge složku z aktuálního workspace
  */
-function deleteFamsgState(fsbridgePath: string | undefined, outputChannel: vscode.OutputChannel | null): void {
-	if (!fsbridgePath || fsbridgePath === '') {
+function deleteFamsgState(outputChannel: vscode.OutputChannel | null): void {
+	const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+	if (!workspaceRoot) {
 		return;
 	}
 
-	const statePath = path.join(fsbridgePath, 'famsgstate.json');
+	const fsbridgeDir = path.join(workspaceRoot, '.fsbridge');
+	const statePath = path.join(fsbridgeDir, 'famsgstate.json');
 	
 	if (fs.existsSync(statePath)) {
 		try {
@@ -90,12 +93,12 @@ export function activate(context: vscode.ExtensionContext) {
 	outputChannel.appendLine('[FA Bridge] Extension aktivována (.fsbridge nalezen v workspace)');
 	console.log('[FA Bridge] Extension aktivována');
 
-	// Inicializuj debugger - používá fsbridgePath z konfigurace (ne workspace!)
-	const config = vscode.workspace.getConfiguration('faBridge');
-	const fsbridgePath = config.get<string>('fsbridgePath');
+	// Použij .fsbridge složku z aktuálního workspace
+	const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+	const fsbridgePath = workspaceRoot ? path.join(workspaceRoot, '.fsbridge') : null;
 	
 	// Smaž famsgstate.json při startu doplnku
-	deleteFamsgState(fsbridgePath, outputChannel);
+	deleteFamsgState(outputChannel);
 
 	// Registruj sidebar panel
 	registerFABridgePanel(context);
@@ -114,19 +117,17 @@ export function activate(context: vscode.ExtensionContext) {
 	// Output Channel se zobrazí automaticky v dropdownu Output panelu
 	// Není potřeba ho explicitně zobrazovat
 
-	outputChannel.appendLine(`[FA Bridge] Čtení konfigurace: fsbridgePath = ${fsbridgePath || '(není nastaveno)'}`);
+	outputChannel.appendLine(`[FA Bridge] Používá .fsbridge složku z workspace: ${fsbridgePath || '(není workspace)'}`);
 	
-	// Registruj Msg Watch panel vždy (nezávislý na debuggeru a fsbridgePath)
-	// Pokud není fsbridgePath, panel bude prázdný, ale bude viditelný
+	// Registruj Msg Watch panel - používá .fsbridge z workspace
 	if (fsbridgePath) {
 		registerMsgWatchPanel(context, fsbridgePath, outputChannel);
 		outputChannel.appendLine(`[FA Bridge] Msg Watch panel registrován s cestou: ${fsbridgePath}`);
 	} else {
-		// I když není fsbridgePath, zaregistruj panel s prázdnou cestou
+		// I když není workspace, zaregistruj panel s prázdnou cestou
 		// Panel bude zobrazovat pouze chybovou zprávu
 		registerMsgWatchPanel(context, '', outputChannel);
-		outputChannel.appendLine('[FA Bridge] WARNING: fsbridgePath není nastaven. Msg Watch panel nebude fungovat.');
-		outputChannel.appendLine('[FA Bridge] Nastavte cestu v nastavení: faBridge.fsbridgePath');
+		outputChannel.appendLine('[FA Bridge] WARNING: Workspace není otevřený. Msg Watch panel nebude fungovat.');
 	}
 
 	// Registruj všechny příkazy
@@ -202,7 +203,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 	// Sleduj uložení souborů a maž famsgstate.json při uložení
 	const saveListener = vscode.workspace.onDidSaveTextDocument(() => {
-		deleteFamsgState(fsbridgePath, outputChannel);
+		deleteFamsgState(outputChannel);
 	});
 	context.subscriptions.push(saveListener);
 
@@ -243,6 +244,7 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(windowStateListener);
 
 	// Automaticky otevři FA Bridge panel při každém startu (pokud je to povoleno v nastavení)
+	const config = vscode.workspace.getConfiguration('faBridge');
 	const autoOpenPanel = config.get<boolean>('autoOpenPanel', true);
 	if (autoOpenPanel) {
 		setTimeout(async () => {

@@ -5,17 +5,17 @@ import { writeFACommand } from '../utils/fsBridge';
 
 /**
  * Smaže famsgstate.json pokud existuje
+ * Používá vždy .fsbridge složku z aktuálního workspace
  */
 function deleteFamsgState(): void {
 	try {
-		const config = vscode.workspace.getConfiguration('faBridge');
-		const fsbridgePath = config.get<string>('fsbridgePath');
-		
-		if (!fsbridgePath || fsbridgePath === '') {
+		const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+		if (!workspaceRoot) {
 			return;
 		}
 
-		const statePath = path.join(fsbridgePath, 'famsgstate.json');
+		const fsbridgeDir = path.join(workspaceRoot, '.fsbridge');
+		const statePath = path.join(fsbridgeDir, 'famsgstate.json');
 		
 		if (fs.existsSync(statePath)) {
 			fs.unlinkSync(statePath);

@@ -5,16 +5,17 @@ import * as vscode from 'vscode';
 /**
  * Zapíše příkaz do .fsbridge/facmd.txt s UTF-8 BOM
  * Atomicky (tmp → rename) aby se FA nezbláznila
+ * Používá vždy .fsbridge složku z aktuálního workspace
  */
 export async function writeFACommand(command: string): Promise<void> {
 	try {
-		// Použij konfigurovanou cestu k .fsbridge
-		const fsbridgePath = vscode.workspace.getConfiguration('faBridge').get<string>('fsbridgePath');
-		if (!fsbridgePath) {
-			throw new Error('Nastavte cestu k .fsbridge složce v nastavení (faBridge.fsbridgePath)');
+		// Použij .fsbridge složku z aktuálního workspace
+		const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+		if (!workspaceRoot) {
+			throw new Error('Žádný workspace otevřen');
 		}
 
-		const fsbridgeDir = fsbridgePath;
+		const fsbridgeDir = path.join(workspaceRoot, '.fsbridge');
 		const facmdPath = path.join(fsbridgeDir, 'facmd.txt');
 
 		// Vytvoř .fsbridge složku pokud neexistuje
