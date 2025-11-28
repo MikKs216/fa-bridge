@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
-import { writeFACommand } from '../utils/fsBridge';
+import { writeFACommand, getFafieldPath, getFsBridgeWorkspaceRoot } from '../utils/fsBridge';
 
 /**
  * Smaže famsgstate.json pokud existuje
@@ -9,7 +9,7 @@ import { writeFACommand } from '../utils/fsBridge';
  */
 function deleteFamsgState(): void {
 	try {
-		const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+		const workspaceRoot = getFsBridgeWorkspaceRoot();
 		if (!workspaceRoot) {
 			return;
 		}
@@ -82,16 +82,16 @@ export async function vlozitNazevUdaje(): Promise<void> {
 			return;
 		}
 
-		// Přečti obsah z fafield.txt
-		const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+		// Přečti obsah z fafield.txt (podporuje více instancí FA)
+		const workspaceRoot = getFsBridgeWorkspaceRoot();
 		if (!workspaceRoot) {
-			throw new Error('Žádný workspace otevřen');
+			throw new Error('Žádný workspace otevřen nebo .fsbridge složka nenalezena');
 		}
 
-		const faFieldPath = path.join(workspaceRoot, '.fsbridge', 'fafield.txt');
+		const faFieldPath = getFafieldPath(workspaceRoot);
 
 		if (!fs.existsSync(faFieldPath)) {
-			vscode.window.showErrorMessage('✗ Soubor .fsbridge/fafield.txt neexistuje');
+			vscode.window.showErrorMessage(`✗ Soubor ${path.basename(faFieldPath)} neexistuje`);
 			return;
 		}
 
@@ -139,16 +139,16 @@ export async function vlozitNazevUdaje(): Promise<void> {
  */
 export async function kopirovatNazevUdaje(): Promise<void> {
 	try {
-		// Přečti obsah z fafield.txt
-		const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+		// Přečti obsah z fafield.txt (podporuje více instancí FA)
+		const workspaceRoot = getFsBridgeWorkspaceRoot();
 		if (!workspaceRoot) {
-			throw new Error('Žádný workspace otevřen');
+			throw new Error('Žádný workspace otevřen nebo .fsbridge složka nenalezena');
 		}
 
-		const faFieldPath = path.join(workspaceRoot, '.fsbridge', 'fafield.txt');
+		const faFieldPath = getFafieldPath(workspaceRoot);
 
 		if (!fs.existsSync(faFieldPath)) {
-			vscode.window.showErrorMessage('✗ Soubor .fsbridge/fafield.txt neexistuje');
+			vscode.window.showErrorMessage(`✗ Soubor ${path.basename(faFieldPath)} neexistuje`);
 			return;
 		}
 
@@ -190,16 +190,16 @@ export async function hledatPodleAktUdaje(): Promise<void> {
 			return;
 		}
 
-		// Přečti obsah z fafield.txt (stejně jako vlozitNazevUdaje)
-		const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+		// Přečti obsah z fafield.txt (podporuje více instancí FA)
+		const workspaceRoot = getFsBridgeWorkspaceRoot();
 		if (!workspaceRoot) {
-			throw new Error('Žádný workspace otevřen');
+			throw new Error('Žádný workspace otevřen nebo .fsbridge složka nenalezena');
 		}
 
-		const faFieldPath = path.join(workspaceRoot, '.fsbridge', 'fafield.txt');
+		const faFieldPath = getFafieldPath(workspaceRoot);
 
 		if (!fs.existsSync(faFieldPath)) {
-			vscode.window.showErrorMessage('✗ Soubor .fsbridge/fafield.txt neexistuje');
+			vscode.window.showErrorMessage(`✗ Soubor ${path.basename(faFieldPath)} neexistuje`);
 			return;
 		}
 
@@ -215,7 +215,7 @@ export async function hledatPodleAktUdaje(): Promise<void> {
 		content = content.trim();
 
 		if (!content) {
-			vscode.window.showErrorMessage('✗ Obsah .fsbridge/fafield.txt je prázdný');
+			vscode.window.showErrorMessage(`✗ Obsah ${path.basename(faFieldPath)} je prázdný`);
 			return;
 		}
 
@@ -285,19 +285,21 @@ export async function najitUdaj(): Promise<void> {
 
 		const word = editor.document.getText(wordRange);
 
-		// Přečti workspace
-		const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+		// Přečti workspace (podporuje více instancí FA)
+		const workspaceRoot = getFsBridgeWorkspaceRoot();
 		if (!workspaceRoot) {
-			throw new Error('Žádný workspace otevřen');
+			throw new Error('Žádný workspace otevřen nebo .fsbridge složka nenalezena');
 		}
 
 		const fsBridgeDir = path.join(workspaceRoot, '.fsbridge');
-		const faFieldPath = path.join(fsBridgeDir, 'fafield.txt');
 
 		// Zajisti že .fsbridge složka existuje
 		if (!fs.existsSync(fsBridgeDir)) {
 			fs.mkdirSync(fsBridgeDir, { recursive: true });
 		}
+
+		// Použij instance-specific cestu
+		const faFieldPath = getFafieldPath(workspaceRoot);
 
 		// UTF-8 s BOM (EF BB BF)
 		const bom = Buffer.from([0xef, 0xbb, 0xbf]);
@@ -455,16 +457,16 @@ export async function vlozitUdajSBody(): Promise<void> {
 			return;
 		}
 
-		// Přečti obsah z fafield.txt
-		const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+		// Přečti obsah z fafield.txt (podporuje více instancí FA)
+		const workspaceRoot = getFsBridgeWorkspaceRoot();
 		if (!workspaceRoot) {
-			throw new Error('Žádný workspace otevřen');
+			throw new Error('Žádný workspace otevřen nebo .fsbridge složka nenalezena');
 		}
 
-		const faFieldPath = path.join(workspaceRoot, '.fsbridge', 'fafield.txt');
+		const faFieldPath = getFafieldPath(workspaceRoot);
 
 		if (!fs.existsSync(faFieldPath)) {
-			vscode.window.showErrorMessage('✗ Soubor .fsbridge/fafield.txt neexistuje');
+			vscode.window.showErrorMessage(`✗ Soubor ${path.basename(faFieldPath)} neexistuje`);
 			return;
 		}
 
@@ -534,16 +536,16 @@ export async function vlozitUdajSDvojteckami(): Promise<void> {
 			return;
 		}
 
-		// Přečti obsah z fafield.txt
-		const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+		// Přečti obsah z fafield.txt (podporuje více instancí FA)
+		const workspaceRoot = getFsBridgeWorkspaceRoot();
 		if (!workspaceRoot) {
-			throw new Error('Žádný workspace otevřen');
+			throw new Error('Žádný workspace otevřen nebo .fsbridge složka nenalezena');
 		}
 
-		const faFieldPath = path.join(workspaceRoot, '.fsbridge', 'fafield.txt');
+		const faFieldPath = getFafieldPath(workspaceRoot);
 
 		if (!fs.existsSync(faFieldPath)) {
-			vscode.window.showErrorMessage('✗ Soubor .fsbridge/fafield.txt neexistuje');
+			vscode.window.showErrorMessage(`✗ Soubor ${path.basename(faFieldPath)} neexistuje`);
 			return;
 		}
 

@@ -15,7 +15,7 @@ import {
 	vlozitUdajSDvojteckami,
 	hledatOdZacatku,
 } from './commands/sendCommand';
-import { writeFACommand } from './utils/fsBridge';
+import { writeFACommand, getValidInstanceId, getFsBridgeWorkspaceRoot } from './utils/fsBridge';
 import { registerFABridgePanel } from './views/FABridgePanel';
 import { registerSnippetProvider } from './providers/SnippetProvider';
 import { registerMsgWatchPanel } from './debugger/msgWatch';
@@ -26,10 +26,10 @@ let outputChannel: vscode.OutputChannel | null = null;
 
 /**
  * Smaže famsgstate.json pokud existuje
- * Používá vždy .fsbridge složku z aktuálního workspace
+ * Používá vždy .fsbridge složku z workspace, který obsahuje .fsbridge
  */
 function deleteFamsgState(outputChannel: vscode.OutputChannel | null): void {
-	const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+	const workspaceRoot = getFsBridgeWorkspaceRoot();
 	if (!workspaceRoot) {
 		return;
 	}
@@ -93,9 +93,19 @@ export function activate(context: vscode.ExtensionContext) {
 	outputChannel.appendLine('[FA Bridge] Extension aktivována (.fsbridge nalezen v workspace)');
 	console.log('[FA Bridge] Extension aktivována');
 
-	// Použij .fsbridge složku z aktuálního workspace
-	const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+	// Použij .fsbridge složku z workspace, který obsahuje .fsbridge (může být v sekundárním workspace)
+	const workspaceRoot = getFsBridgeWorkspaceRoot();
 	const fsbridgePath = workspaceRoot ? path.join(workspaceRoot, '.fsbridge') : null;
+	
+	// Zkontroluj instance ID - automaticky cleanup mrtvých instancí
+	if (workspaceRoot) {
+		const instanceId = getValidInstanceId(workspaceRoot);
+		if (instanceId) {
+			outputChannel.appendLine(`[FA Bridge] Instance ID: ${instanceId} (FA PID)`);
+		} else {
+			outputChannel.appendLine('[FA Bridge] Bez instance ID (fallback mód)');
+		}
+	}
 	
 	// Smaž famsgstate.json při startu doplnku
 	deleteFamsgState(outputChannel);
@@ -215,7 +225,7 @@ export function activate(context: vscode.ExtensionContext) {
 			setTimeout(async () => {
 				try {
 					// Zkontroluj, jestli existuje workspace a .fsbridge složka
-					const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+					const workspaceRoot = getFsBridgeWorkspaceRoot();
 					if (!workspaceRoot) {
 						return;
 					}

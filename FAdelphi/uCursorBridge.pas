@@ -68,6 +68,8 @@ type
     FCurrentFormId: string;
     FCurrentFile: string;
     FLastWrite: TDateTime;
+    FInstanceId: string;         // PID této instance FA pro více-instanční podporu
+    FCursorPID: DWORD;           // PID spuštěného cursoru pro tuto instanci FA
 
     FOnExternalSave: TExternalSaveEvent;
     FOnCommand: TCommandEvent;
@@ -101,6 +103,24 @@ type
     
     // Čtení field.txt ze Cursor extension
     function GetFieldFilePath: string;
+    
+    // Podpora více instancí FA - složka pro každou instanci
+    function GetInstanceDir: string;
+    function GetInstanceFilePath: string;
+    procedure WriteInstanceId;
+    function ReadInstanceId: string;
+    
+    // Podpora párování FA-Cursor instance
+    function GetCursorInstanceFilePath: string;
+    procedure WriteCursorInstanceId;
+    function ReadCursorInstanceId: DWORD;
+    function IsCursorProcessAlive: Boolean;
+    function FindWindowByPID(PID: DWORD): HWND;
+    
+    // Podpora multi-root workspace souborů
+    function GetWorkspaceFilePath(const FormId: string): string;
+    function CreateWorkspaceFile(const FormId: string): Boolean;
+    function EscapeJsonString(const S: string): string;
   public
     constructor Create;
 
@@ -259,6 +279,7 @@ begin
   FCurrentFormId := '';
   FCurrentFile := '';
   FLastWrite := 0;
+  FCursorPID := 0;              // PID cursoru zatím neznámý
 end;
 
 function TCursorBridge.EnsureDir(const Dir: string): Boolean;
@@ -307,28 +328,299 @@ begin
           + DEFAULT_FILE_PREFIX + FormId + '.pas';
 end;
 
-function TCursorBridge.GetCommandFilePath: string;
+function TCursorBridge.GetInstanceDir: string;
 begin
-  // Příkazy z Cursor extension: <workspace>/.fsbridge/facmd.txt
+  // Složka pro tuto instanci FA: <workspace>/.fsbridge/{FA_PID}/
+  // FInstanceId musí být nastaveno před voláním
+  if FInstanceId = '' then
+    FInstanceId := IntToStr(GetCurrentProcessId);
+    
   Result := IncludeTrailingPathDelimiter(EffectiveExportFolder)
           + '.fsbridge' + PathDelim
-          + 'facmd.txt';
+          + FInstanceId + PathDelim;
+end;
+
+function TCursorBridge.GetInstanceFilePath: string;
+begin
+  // Instance ID soubor: <workspace>/.fsbridge/{FA_PID}/fa_instance.txt
+  Result := GetInstanceDir + 'fa_instance.txt';
+end;
+
+procedure TCursorBridge.WriteInstanceId;
+var
+  InstanceFile: string;
+  SL: TStringList;
+begin
+  // Zapíše PID této instance FA do fa_instance.txt
+  FInstanceId := IntToStr(GetCurrentProcessId);
+  InstanceFile := GetInstanceFilePath;
+  
+  // Zajisti existenci složky .fsbridge
+  EnsureDir(ExtractFilePath(InstanceFile));
+  
+  SL := TStringList.Create;
+  try
+    SL.Text := FInstanceId;
+    SL.SaveToFile(InstanceFile);
+  finally
+    SL.Free;
+  end;
+end;
+
+function TCursorBridge.ReadInstanceId: string;
+var
+  InstanceFile: string;
+  SL: TStringList;
+begin
+  // Přečte instance ID ze souboru (pokud existuje)
+  Result := '';
+  InstanceFile := GetInstanceFilePath;
+  
+  if not FileExists(InstanceFile) then
+    Exit;
+    
+  SL := TStringList.Create;
+  try
+    SL.LoadFromFile(InstanceFile);
+    if SL.Count > 0 then
+      Result := Trim(SL[0]);
+  finally
+    SL.Free;
+  end;
+end;
+
+function TCursorBridge.GetCursorInstanceFilePath: string;
+begin
+  // PID spuštěného cursoru: <workspace>/.fsbridge/{FA_PID}/cursor_instance.txt
+  Result := GetInstanceDir + 'cursor_instance.txt';
+end;
+
+procedure TCursorBridge.WriteCursorInstanceId;
+var
+  InstanceFile: string;
+  SL: TStringList;
+begin
+  // Zapíše PID spuštěného cursoru do cursor_instance.txt
+  if FCursorPID = 0 then Exit;
+  
+  InstanceFile := GetCursorInstanceFilePath;
+  
+  // Zajisti existenci složky .fsbridge
+  EnsureDir(ExtractFilePath(InstanceFile));
+  
+  SL := TStringList.Create;
+  try
+    SL.Text := IntToStr(FCursorPID);
+    SL.SaveToFile(InstanceFile);
+  finally
+    SL.Free;
+  end;
+end;
+
+function TCursorBridge.ReadCursorInstanceId: DWORD;
+var
+  InstanceFile: string;
+  SL: TStringList;
+begin
+  // Přečte PID cursoru ze souboru (pokud existuje)
+  Result := 0;
+  
+  // Nejdřív zkus z paměti
+  if FCursorPID <> 0 then
+  begin
+    Result := FCursorPID;
+    Exit;
+  end;
+  
+  // Pak ze souboru
+  InstanceFile := GetCursorInstanceFilePath;
+  
+  if not FileExists(InstanceFile) then
+    Exit;
+    
+  SL := TStringList.Create;
+  try
+    SL.LoadFromFile(InstanceFile);
+    if SL.Count > 0 then
+      Result := StrToIntDef(Trim(SL[0]), 0);
+  finally
+    SL.Free;
+  end;
+  
+  // Ulož do paměti pro příště
+  FCursorPID := Result;
+end;
+
+function TCursorBridge.IsCursorProcessAlive: Boolean;
+var
+  PID: DWORD;
+  H: THandle;
+  ExitCode: DWORD;
+begin
+  Result := False;
+  PID := ReadCursorInstanceId;
+  if PID = 0 then Exit;
+  
+  H := OpenProcess(PROCESS_QUERY_INFORMATION, False, PID);
+  if H <> 0 then
+  begin
+    try
+      if GetExitCodeProcess(H, ExitCode) then
+        Result := (ExitCode = STILL_ACTIVE);
+    finally
+      CloseHandle(H);
+    end;
+  end;
+end;
+
+function TCursorBridge.FindWindowByPID(PID: DWORD): HWND;
+type
+  PEnumData = ^TEnumData;
+  TEnumData = record
+    TargetPID: DWORD;
+    ResultHandle: HWND;
+  end;
+  
+  function EnumCallback(H: HWND; lParam: LPARAM): BOOL; stdcall;
+  var
+    WindowPID: DWORD;
+    Data: PEnumData;
+  begin
+    Result := True; // Pokračovat
+    Data := PEnumData(lParam);
+    
+    GetWindowThreadProcessId(H, @WindowPID);
+    if WindowPID = Data^.TargetPID then
+    begin
+      // Zkontrolovat, že je to hlavní okno (viditelné, bez rodiče)
+      if IsWindowVisible(H) and (GetWindow(H, GW_OWNER) = 0) then
+      begin
+        Data^.ResultHandle := H;
+        Result := False; // Zastavit enumeraci
+      end;
+    end;
+  end;
+
+var
+  Data: TEnumData;
+begin
+  Data.TargetPID := PID;
+  Data.ResultHandle := 0;
+  EnumWindows(@EnumCallback, LPARAM(@Data));
+  Result := Data.ResultHandle;
+end;
+
+function TCursorBridge.EscapeJsonString(const S: string): string;
+var
+  I: Integer;
+  C: Char;
+begin
+  Result := '';
+  for I := 1 to Length(S) do
+  begin
+    C := S[I];
+    case C of
+      '\': Result := Result + '\\';
+      '"': Result := Result + '\"';
+      #8: Result := Result + '\b';
+      #9: Result := Result + '\t';
+      #10: Result := Result + '\n';
+      #12: Result := Result + '\f';
+      #13: Result := Result + '\r';
+      else
+        if (Ord(C) < 32) or (Ord(C) > 126) then
+          Result := Result + Format('\u%.4x', [Ord(C)])
+        else
+          Result := Result + C;
+    end;
+  end;
+end;
+
+function TCursorBridge.GetWorkspaceFilePath(const FormId: string): string;
+var
+  InstanceId: string;
+begin
+  // Workspace soubor: <workspace>/.fsbridge/workspace_{FormId}_FA_{PID}.code-workspace
+  // Trvalý soubor pro každou dvojici FormId + FA instance (PID)
+  if FInstanceId = '' then
+    FInstanceId := IntToStr(GetCurrentProcessId);
+  
+  InstanceId := FInstanceId;
+  Result := IncludeTrailingPathDelimiter(EffectiveExportFolder)
+          + '.fsbridge' + PathDelim
+          + 'workspace_' + FormId + '_FA_' + InstanceId + '.code-workspace';
+end;
+
+function TCursorBridge.CreateWorkspaceFile(const FormId: string): Boolean;
+var
+  WorkspaceFile: string;
+  ScriptFolder: string;
+  CommonFolder: string;
+  SL: TStringList;
+  JsonContent: string;
+begin
+  Result := False;
+  
+  // Cesty k workspace složkám (absolutní)
+  ScriptFolder := IncludeTrailingPathDelimiter(EffectiveExportFolder) + FormId;
+  CommonFolder := EffectiveExportFolder; // Celá Scripts složka jako sekundární workspace
+  
+  // Escape cesty pro JSON (obrácená lomítka -> dvojitá obrácená lomítka)
+  ScriptFolder := StringReplace(ScriptFolder, '\', '\\', [rfReplaceAll]);
+  CommonFolder := StringReplace(CommonFolder, '\', '\\', [rfReplaceAll]);
+  
+  // Vytvoř JSON obsah workspace souboru
+  JsonContent := '{' + #13#10 +
+    '  "folders": [' + #13#10 +
+    '    {' + #13#10 +
+    '      "path": "' + ScriptFolder + '",' + #13#10 +
+    '      "name": "Script: ' + EscapeJsonString(FormId) + '"' + #13#10 +
+    '    },' + #13#10 +
+    '    {' + #13#10 +
+    '      "path": "' + CommonFolder + '",' + #13#10 +
+    '      "name": "Common Files"' + #13#10 +
+    '    }' + #13#10 +
+    '  ],' + #13#10 +
+    '  "settings": {}' + #13#10 +
+    '}';
+  
+  // Cesta k workspace souboru
+  WorkspaceFile := GetWorkspaceFilePath(FormId);
+  
+  // Zajisti existenci složky .fsbridge
+  EnsureDir(ExtractFilePath(WorkspaceFile));
+  
+  // Zapiš workspace soubor
+  SL := TStringList.Create;
+  try
+    SL.Text := JsonContent;
+    try
+      SL.SaveToFile(WorkspaceFile);
+      Result := True;
+    except
+      Result := False;
+    end;
+  finally
+    SL.Free;
+  end;
+end;
+
+function TCursorBridge.GetCommandFilePath: string;
+begin
+  // Příkazy z Cursor extension: <workspace>/.fsbridge/{FA_PID}/facmd.txt
+  Result := GetInstanceDir + 'facmd.txt';
 end;
 
 function TCursorBridge.GetFieldFilePath: string;
 begin
-  // Field data z Cursor extension: <workspace>/.fsbridge/fafield.txt
-  Result := IncludeTrailingPathDelimiter(EffectiveExportFolder)
-          + '.fsbridge' + PathDelim
-          + 'fafield.txt';
+  // Field data z Cursor extension: <workspace>/.fsbridge/{FA_PID}/fafield.txt
+  Result := GetInstanceDir + 'fafield.txt';
 end;
 
 function TCursorBridge.GetDebugFilePath: string;
 begin
-  // Debugger příkazy z Cursor extension: <workspace>/.fsbridge/fadebug.txt
-  Result := IncludeTrailingPathDelimiter(EffectiveExportFolder)
-          + '.fsbridge' + PathDelim
-          + 'fadebug.txt';
+  // Debugger příkazy z Cursor extension: <workspace>/.fsbridge/{FA_PID}/fadebug.txt
+  Result := GetInstanceDir + 'fadebug.txt';
 end;
 
 
@@ -698,45 +990,192 @@ end;
 
 function TCursorBridge.RunCursorReuse(const AFolder, AFile: string; ALine, ACol: Integer): Boolean;
 var
-  Params, FolderArg, FileArg, WS, Cmd: string;
+  Params, FolderArg, FileArg, WS, Cmd, CmdLine, WorkspaceFile: string;
   Ext: string;
+  H: HWND;
+  UseReuse: Boolean;
+  UseWorkspaceFile: Boolean;
+  SI: TStartupInfo;
+  PI: TProcessInformation;
+  FormId: string;
+  RelativeFile: string;
 begin
-  // Workspace = EffectiveExportFolder, soubor otevřít přes -g (řádek[:sloupec])
-  WS := EffectiveExportFolder;
-  FolderArg := '"' + WS + '"';
+  Result := False;
+  
+  // Zajisti, že máme nastavené instance ID FA (pro instance-specific soubory)
+  if FInstanceId = '' then
+    FInstanceId := IntToStr(GetCurrentProcessId);
+  
+  // Získej FormId z FCurrentFormId (nastaveno v StartEditing)
+  FormId := FCurrentFormId;
+  if FormId = '' then
+  begin
+    // Fallback: zkus získat FormId z cesty k souboru
+    // AFile je např. "dz_15DPFO5252_2\u_dz_15DPFO5252_2.pas"
+    WS := ExtractFilePath(AFile);
+    WS := ExcludeTrailingPathDelimiter(WS);
+    FormId := ExtractFileName(WS);
+  end;
+  
+  // Urči, jestli používáme workspace soubor
+  UseWorkspaceFile := False;
+  RelativeFile := '';
+  
+  if FormId <> '' then
+  begin
+    // Vytvoř workspace soubor pro multi-root workspace
+    if CreateWorkspaceFile(FormId) then
+    begin
+      // Použij workspace soubor místo složky
+      WorkspaceFile := GetWorkspaceFilePath(FormId);
+      FolderArg := '"' + WorkspaceFile + '"';
+      
+      // Pro workspace soubor musíme použít relativní cestu k souboru vzhledem k primárnímu workspace
+      // Primární workspace je složka scriptu: EffectiveExportFolder + '\' + FormId
+      // Soubor je: EffectiveExportFolder + '\' + FormId + '\' + ExtractFileName(AFile)
+      RelativeFile := ExtractFileName(AFile);
+      UseWorkspaceFile := True;
+    end;
+  end;
+  
+  if not UseWorkspaceFile then
+  begin
+    // Použijeme starý způsob (složka místo workspace souboru)
+    WS := EffectiveExportFolder;
+    FolderArg := '"' + WS + '"';
+  end;
 
-  if (ALine > 0) and (ACol > 0) then
-    FileArg := Format(' -g "%s:%d:%d"', [AFile, ALine, ACol])
-  else if (ALine > 0) then
-    FileArg := Format(' -g "%s:%d"', [AFile, ALine])
+  // Urči FileArg podle toho, jestli používáme workspace soubor nebo složku
+  if UseWorkspaceFile then
+  begin
+    // Používáme workspace soubor - použijeme absolutní cestu k souboru
+    // aby Cursor otevřel soubor pouze v primárním workspace a nevytvářel ho v sekundárním
+    if (ALine > 0) and (ACol > 0) then
+      FileArg := Format(' -g "%s:%d:%d"', [AFile, ALine, ACol])
+    else if (ALine > 0) then
+      FileArg := Format(' -g "%s:%d"', [AFile, ALine])
+    else
+      FileArg := Format(' "%s"', [AFile]);
+  end
   else
-    FileArg := Format(' "%s"', [AFile]);
+  begin
+    // Používáme složku - absolutní nebo relativní cesta k souboru
+    if (ALine > 0) and (ACol > 0) then
+      FileArg := Format(' -g "%s:%d:%d"', [AFile, ALine, ACol])
+    else if (ALine > 0) then
+      FileArg := Format(' -g "%s:%d"', [AFile, ALine])
+    else
+      FileArg := Format(' "%s"', [AFile]);
+  end;
 
-  // Pořadí: nejdřív workspace (složka), potom soubor
-  Params := Format('-r %s%s', [FolderArg, FileArg]);
+  // Zkontroluj, jestli MÁ TATO INSTANCE FA běžící cursor S EXISTUJÍCÍM OKNEM
+  UseReuse := False;
+  if IsCursorProcessAlive then
+  begin
+    // Proces běží - zkontroluj, jestli existuje okno
+    H := FindWindowByPID(FCursorPID);
+    UseReuse := (H <> 0);
+  end;
+  
+  if UseReuse then
+  begin
+    // Cursor této instance FA běží A má okno - AKTIVUJ okno a použij -r
+    H := FindWindowByPID(FCursorPID);
+    if H <> 0 then
+    begin
+      // Nejdřív aktivuj okno (aby Cursor věděl, že má použít TOTO okno pro -r)
+      SetForegroundWindow(H);
+      ShowWindow(H, SW_RESTORE); // Pokud je minimalizované
+      Sleep(100); // Krátké zpoždění aby se okno aktivovalo
+    end;
+    
+    // Použij -r pro reuse TOHOTO okna (mělo by fungovat protože je aktivní)
+    Params := Format('-r %s%s', [FolderArg, FileArg]);
+  end
+  else
+  begin
+    // Cursor této instance neběží NEBO nemá okno - spustit NOVÝ cursor
+    // Použijeme workspace soubor - každá instance FA má svůj jedinečný workspace soubor
+    // což zajistí, že Cursor otevře nové okno
+    Params := Format('-n %s%s', [FolderArg, FileArg]);
+    // Vynuluj starý PID
+    FCursorPID := 0;
+  end;
 
+  // Working directory musí být vždy složka, ne workspace soubor
+  WS := EffectiveExportFolder;
+  
   // Najdi skutečný spustitelný soubor (EXE), případně CMD na PATH
   Cmd := ResolveEditorCommand;
   Ext := LowerCase(ExtractFileExt(Cmd));
 
   if (Ext = '.cmd') or (Ext = '.bat') then
   begin
-    // Spusť .cmd/.bat bez blikající konzole (okno editoru se otevře normálně)
+    // Pro .cmd/.bat použij ShellExecute (nezískáme PID, ale je to fallback)
     Result := ShellExecNoConsole(Cmd, Params, WS, SW_HIDE);
   end
   else
   begin
-    // EXE – běžné spuštění bez mezikroku v cmd.exe
-    Result := ShellExecNoConsole(Cmd, Params, WS, SW_SHOWNORMAL);
+    // EXE – použij CreateProcess aby jsme získali PID
+    CmdLine := Format('"%s" %s', [Cmd, Params]);
+    
+    ZeroMemory(@SI, SizeOf(SI));
+    SI.cb := SizeOf(SI);
+    SI.dwFlags := STARTF_USESHOWWINDOW;
+    SI.wShowWindow := SW_SHOWNORMAL;
+    ZeroMemory(@PI, SizeOf(PI));
+    
+    // Pro nové okno použij CREATE_NEW_CONSOLE + CREATE_NEW_PROCESS_GROUP
+    // aby se vytvořil nový proces místo použití existujícího
+    Result := CreateProcess(
+      nil,                      // lpApplicationName
+      PChar(CmdLine),           // lpCommandLine
+      nil,                      // lpProcessAttributes
+      nil,                      // lpThreadAttributes
+      False,                    // bInheritHandles
+      CREATE_NEW_CONSOLE or CREATE_NEW_PROCESS_GROUP,  // dwCreationFlags - nový proces group
+      nil,                      // lpEnvironment
+      PChar(WS),                // lpCurrentDirectory (vždy složka)
+      SI,                       // lpStartupInfo
+      PI                        // lpProcessInformation
+    );
+    
+    if Result and (not UseReuse) then
+    begin
+      // Nový cursor spuštěn - ulož jeho PID
+      FCursorPID := PI.dwProcessId;
+      WriteCursorInstanceId;
+      // Zapiš FA PID do fa_instance_{CURSOR_PID}.txt (aby Cursor věděl, kam posílat příkazy)
+      WriteInstanceId;
+    end;
+    
+    // Zavři handles
+    if PI.hProcess <> 0 then CloseHandle(PI.hProcess);
+    if PI.hThread <> 0 then CloseHandle(PI.hThread);
   end;
 end;
 
 procedure TCursorBridge.ActivateCursorWindow;
 var
   H: HWND;
+  PID: DWORD;
   Preferred: string;
 begin
-  // Preferuj okno podle nastaveného příkazu, fallback na druhý editor
+  // Nejdřív zkus najít okno podle uloženého PID cursoru (naše instance)
+  PID := ReadCursorInstanceId;
+  if PID <> 0 then
+  begin
+    H := FindWindowByPID(PID);
+    if H <> 0 then
+    begin
+      if IsIconic(H) then
+        ShowWindow(H, SW_RESTORE);
+      SetForegroundWindow(H);
+      Exit;
+    end;
+  end;
+  
+  // Fallback: hledej podle názvu procesu (starý způsob)
   Preferred := BaseName(FCursorCmdOrPath);
 
   if Pos('CODE', Preferred) > 0 then
@@ -752,8 +1191,9 @@ begin
 
   if H <> 0 then
   begin
+    if IsIconic(H) then
+      ShowWindow(H, SW_RESTORE);
     SetForegroundWindow(H);
-    ShowWindow(H, SW_SHOWNORMAL);
   end;
 end;
 
@@ -770,7 +1210,22 @@ begin
   AtomicWriteAllText(FCurrentFile, Code);
   FLastWrite := GetFileWriteTime(FCurrentFile);
 
+  // Zajisti, že máme nastavené instance ID FA (pro instance-specific soubory)
+  if FInstanceId = '' then
+    FInstanceId := IntToStr(GetCurrentProcessId);
+  
+  // Načti uložený PID cursoru (pokud existuje) pro detekci běžící instance
+  ReadCursorInstanceId;
+  
+  // Pokud máme běžící Cursor, zapiš FA PID do fa_instance_{CURSOR_PID}.txt
+  // (pokud Cursor ještě neběží, zapíše se po jeho spuštění v RunCursorReuse)
+  if FCursorPID <> 0 then
+    WriteInstanceId;
+
   // Otevři/reuse editor ve workspace a aktivuj okno
+  // RunCursorReuse automaticky:
+  // - Pokud cursor této FA instance běží → použije -r pro reuse
+  // - Pokud neběží → spustí nový cursor a uloží jeho PID
   Result := RunCursorReuse(EffectiveExportFolder, FCurrentFile, JumpLine, JumpCol);
   ActivateCursorWindow;
 end;
