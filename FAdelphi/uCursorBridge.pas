@@ -556,20 +556,33 @@ var
   WorkspaceFile: string;
   ScriptFolder: string;
   CommonFolder: string;
+  InstanceFolder: string;
   SL: TStringList;
   JsonContent: string;
 begin
   Result := False;
   
+  // Zajisti FInstanceId
+  if FInstanceId = '' then
+    FInstanceId := IntToStr(GetCurrentProcessId);
+  
   // Cesty k workspace složkám (absolutní)
   ScriptFolder := IncludeTrailingPathDelimiter(EffectiveExportFolder) + FormId;
   CommonFolder := EffectiveExportFolder; // Celá Scripts složka jako sekundární workspace
+  // Instance-specifická složka - zajistí unikátnost workspace pro každou FA instanci
+  // i když pracují se stejným formulářem
+  InstanceFolder := IncludeTrailingPathDelimiter(EffectiveExportFolder) + '.fsbridge' + PathDelim + FInstanceId;
+  
+  // Zajisti existenci instance složky
+  EnsureDir(InstanceFolder);
   
   // Escape cesty pro JSON (obrácená lomítka -> dvojitá obrácená lomítka)
   ScriptFolder := StringReplace(ScriptFolder, '\', '\\', [rfReplaceAll]);
   CommonFolder := StringReplace(CommonFolder, '\', '\\', [rfReplaceAll]);
+  InstanceFolder := StringReplace(InstanceFolder, '\', '\\', [rfReplaceAll]);
   
   // Vytvoř JSON obsah workspace souboru
+  // Třetí složka (Instance) zajistí, že Cursor bude považovat každý workspace za unikátní
   JsonContent := '{' + #13#10 +
     '  "folders": [' + #13#10 +
     '    {' + #13#10 +
@@ -579,6 +592,10 @@ begin
     '    {' + #13#10 +
     '      "path": "' + CommonFolder + '",' + #13#10 +
     '      "name": "Common Files"' + #13#10 +
+    '    },' + #13#10 +
+    '    {' + #13#10 +
+    '      "path": "' + InstanceFolder + '",' + #13#10 +
+    '      "name": "FA Instance ' + FInstanceId + '"' + #13#10 +
     '    }' + #13#10 +
     '  ],' + #13#10 +
     '  "settings": {}' + #13#10 +
@@ -1038,6 +1055,15 @@ begin
     end;
   end;
   
+  // Zkontroluj, jestli MÁ TATO INSTANCE FA běžící cursor S EXISTUJÍCÍM OKNEM
+  UseReuse := False;
+  if IsCursorProcessAlive then
+  begin
+    // Náš uložený Cursor proces běží - zkontroluj jeho okno
+    H := FindWindowByPID(FCursorPID);
+    UseReuse := (H <> 0);
+  end;
+  
   if not UseWorkspaceFile then
   begin
     // Použijeme starý způsob (složka místo workspace souboru)
@@ -1068,15 +1094,6 @@ begin
       FileArg := Format(' "%s"', [AFile]);
   end;
 
-  // Zkontroluj, jestli MÁ TATO INSTANCE FA běžící cursor S EXISTUJÍCÍM OKNEM
-  UseReuse := False;
-  if IsCursorProcessAlive then
-  begin
-    // Proces běží - zkontroluj, jestli existuje okno
-    H := FindWindowByPID(FCursorPID);
-    UseReuse := (H <> 0);
-  end;
-  
   if UseReuse then
   begin
     // Cursor této instance FA běží A má okno - AKTIVUJ okno a použij -r
@@ -1095,9 +1112,9 @@ begin
   else
   begin
     // Cursor této instance neběží NEBO nemá okno - spustit NOVÝ cursor
-    // Použijeme workspace soubor - každá instance FA má svůj jedinečný workspace soubor
-    // což zajistí, že Cursor otevře nové okno
-    Params := Format('-n %s%s', [FolderArg, FileArg]);
+    // Použijeme --new-window aby Cursor otevřel nové okno
+    // i když už existuje jiné okno se stejným workspace
+    Params := Format('--new-window %s%s', [FolderArg, FileArg]);
     // Vynuluj starý PID
     FCursorPID := 0;
   end;
