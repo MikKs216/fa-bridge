@@ -3,7 +3,7 @@
   "displayName": "FA Bridge",
   "publisher": "fa-dev",
   "description": "Propojení Cursor/VS Code s editorem FormStudio (FA)",
-	"version": "0.5.48",
+  "version": "0.5.60",
   "engines": {
     "vscode": "^1.85.0"
   },
@@ -79,8 +79,21 @@
     "languages": [
       {
         "id": "pascal",
-        "aliases": ["Pascal", "Delphi", "Object Pascal"],
-        "extensions": [".pas", ".p", ".dfm", ".fmx", ".dpr", ".dpk", ".lfm", ".lpr"],
+        "aliases": [
+          "Pascal",
+          "Delphi",
+          "Object Pascal"
+        ],
+        "extensions": [
+          ".pas",
+          ".p",
+          ".dfm",
+          ".fmx",
+          ".dpr",
+          ".dpk",
+          ".lfm",
+          ".lpr"
+        ],
         "configuration": "./language-configuration.json"
       }
     ],

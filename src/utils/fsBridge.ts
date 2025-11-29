@@ -54,11 +54,32 @@ export function isProcessAlive(pid: number): boolean {
 }
 
 /**
- * Najde složku instance FA podle workspace souboru nebo prohledáním
+ * Extrahuje FormId z názvu souboru
+ * Např. "script_dz_15DPFO5252_2.pas" → "dz_15DPFO5252_2"
+ */
+export function extractFormIdFromFileName(fileName: string): string | null {
+	// Očekávaný formát: script_{FormId}.pas nebo u_{FormId}.pas
+	const baseName = path.basename(fileName, path.extname(fileName));
+	
+	// Zkus script_ prefix
+	if (baseName.startsWith('script_')) {
+		return baseName.substring(7); // odstrani "script_"
+	}
+	
+	// Zkus u_ prefix
+	if (baseName.startsWith('u_')) {
+		return baseName.substring(2); // odstrani "u_"
+	}
+	
+	return null;
+}
+
+/**
+ * Najde složku instance FA podle current_form.txt, který odpovídá aktivnímu souboru
  * Vrací cestu ke složce .fsbridge/{FA_PID}/ nebo null
  * 
- * Řešení problému: process.pid v Node.js ≠ PID Cursor aplikace z CreateProcess
- * Proto používáme FA PID (který je konzistentní) místo Cursor PID
+ * Nový koncept: JEDEN společný workspace, scripty jako záložky
+ * Každá FA instance má soubor current_form.txt s FormId, který právě edituje
  */
 export function getFAInstanceDir(workspaceRoot: string): string | null {
 	const fsbridgeDir = path.join(workspaceRoot, '.fsbridge');
@@ -67,31 +88,57 @@ export function getFAInstanceDir(workspaceRoot: string): string | null {
 		return null;
 	}
 
-	// Metoda 1: Extrahuj FA PID z názvu AKTUÁLNĚ OTEVŘENÉHO workspace souboru
-	// Název: workspace_{FormId}_FA_{PID}.code-workspace
-	try {
-		// Získej URI aktuálně otevřeného workspace souboru
-		const workspaceFile = vscode.workspace.workspaceFile;
-		if (workspaceFile) {
-			const workspaceFilePath = workspaceFile.fsPath;
-			const workspaceFileName = path.basename(workspaceFilePath);
+	// Metoda 1: Najdi FA instanci podle FormId aktivního souboru
+	// Získej FormId z názvu aktivního souboru
+	const activeEditor = vscode.window.activeTextEditor;
+	if (activeEditor) {
+		const activeFileName = activeEditor.document.fileName;
+		const formId = extractFormIdFromFileName(activeFileName);
+		
+		if (formId) {
+			console.log(`[FA Bridge] Aktivní soubor FormId: ${formId}`);
 			
-			// Extrahuj FA PID z názvu souboru
-			const match = workspaceFileName.match(/_FA_(\d+)\.code-workspace$/);
-			if (match) {
-				const faPID = match[1];
-				const instanceDir = path.join(fsbridgeDir, faPID);
-				if (fs.existsSync(instanceDir) && fs.statSync(instanceDir).isDirectory()) {
-					console.log(`[FA Bridge] Nalezena instance složka z aktuálního workspace souboru: ${faPID} (${workspaceFileName})`);
-					return instanceDir;
+			// Prohledej všechny FA instance a najdi tu s odpovídajícím current_form.txt
+			try {
+				const entries = fs.readdirSync(fsbridgeDir, { withFileTypes: true });
+				const dirs = entries.filter(d => d.isDirectory() && /^\d+$/.test(d.name));
+				
+				for (const dir of dirs) {
+					const instanceDir = path.join(fsbridgeDir, dir.name);
+					const currentFormFile = path.join(instanceDir, 'current_form.txt');
+					
+					if (fs.existsSync(currentFormFile)) {
+						let content = fs.readFileSync(currentFormFile, 'utf-8');
+						// Odstraň BOM pokud existuje
+						if (content.charCodeAt(0) === 0xFEFF) {
+							content = content.slice(1);
+						}
+						const instanceFormId = content.trim();
+						
+						if (instanceFormId === formId) {
+							// Zkontroluj, jestli FA proces ještě běží
+							const faInstanceFile = path.join(instanceDir, 'fa_instance.txt');
+							if (fs.existsSync(faInstanceFile)) {
+								let pidContent = fs.readFileSync(faInstanceFile, 'utf-8');
+								if (pidContent.charCodeAt(0) === 0xFEFF) {
+									pidContent = pidContent.slice(1);
+								}
+								const faPID = parseInt(pidContent.trim(), 10);
+								if (!isNaN(faPID) && isProcessAlive(faPID)) {
+									console.log(`[FA Bridge] Nalezena FA instance pro FormId ${formId}: ${dir.name}`);
+									return instanceDir;
+								}
+							}
+						}
+					}
 				}
+			} catch (error) {
+				console.error(`[FA Bridge] Chyba při hledání FA instance podle FormId: ${error}`);
 			}
 		}
-	} catch (error) {
-		console.error(`[FA Bridge] Chyba při hledání workspace souboru: ${error}`);
 	}
 
-	// Metoda 2: Prohledej všechny číselné složky a najdi tu s fa_instance.txt
+	// Metoda 2: Fallback - najdi první běžící FA instanci
 	try {
 		const entries = fs.readdirSync(fsbridgeDir, { withFileTypes: true });
 		const dirs = entries.filter(d => d.isDirectory() && /^\d+$/.test(d.name));
@@ -108,7 +155,7 @@ export function getFAInstanceDir(workspaceRoot: string): string | null {
 				}
 				const faPID = parseInt(content.trim(), 10);
 				if (!isNaN(faPID) && isProcessAlive(faPID)) {
-					console.log(`[FA Bridge] Nalezena aktivní instance složka: ${dir.name}`);
+					console.log(`[FA Bridge] Nalezena aktivní instance složka (fallback): ${dir.name}`);
 					return instanceDir;
 				}
 			}
@@ -153,26 +200,30 @@ export function getValidInstanceId(workspaceRoot: string): string | null {
 
 /**
  * Vrátí cestu k facmd souboru
+ * Vrací null pokud není nalezena instance složka
  */
-export function getFacmdPath(workspaceRoot: string): string {
+export function getFacmdPath(workspaceRoot: string): string | null {
 	const instanceDir = getFAInstanceDir(workspaceRoot);
 	if (instanceDir) {
 		return path.join(instanceDir, 'facmd.txt');
 	}
-	// Fallback pro zpětnou kompatibilitu (stará struktura)
-	return path.join(workspaceRoot, '.fsbridge', 'facmd.txt');
+	// NENÍ fallback - pokud není instance složka, vrátíme null
+	// aby se facmd.txt nevytvářel ve špatné složce
+	return null;
 }
 
 /**
  * Vrátí cestu k fafield souboru
+ * Vrací null pokud není nalezena instance složka
  */
-export function getFafieldPath(workspaceRoot: string): string {
+export function getFafieldPath(workspaceRoot: string): string | null {
 	const instanceDir = getFAInstanceDir(workspaceRoot);
 	if (instanceDir) {
 		return path.join(instanceDir, 'fafield.txt');
 	}
-	// Fallback pro zpětnou kompatibilitu (stará struktura)
-	return path.join(workspaceRoot, '.fsbridge', 'fafield.txt');
+	// NENÍ fallback - pokud není instance složka, vrátíme null
+	// aby se fafield.txt nevytvářel ve špatné složce
+	return null;
 }
 
 /**
@@ -190,6 +241,21 @@ export async function writeFACommand(command: string): Promise<void> {
 		}
 
 		const facmdPath = getFacmdPath(workspaceRoot);
+		if (!facmdPath) {
+			throw new Error('Nenalezena FA instance složka. Ujisti se, že máš otevřený FA script a že FA aplikace běží.');
+		}
+		
+		// DŮLEŽITÉ: Ověř, že cesta obsahuje PID složku (formát: .fsbridge/{PID}/facmd.txt)
+		// Pokud by se náhodou použila špatná cesta, zabráníme zápisu přímo do .fsbridge/facmd.txt
+		const fsbridgeDir = path.join(workspaceRoot, '.fsbridge');
+		const relativePath = path.relative(fsbridgeDir, facmdPath);
+		const pathParts = relativePath.split(path.sep);
+		
+		// Cesta musí být ve formátu: {PID}/facmd.txt
+		if (pathParts.length !== 2 || !/^\d+$/.test(pathParts[0]) || pathParts[1] !== 'facmd.txt') {
+			throw new Error(`Neplatná cesta k facmd.txt: ${facmdPath}. Cesta musí být ve formátu .fsbridge/{FA_PID}/facmd.txt`);
+		}
+		
 		const instanceDir = path.dirname(facmdPath);
 		
 		// Vytvoř složku pokud neexistuje

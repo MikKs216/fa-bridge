@@ -21,6 +21,7 @@ import { registerSnippetProvider } from './providers/SnippetProvider';
 import { registerMsgWatchPanel } from './debugger/msgWatch';
 import { registerHelpPanel } from './views/HelpPanel';
 import { registerIntelliSenseProvider, getIntelliSenseProvider } from './providers/PascalIntelliSenseProvider';
+import { CommandWatcher } from './utils/commandWatcher';
 
 let outputChannel: vscode.OutputChannel | null = null;
 
@@ -140,6 +141,11 @@ export function activate(context: vscode.ExtensionContext) {
 		outputChannel.appendLine('[FA Bridge] WARNING: Workspace není otevřený. Msg Watch panel nebude fungovat.');
 	}
 
+	// Registruj Command Watcher pro zpracování příkazů z FA
+	const commandWatcher = new CommandWatcher(outputChannel);
+	context.subscriptions.push(commandWatcher);
+	outputChannel.appendLine('[FA Bridge] Command Watcher registrován');
+
 	// Registruj všechny příkazy
 	const commands = [
 		vscode.commands.registerCommand('faBridge.ulozitSoubor', ulozitSoubor),
@@ -233,6 +239,20 @@ export function activate(context: vscode.ExtensionContext) {
 					const fsbridgeDir = path.join(workspaceRoot, '.fsbridge');
 					if (!fs.existsSync(fsbridgeDir)) {
 						return;
+					}
+
+					// DŮLEŽITÉ: Pošli příkaz pouze pokud je otevřený FA script soubor
+					// Jinak by se mohlo použít fallback a zapisovat do špatné instance složky
+					const activeEditor = vscode.window.activeTextEditor;
+					if (!activeEditor) {
+						return; // Žádný aktivní editor - nepokračuj
+					}
+
+					const activeFileName = activeEditor.document.fileName;
+					// Zkontroluj, jestli je to FA script soubor (script_*.pas nebo u_*.pas)
+					const isFAScript = /(?:script_|u_)[^\\/]+\.pas$/i.test(activeFileName);
+					if (!isFAScript) {
+						return; // Není to FA script - nepokračuj
 					}
 
 					// Pošli příkaz do FA pro aktualizaci aktuálního údaje

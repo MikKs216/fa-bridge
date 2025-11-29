@@ -89,6 +89,10 @@ export async function vlozitNazevUdaje(): Promise<void> {
 		}
 
 		const faFieldPath = getFafieldPath(workspaceRoot);
+		if (!faFieldPath) {
+			vscode.window.showErrorMessage('✗ Nenalezena FA instance složka. Ujisti se, že máš otevřený FA script a že FA aplikace běží.');
+			return;
+		}
 
 		if (!fs.existsSync(faFieldPath)) {
 			vscode.window.showErrorMessage(`✗ Soubor ${path.basename(faFieldPath)} neexistuje`);
@@ -146,6 +150,10 @@ export async function kopirovatNazevUdaje(): Promise<void> {
 		}
 
 		const faFieldPath = getFafieldPath(workspaceRoot);
+		if (!faFieldPath) {
+			vscode.window.showErrorMessage('✗ Nenalezena FA instance složka. Ujisti se, že máš otevřený FA script a že FA aplikace běží.');
+			return;
+		}
 
 		if (!fs.existsSync(faFieldPath)) {
 			vscode.window.showErrorMessage(`✗ Soubor ${path.basename(faFieldPath)} neexistuje`);
@@ -197,6 +205,10 @@ export async function hledatPodleAktUdaje(): Promise<void> {
 		}
 
 		const faFieldPath = getFafieldPath(workspaceRoot);
+		if (!faFieldPath) {
+			vscode.window.showErrorMessage('✗ Nenalezena FA instance složka. Ujisti se, že máš otevřený FA script a že FA aplikace běží.');
+			return;
+		}
 
 		if (!fs.existsSync(faFieldPath)) {
 			vscode.window.showErrorMessage(`✗ Soubor ${path.basename(faFieldPath)} neexistuje`);
@@ -300,6 +312,10 @@ export async function najitUdaj(): Promise<void> {
 
 		// Použij instance-specific cestu
 		const faFieldPath = getFafieldPath(workspaceRoot);
+		if (!faFieldPath) {
+			vscode.window.showErrorMessage('✗ Nenalezena FA instance složka. Ujisti se, že máš otevřený FA script a že FA aplikace běží.');
+			return;
+		}
 
 		// UTF-8 s BOM (EF BB BF)
 		const bom = Buffer.from([0xef, 0xbb, 0xbf]);
@@ -464,6 +480,10 @@ export async function vlozitUdajSBody(): Promise<void> {
 		}
 
 		const faFieldPath = getFafieldPath(workspaceRoot);
+		if (!faFieldPath) {
+			vscode.window.showErrorMessage('✗ Nenalezena FA instance složka. Ujisti se, že máš otevřený FA script a že FA aplikace běží.');
+			return;
+		}
 
 		if (!fs.existsSync(faFieldPath)) {
 			vscode.window.showErrorMessage(`✗ Soubor ${path.basename(faFieldPath)} neexistuje`);
@@ -543,6 +563,10 @@ export async function vlozitUdajSDvojteckami(): Promise<void> {
 		}
 
 		const faFieldPath = getFafieldPath(workspaceRoot);
+		if (!faFieldPath) {
+			vscode.window.showErrorMessage('✗ Nenalezena FA instance složka. Ujisti se, že máš otevřený FA script a že FA aplikace běží.');
+			return;
+		}
 
 		if (!fs.existsSync(faFieldPath)) {
 			vscode.window.showErrorMessage(`✗ Soubor ${path.basename(faFieldPath)} neexistuje`);

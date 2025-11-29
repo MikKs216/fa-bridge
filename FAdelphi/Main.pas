@@ -5004,7 +5004,56 @@ procedure TfaMain.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
 var
   res: integer;
   s: string;
+  {$IFDEF UCURSOR}
+  CloseResult: TCursorCloseResult;
+  {$ENDIF UCURSOR}
 begin
+
+  {$IFDEF UCURSOR}
+  // Zkontroluj a zavři Cursor soubor před zavřením FA
+  if Assigned(FBridge) then
+  begin
+    CloseResult := FBridge.CheckAndCloseCursorFile;
+    
+    case CloseResult of
+      ccrUnsaved:
+      begin
+        // Soubor má neuložené změny - upozorni uživatele
+        MsgBoxWarn(Caption, 
+          'Script v Cursoru má neuložené změny. Nejdříve uložte změny v Cursoru (Ctrl+S) a pak znovu zavřete FORM asistenta.', 
+          MB_OK);
+        FBridge.ActivateCursorWindow; // Přepni na Cursor okno
+        CanClose := False;
+        Exit;
+      end;
+      
+      ccrError:
+      begin
+        // Chyba komunikace - upozorni uživatele
+        res := MessageAsk(Caption, 
+          'Nepodařilo se zkontrolovat stav scriptu v Cursoru. Zavřít FORM asistenta i tak?', 
+          [MBYES, MBNO]);
+        if res <> IDYES then
+        begin
+          FBridge.ActivateCursorWindow;
+          CanClose := False;
+          Exit;
+        end;
+      end;
+      
+      ccrNotOpen:
+      begin
+        // Script není otevřený - OK, můžeme pokračovat
+      end;
+      
+      ccrClosed:
+      begin
+        // Script byl úspěšně zavřen - OK, můžeme pokračovat
+      end;
+    end;
+  end;
+  {$ENDIF UCURSOR}
+  //
   if FFileOpened and FIsOpenedPDFEditor then begin
     MsgBoxWarn(Caption, sMsgAskCloseIfPDFEditorOpen, MB_OK);
     CanClose:=false;
@@ -13719,6 +13768,17 @@ begin
           end;
         end;
       end;
+      //Alt+Q - export do Cursor/VSCode
+      {$IFNDEF FINALBUILD}
+      if (Msg.wParam = Ord('Q')) and (GetKeyState(VK_MENU) < 0) then begin
+        {$IFDEF UCURSOR}
+        EditFormScriptCursor;
+        {$ELSE UCURSOR}
+        EditFormScriptUnModal;
+        {$ENDIF UCURSOR}
+        Handled := TRUE;
+      end;
+      {$ENDIF FINALBUILD}
     end; {WM_SYSKEYDOWN}
     //Ostatni klavesy
     if Msg.message = WM_KEYDOWN then begin
