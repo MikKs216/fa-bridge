@@ -5018,15 +5018,15 @@ var
 begin
 
   {$IFDEF UCURSOR}
-  WriteBridgeDebug('FormCloseQuery: START, FStateFormWasChanged=' + BoolToStr(FStateFormWasChanged));
+  // WriteBridgeDebug('FormCloseQuery: START, FStateFormWasChanged=' + BoolToStr(FStateFormWasChanged)); // ZAKOMENTOVÁNO
   
   // Zkontroluj a zavři Cursor soubor před zavřením FA
   if Assigned(FBridge) then
   begin
     CloseResult := FBridge.CheckAndCloseCursorFile;
     
-    WriteBridgeDebug('FormCloseQuery: PO CheckAndCloseCursorFile, CloseResult=' + 
-      IntToStr(Ord(CloseResult)) + ', FStateFormWasChanged=' + BoolToStr(FStateFormWasChanged));
+    // WriteBridgeDebug('FormCloseQuery: PO CheckAndCloseCursorFile, CloseResult=' + 
+    //   IntToStr(Ord(CloseResult)) + ', FStateFormWasChanged=' + BoolToStr(FStateFormWasChanged)); // ZAKOMENTOVÁNO
     
     case CloseResult of
       ccrUnsaved:
@@ -5066,7 +5066,7 @@ begin
         // resetuj FStateFormWasChanged
         if FStateFormWasChanged and FScriptChangedByCursor then
         begin
-          WriteBridgeDebug('FormCloseQuery: Reset FStateFormWasChanged (změna byla pouze z Cursor synchronizace)');
+          // WriteBridgeDebug('FormCloseQuery: Reset FStateFormWasChanged (změna byla pouze z Cursor synchronizace)'); // ZAKOMENTOVÁNO
           SetChangeFlag(FALSE);
           FScriptChangedByCursor := False;
         end;
@@ -5125,7 +5125,7 @@ begin
     EXIT;
   //
   {$IFDEF UCURSOR}
-  WriteBridgeDebug('FormCloseQuery: PŘED kontrolou FStateFormWasChanged=' + BoolToStr(FStateFormWasChanged));
+  // WriteBridgeDebug('FormCloseQuery: PŘED kontrolou FStateFormWasChanged=' + BoolToStr(FStateFormWasChanged)); // ZAKOMENTOVÁNO
   {$ENDIF UCURSOR}
   
   //pokud neni soubor ulozen, zeptat se na ulozeni a ulozit
@@ -5484,9 +5484,9 @@ end; {SetDesignButtons}
 procedure TfaMain.SetChangeFlag(AWasChange: boolean);
 begin
   {$IFDEF UCURSOR}
-  WriteBridgeDebug('SetChangeFlag: AWasChange=' + BoolToStr(AWasChange) + 
-    ', OLD FStateFormWasChanged=' + BoolToStr(FStateFormWasChanged) + 
-    ', FScriptChangedByCursor=' + BoolToStr(FScriptChangedByCursor));
+  // WriteBridgeDebug('SetChangeFlag: AWasChange=' + BoolToStr(AWasChange) + 
+  //   ', OLD FStateFormWasChanged=' + BoolToStr(FStateFormWasChanged) + 
+  //   ', FScriptChangedByCursor=' + BoolToStr(FScriptChangedByCursor)); // ZAKOMENTOVÁNO
   {$ENDIF UCURSOR}
   
   {if not FIsDesignMode and mtValues.ReadOnly and AWasChange then
@@ -6544,7 +6544,7 @@ var
   isDesignMode, mtValReadOnly: boolean;
 begin
   {$IFDEF UCURSOR}
-  WriteBridgeDebug('SaveDef: START, FStateFormWasChanged=' + BoolToStr(FStateFormWasChanged));
+  // WriteBridgeDebug('SaveDef: START, FStateFormWasChanged=' + BoolToStr(FStateFormWasChanged)); // ZAKOMENTOVÁNO
   {$ENDIF UCURSOR}
   
   if FDefReadOnly then
@@ -6582,13 +6582,13 @@ begin
         SaveDataDef(FDefFileName);
         
         {$IFDEF UCURSOR}
-        WriteBridgeDebug('SaveDef: PŘED SetChangeFlag(FALSE), FStateFormWasChanged=' + BoolToStr(FStateFormWasChanged));
+        // WriteBridgeDebug('SaveDef: PŘED SetChangeFlag(FALSE), FStateFormWasChanged=' + BoolToStr(FStateFormWasChanged)); // ZAKOMENTOVÁNO
         {$ENDIF UCURSOR}
         
         SetChangeFlag(FALSE);
         
         {$IFDEF UCURSOR}
-        WriteBridgeDebug('SaveDef: PO SetChangeFlag(FALSE), FStateFormWasChanged=' + BoolToStr(FStateFormWasChanged));
+        // WriteBridgeDebug('SaveDef: PO SetChangeFlag(FALSE), FStateFormWasChanged=' + BoolToStr(FStateFormWasChanged)); // ZAKOMENTOVÁNO
         {$ENDIF UCURSOR}
       end;
       //
@@ -6600,7 +6600,7 @@ begin
   end;
   
   {$IFDEF UCURSOR}
-  WriteBridgeDebug('SaveDef: END, FStateFormWasChanged=' + BoolToStr(FStateFormWasChanged));
+  // WriteBridgeDebug('SaveDef: END, FStateFormWasChanged=' + BoolToStr(FStateFormWasChanged)); // ZAKOMENTOVÁNO
   {$ENDIF UCURSOR}
 end; {SaveDef}
 
@@ -9925,7 +9925,7 @@ var
   dFldsC, dFldsE: string;
 begin
   {$IFDEF UCURSOR}
-  WriteBridgeDebug('SetFormData: START, FStateFormWasChanged=' + BoolToStr(FStateFormWasChanged));
+  // WriteBridgeDebug('SetFormData: START, FStateFormWasChanged=' + BoolToStr(FStateFormWasChanged)); // ZAKOMENTOVÁNO
   {$ENDIF UCURSOR}
   
   SetTskpData(AData);
@@ -9956,13 +9956,13 @@ begin
   end;
   
   {$IFDEF UCURSOR}
-  WriteBridgeDebug('SetFormData: PŘED SetChangeFlag(FALSE), FStateFormWasChanged=' + BoolToStr(FStateFormWasChanged));
+  // WriteBridgeDebug('SetFormData: PŘED SetChangeFlag(FALSE), FStateFormWasChanged=' + BoolToStr(FStateFormWasChanged)); // ZAKOMENTOVÁNO
   {$ENDIF UCURSOR}
   
   SetChangeFlag(FALSE);
   
   {$IFDEF UCURSOR}
-  WriteBridgeDebug('SetFormData: PO SetChangeFlag(FALSE), FStateFormWasChanged=' + BoolToStr(FStateFormWasChanged));
+  // WriteBridgeDebug('SetFormData: PO SetChangeFlag(FALSE), FStateFormWasChanged=' + BoolToStr(FStateFormWasChanged)); // ZAKOMENTOVÁNO
   {$ENDIF UCURSOR}
 end; {SetFormData}
 
@@ -17144,7 +17144,7 @@ var
   s: string;
 begin
   {$IFDEF UCURSOR}
-  WriteBridgeDebug('SaveFormScript: START, FStateFormWasChanged=' + BoolToStr(FStateFormWasChanged));
+  // WriteBridgeDebug('SaveFormScript: START, FStateFormWasChanged=' + BoolToStr(FStateFormWasChanged)); // ZAKOMENTOVÁNO
   {$ENDIF UCURSOR}
   
   {$IFDEF PROFILER}TimeLog('SaveFormScript'); {$ENDIF PROFILER}
@@ -17152,21 +17152,21 @@ begin
   {$IFDEF PROFILER}TimeLog('GetFormData'); {$ENDIF PROFILER}
   
   {$IFDEF UCURSOR}
-  WriteBridgeDebug('SaveFormScript: PŘED SaveDef, FStateFormWasChanged=' + BoolToStr(FStateFormWasChanged));
+  // WriteBridgeDebug('SaveFormScript: PŘED SaveDef, FStateFormWasChanged=' + BoolToStr(FStateFormWasChanged)); // ZAKOMENTOVÁNO
   {$ENDIF UCURSOR}
   
   SaveDef;
   {$IFDEF PROFILER}TimeLog('SaveDef'); {$ENDIF PROFILER}
   
   {$IFDEF UCURSOR}
-  WriteBridgeDebug('SaveFormScript: PO SaveDef, FStateFormWasChanged=' + BoolToStr(FStateFormWasChanged));
+  // WriteBridgeDebug('SaveFormScript: PO SaveDef, FStateFormWasChanged=' + BoolToStr(FStateFormWasChanged)); // ZAKOMENTOVÁNO
   {$ENDIF UCURSOR}
   
   SetFormData(s);
   {$IFDEF PROFILER}TimeLog('SetFormData'); {$ENDIF PROFILER}
   
   {$IFDEF UCURSOR}
-  WriteBridgeDebug('SaveFormScript: PO SetFormData, FStateFormWasChanged=' + BoolToStr(FStateFormWasChanged));
+  // WriteBridgeDebug('SaveFormScript: PO SetFormData, FStateFormWasChanged=' + BoolToStr(FStateFormWasChanged)); // ZAKOMENTOVÁNO
   {$ENDIF UCURSOR}
   
   FocusActuallyControl;
@@ -26931,7 +26931,7 @@ begin
   FBridge.OnDebuggerCommand := ProcessDebugCommand; // callback pro debugger příkazy z Cursor
 
   TimerPoll := TTimer.Create(Self);
-  TimerPoll.Interval := 500; // 500 ms
+  TimerPoll.Interval := 250; // 250 ms (sníženo z 500ms pro rychlejší odezvu při přepínání)
   TimerPoll.OnTimer  := TimerPollTimer;
   TimerPoll.Enabled := True;
 end;
@@ -26969,8 +26969,8 @@ var
   isChangingScript, btSaveEnabled: boolean;
   CurrentCode: AnsiString;
 begin
-  WriteBridgeDebug('BridgeExternalSave: FCurrentFormId=' + FCurrentFormId + 
-    ', TextLength=' + IntToStr(Length(Text)) + ', FStateFormWasChanged=' + BoolToStr(FStateFormWasChanged));
+  // WriteBridgeDebug('BridgeExternalSave: FCurrentFormId=' + FCurrentFormId + 
+  //   ', TextLength=' + IntToStr(Length(Text)) + ', FStateFormWasChanged=' + BoolToStr(FStateFormWasChanged)); // ZAKOMENTOVÁNO
   
   if FCurrentFormId <> '' then
   begin
@@ -26978,12 +26978,12 @@ begin
     // Pokud se nezměnil, nic nedělej (aby se předešlo falešné detekci změny)
     CurrentCode := LoadCodeFromDB;
     
-    WriteBridgeDebug('BridgeExternalSave: CurrentCodeLength=' + IntToStr(Length(CurrentCode)) + 
-      ', SameText=' + BoolToStr(SameText(CurrentCode, Text)));
+    // WriteBridgeDebug('BridgeExternalSave: CurrentCodeLength=' + IntToStr(Length(CurrentCode)) + 
+    //   ', SameText=' + BoolToStr(SameText(CurrentCode, Text))); // ZAKOMENTOVÁNO
     
     if SameText(CurrentCode, Text) then
     begin
-      WriteBridgeDebug('BridgeExternalSave: EXIT - obsah stejný');
+      // WriteBridgeDebug('BridgeExternalSave: EXIT - obsah stejný'); // ZAKOMENTOVÁNO
       Exit; // Obsah se nezměnil, nic nedělej
     end;
     
@@ -27002,8 +27002,8 @@ begin
       ReloadListBoxes;
       BringToFront;
       
-      WriteBridgeDebug('BridgeExternalSave: PO SaveFormScript, FStateFormWasChanged=' + BoolToStr(FStateFormWasChanged) + 
-        ', FScriptChangedByCursor=' + BoolToStr(FScriptChangedByCursor));
+      // WriteBridgeDebug('BridgeExternalSave: PO SaveFormScript, FStateFormWasChanged=' + BoolToStr(FStateFormWasChanged) + 
+      //   ', FScriptChangedByCursor=' + BoolToStr(FScriptChangedByCursor)); // ZAKOMENTOVÁNO
     finally
       dxBarButtonSave.Enabled := btSaveEnabled;
       FIsChangingScript:=isChangingScript;
@@ -27019,7 +27019,7 @@ end;
 procedure TfaMain.SaveCodeToDB(const Code: AnsiString);
 begin
   {$IFDEF UCURSOR}
-  WriteBridgeDebug('SaveCodeToDB: START, FStateFormWasChanged=' + BoolToStr(FStateFormWasChanged));
+  // WriteBridgeDebug('SaveCodeToDB: START, FStateFormWasChanged=' + BoolToStr(FStateFormWasChanged)); // ZAKOMENTOVÁNO
   {$ENDIF UCURSOR}
   
   if mtDef.State = dsBrowse then
@@ -27029,13 +27029,13 @@ begin
   mtDef.Post;
   
   {$IFDEF UCURSOR}
-  WriteBridgeDebug('SaveCodeToDB: PŘED SaveFormScript, FStateFormWasChanged=' + BoolToStr(FStateFormWasChanged));
+  // WriteBridgeDebug('SaveCodeToDB: PŘED SaveFormScript, FStateFormWasChanged=' + BoolToStr(FStateFormWasChanged)); // ZAKOMENTOVÁNO
   {$ENDIF UCURSOR}
   
   SaveFormScript;
   
   {$IFDEF UCURSOR}
-  WriteBridgeDebug('SaveCodeToDB: PO SaveFormScript, FStateFormWasChanged=' + BoolToStr(FStateFormWasChanged));
+  // WriteBridgeDebug('SaveCodeToDB: PO SaveFormScript, FStateFormWasChanged=' + BoolToStr(FStateFormWasChanged)); // ZAKOMENTOVÁNO
   {$ENDIF UCURSOR}
 end;
 
@@ -27073,12 +27073,13 @@ end;
 procedure TfaMain.ProcessFACommand(const Command: string);
 var 
   s: string;
-  DebugFile: string;
-  DebugFS: TFileStream;
-  DebugMsg: AnsiString;
+  // Debug logování zakomentováno
+  // DebugFile: string;
+  // DebugFS: TFileStream;
+  // DebugMsg: AnsiString;
 begin
-  // Debug: zapiš začátek zpracování příkazu
-  try
+  // Debug: zapiš začátek zpracování příkazu - ZAKOMENTOVÁNO
+  {try
     if Assigned(FBridge) then
     begin
       DebugFile := IncludeTrailingPathDelimiter(FBridge.GetEffectiveExportFolder) + '.fsbridge\' + IntToStr(GetCurrentProcessId) + '\facmd-debug.txt';
@@ -27098,12 +27099,12 @@ begin
     end;
   except
     // Ignoruj chyby
-  end;
+  end;}
   
   if Command = 'Aktivovat_formular' then
   begin
-    // Debug: před FAToFront
-    try
+    // Debug: před FAToFront - ZAKOMENTOVÁNO
+    {try
       if Assigned(FBridge) then
       begin
         DebugFile := IncludeTrailingPathDelimiter(FBridge.GetEffectiveExportFolder) + '.fsbridge\' + IntToStr(GetCurrentProcessId) + '\facmd-debug.txt';
@@ -27122,12 +27123,12 @@ begin
       end;
     except
       // Ignoruj chyby
-    end;
+    end;}
     
     FAToFront;
     
-    // Debug: po FAToFront
-    try
+    // Debug: po FAToFront - ZAKOMENTOVÁNO
+    {try
       if Assigned(FBridge) then
       begin
         DebugFile := IncludeTrailingPathDelimiter(FBridge.GetEffectiveExportFolder) + '.fsbridge\' + IntToStr(GetCurrentProcessId) + '\facmd-debug.txt';
@@ -27146,7 +27147,7 @@ begin
       end;
     except
       // Ignoruj chyby
-    end;
+    end;}
   end
   else if Command = 'Zkompilovat_script' then
   begin
@@ -27164,8 +27165,8 @@ begin
   end
   else
   begin
-    // Debug: neznámý příkaz
-    try
+    // Debug: neznámý příkaz - ZAKOMENTOVÁNO
+    {try
       if Assigned(FBridge) then
       begin
         DebugFile := IncludeTrailingPathDelimiter(FBridge.GetEffectiveExportFolder) + '.fsbridge\' + IntToStr(GetCurrentProcessId) + '\facmd-debug.txt';
@@ -27184,11 +27185,11 @@ begin
       end;
     except
       // Ignoruj chyby
-    end;
+    end;}
   end;
   
-  // Debug: konec zpracování příkazu
-  try
+  // Debug: konec zpracování příkazu - ZAKOMENTOVÁNO
+  {try
     if Assigned(FBridge) then
     begin
       DebugFile := IncludeTrailingPathDelimiter(FBridge.GetEffectiveExportFolder) + '.fsbridge\' + IntToStr(GetCurrentProcessId) + '\facmd-debug.txt';
@@ -27207,7 +27208,7 @@ begin
     end;
   except
     // Ignoruj chyby
-  end;
+  end;}
 end;
 
 // Zpracování příkazů z Cursor extension

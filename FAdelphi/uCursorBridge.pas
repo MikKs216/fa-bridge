@@ -1026,8 +1026,8 @@ begin
       begin
         Command := Trim(Commands[0]); // První řádek = příkaz
         
-        // Debug: zapiš načtený příkaz
-        try
+        // Debug: zapiš načtený příkaz - ZAKOMENTOVÁNO
+        {try
           DebugFile := GetInstanceDir + 'facmd-debug.txt';
           DebugMsg := FormatDateTime('hh:nn:ss.zzz', Now) + ' [ProcessCommandFile] Načten příkaz: [' + AnsiString(Command) + ']' + #13#10;
           DebugFS := TFileStream.Create(DebugFile, fmOpenWrite or fmShareDenyNone);
@@ -1039,7 +1039,7 @@ begin
           end;
         except
           // Ignoruj chyby debug zápisu
-        end;
+        end;}
         
         // Pokud je příkaz prázdný, přejmenuj soubor s timestampem
         if Command = '' then
@@ -1051,8 +1051,8 @@ begin
         // NEJDŘÍV přejmenuj soubor s timestampem (před voláním callbacku!)
         RenameCommandFileWithTimestamp(CmdFilePath);
         
-        // Debug: zapiš před voláním callbacku
-        try
+        // Debug: zapiš před voláním callbacku - ZAKOMENTOVÁNO
+        {try
           DebugFile := GetInstanceDir + 'facmd-debug.txt';
           DebugMsg := FormatDateTime('hh:nn:ss.zzz', Now) + ' [ProcessCommandFile] Před voláním callback, Assigned(FOnCommand)=' + BoolToStr(Assigned(FOnCommand), True) + #13#10;
           DebugFS := TFileStream.Create(DebugFile, fmOpenWrite or fmShareDenyNone);
@@ -1064,7 +1064,7 @@ begin
           end;
         except
           // Ignoruj chyby debug zápisu
-        end;
+        end;}
         
         // PAK teprve zavolej callback pro zpracování příkazu
         if Assigned(FOnCommand) then
@@ -1072,8 +1072,8 @@ begin
           try
             FOnCommand(Command);
             
-            // Debug: zapiš po volání callbacku
-            try
+            // Debug: zapiš po volání callbacku - ZAKOMENTOVÁNO
+            {try
               DebugFile := GetInstanceDir + 'facmd-debug.txt';
               DebugMsg := FormatDateTime('hh:nn:ss.zzz', Now) + ' [ProcessCommandFile] Po volání callback' + #13#10;
               DebugFS := TFileStream.Create(DebugFile, fmOpenWrite or fmShareDenyNone);
@@ -1085,12 +1085,12 @@ begin
               end;
             except
               // Ignoruj chyby debug zápisu
-            end;
+            end;}
           except
             on E: Exception do
             begin
-              // Debug: zapiš chybu při volání callbacku
-              try
+              // Debug: zapiš chybu při volání callbacku - ZAKOMENTOVÁNO
+              {try
                 DebugFile := GetInstanceDir + 'facmd-debug.txt';
                 DebugMsg := FormatDateTime('hh:nn:ss.zzz', Now) + ' [ProcessCommandFile] CHYBA při volání callback: ' + AnsiString(E.Message) + #13#10;
                 DebugFS := TFileStream.Create(DebugFile, fmOpenWrite or fmShareDenyNone);
@@ -1102,14 +1102,14 @@ begin
                 end;
               except
                 // Ignoruj chyby debug zápisu
-              end;
+              end;}
             end;
           end;
         end
         else
         begin
-          // Debug: callback není nastaven
-          try
+          // Debug: callback není nastaven - ZAKOMENTOVÁNO
+          {try
             DebugFile := GetInstanceDir + 'facmd-debug.txt';
             DebugMsg := FormatDateTime('hh:nn:ss.zzz', Now) + ' [ProcessCommandFile] CHYBA: FOnCommand není nastaven!' + #13#10;
             DebugFS := TFileStream.Create(DebugFile, fmOpenWrite or fmShareDenyNone);
@@ -1121,7 +1121,7 @@ begin
             end;
           except
             // Ignoruj chyby debug zápisu
-          end;
+          end;}
         end;
       end
       else
@@ -1133,8 +1133,8 @@ begin
     except
       on E: Exception do
       begin
-        // Debug: zapiš chybu
-        try
+        // Debug: zapiš chybu - ZAKOMENTOVÁNO
+        {try
           DebugFile := GetInstanceDir + 'facmd-debug.txt';
           DebugMsg := FormatDateTime('hh:nn:ss.zzz', Now) + ' [ProcessCommandFile] VÝJIMKA: ' + AnsiString(E.Message) + #13#10;
           DebugFS := TFileStream.Create(DebugFile, fmOpenWrite or fmShareDenyNone);
@@ -1146,7 +1146,7 @@ begin
           end;
         except
           // Ignoruj chyby debug zápisu
-        end;
+        end;}
         
         // Při chybě zkus soubor přejmenovat s timestampem, aby se neblokoval
         try
