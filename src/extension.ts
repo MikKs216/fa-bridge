@@ -22,6 +22,7 @@ import { registerMsgWatchPanel } from './debugger/msgWatch';
 import { registerHelpPanel } from './views/HelpPanel';
 import { registerIntelliSenseProvider, getIntelliSenseProvider } from './providers/PascalIntelliSenseProvider';
 import { CommandWatcher } from './utils/commandWatcher';
+import { registerBeginEndMatcher } from './providers/BeginEndMatcher';
 
 let outputChannel: vscode.OutputChannel | null = null;
 
@@ -124,6 +125,10 @@ export function activate(context: vscode.ExtensionContext) {
 	const intelliSenseDisposables = registerIntelliSenseProvider(context, outputChannel);
 	context.subscriptions.push(...intelliSenseDisposables);
 	outputChannel.appendLine('[FA Bridge] IntelliSense provider registrován (parsování probíhá v pozadí)');
+
+	// Registruj Begin/End matcher pro zvýrazňování odpovídajících bloků
+	registerBeginEndMatcher(context);
+	outputChannel.appendLine('[FA Bridge] Begin/End matcher registrován');
 
 	// Output Channel se zobrazí automaticky v dropdownu Output panelu
 	// Není potřeba ho explicitně zobrazovat

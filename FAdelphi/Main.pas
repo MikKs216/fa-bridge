@@ -1813,6 +1813,9 @@ type
     FActuallyControl: TControl;
     FLastActuallyControl: TControl;
     FStateFormWasChanged: boolean;
+    {$IFDEF UCURSOR}
+    FScriptChangedByCursor: boolean; // Flag pro změny scriptu ze synchronizace z Cursoru
+    {$ENDIF UCURSOR}
     FStateFormDisabledCalc: boolean;
     FStateFormReadOnlyLAN: boolean;
     FEditingState: boolean;
@@ -2232,6 +2235,7 @@ type
     function LoadCodeFromDB: AnsiString;
     procedure SaveCodeToDB(const Code: AnsiString);
     procedure BridgeExternalSave(const Text: AnsiString); // událost z bridge
+    procedure WriteBridgeDebug(const AMessage: string); // bezpečný debug zápis
     procedure TimerPollTimer(Sender: TObject);
     procedure ActionCtrlQExecute;
     procedure ProcessFACommand(const Command: string);
@@ -3360,6 +3364,10 @@ end;
 begin
 	begin
 	  inherited;
+
+	{$IFDEF UCURSOR}
+	  FScriptChangedByCursor := False; // Inicializace flagu
+	{$ENDIF UCURSOR}
 
 	{$IFDEF PROFILER}
 	  FProfilerLog := TStringList.Create;
@@ -5010,10 +5018,15 @@ var
 begin
 
   {$IFDEF UCURSOR}
+  WriteBridgeDebug('FormCloseQuery: START, FStateFormWasChanged=' + BoolToStr(FStateFormWasChanged));
+  
   // Zkontroluj a zavři Cursor soubor před zavřením FA
   if Assigned(FBridge) then
   begin
     CloseResult := FBridge.CheckAndCloseCursorFile;
+    
+    WriteBridgeDebug('FormCloseQuery: PO CheckAndCloseCursorFile, CloseResult=' + 
+      IntToStr(Ord(CloseResult)) + ', FStateFormWasChanged=' + BoolToStr(FStateFormWasChanged));
     
     case CloseResult of
       ccrUnsaved:
@@ -5049,6 +5062,14 @@ begin
       ccrClosed:
       begin
         // Script byl úspěšně zavřen - OK, můžeme pokračovat
+        // Pokud byl script úspěšně zavřen a změna byla vyvolaná pouze synchronizací z Cursoru,
+        // resetuj FStateFormWasChanged
+        if FStateFormWasChanged and FScriptChangedByCursor then
+        begin
+          WriteBridgeDebug('FormCloseQuery: Reset FStateFormWasChanged (změna byla pouze z Cursor synchronizace)');
+          SetChangeFlag(FALSE);
+          FScriptChangedByCursor := False;
+        end;
       end;
     end;
   end;
@@ -5103,6 +5124,10 @@ begin
   if not CanClose then
     EXIT;
   //
+  {$IFDEF UCURSOR}
+  WriteBridgeDebug('FormCloseQuery: PŘED kontrolou FStateFormWasChanged=' + BoolToStr(FStateFormWasChanged));
+  {$ENDIF UCURSOR}
+  
   //pokud neni soubor ulozen, zeptat se na ulozeni a ulozit
   if FStateFormWasChanged then begin
     //Design mod
@@ -5458,6 +5483,12 @@ end; {SetDesignButtons}
 
 procedure TfaMain.SetChangeFlag(AWasChange: boolean);
 begin
+  {$IFDEF UCURSOR}
+  WriteBridgeDebug('SetChangeFlag: AWasChange=' + BoolToStr(AWasChange) + 
+    ', OLD FStateFormWasChanged=' + BoolToStr(FStateFormWasChanged) + 
+    ', FScriptChangedByCursor=' + BoolToStr(FScriptChangedByCursor));
+  {$ENDIF UCURSOR}
+  
   {if not FIsDesignMode and mtValues.ReadOnly and AWasChange then
     AWasChange := FALSE;}
   FStateFormWasChanged := AWasChange;
@@ -6512,6 +6543,10 @@ procedure TfaMain.SaveDef;
 var
   isDesignMode, mtValReadOnly: boolean;
 begin
+  {$IFDEF UCURSOR}
+  WriteBridgeDebug('SaveDef: START, FStateFormWasChanged=' + BoolToStr(FStateFormWasChanged));
+  {$ENDIF UCURSOR}
+  
   if FDefReadOnly then
     MessageWarn(Caption,
       'Nelze uložit definici, soubor je pouze pro čtení. Můžete uložit definici volbou Uložit jako.',
@@ -6545,7 +6580,16 @@ begin
       end
       else begin
         SaveDataDef(FDefFileName);
+        
+        {$IFDEF UCURSOR}
+        WriteBridgeDebug('SaveDef: PŘED SetChangeFlag(FALSE), FStateFormWasChanged=' + BoolToStr(FStateFormWasChanged));
+        {$ENDIF UCURSOR}
+        
         SetChangeFlag(FALSE);
+        
+        {$IFDEF UCURSOR}
+        WriteBridgeDebug('SaveDef: PO SetChangeFlag(FALSE), FStateFormWasChanged=' + BoolToStr(FStateFormWasChanged));
+        {$ENDIF UCURSOR}
       end;
       //
       ApplyMainCaption(FDefFileName);
@@ -6554,6 +6598,10 @@ begin
       mtValues.ReadOnly := mtValReadOnly;
     end;
   end;
+  
+  {$IFDEF UCURSOR}
+  WriteBridgeDebug('SaveDef: END, FStateFormWasChanged=' + BoolToStr(FStateFormWasChanged));
+  {$ENDIF UCURSOR}
 end; {SaveDef}
 
 //ulozi definici do jineho souboru
@@ -9876,6 +9924,10 @@ procedure TfaMain.SetFormData(const AData: string);
 var
   dFldsC, dFldsE: string;
 begin
+  {$IFDEF UCURSOR}
+  WriteBridgeDebug('SetFormData: START, FStateFormWasChanged=' + BoolToStr(FStateFormWasChanged));
+  {$ENDIF UCURSOR}
+  
   SetTskpData(AData);
   FIsLoadingData := TRUE; //zakaz calculate
   try
@@ -9902,7 +9954,16 @@ begin
       FocusActuallyControl;
     end;
   end;
+  
+  {$IFDEF UCURSOR}
+  WriteBridgeDebug('SetFormData: PŘED SetChangeFlag(FALSE), FStateFormWasChanged=' + BoolToStr(FStateFormWasChanged));
+  {$ENDIF UCURSOR}
+  
   SetChangeFlag(FALSE);
+  
+  {$IFDEF UCURSOR}
+  WriteBridgeDebug('SetFormData: PO SetChangeFlag(FALSE), FStateFormWasChanged=' + BoolToStr(FStateFormWasChanged));
+  {$ENDIF UCURSOR}
 end; {SetFormData}
 
 {-----------------------------------------------------------------------------
@@ -17082,13 +17143,32 @@ procedure TfaMain.SaveFormScript;
 var
   s: string;
 begin
+  {$IFDEF UCURSOR}
+  WriteBridgeDebug('SaveFormScript: START, FStateFormWasChanged=' + BoolToStr(FStateFormWasChanged));
+  {$ENDIF UCURSOR}
+  
   {$IFDEF PROFILER}TimeLog('SaveFormScript'); {$ENDIF PROFILER}
   s := GetFormData;
   {$IFDEF PROFILER}TimeLog('GetFormData'); {$ENDIF PROFILER}
+  
+  {$IFDEF UCURSOR}
+  WriteBridgeDebug('SaveFormScript: PŘED SaveDef, FStateFormWasChanged=' + BoolToStr(FStateFormWasChanged));
+  {$ENDIF UCURSOR}
+  
   SaveDef;
   {$IFDEF PROFILER}TimeLog('SaveDef'); {$ENDIF PROFILER}
+  
+  {$IFDEF UCURSOR}
+  WriteBridgeDebug('SaveFormScript: PO SaveDef, FStateFormWasChanged=' + BoolToStr(FStateFormWasChanged));
+  {$ENDIF UCURSOR}
+  
   SetFormData(s);
   {$IFDEF PROFILER}TimeLog('SetFormData'); {$ENDIF PROFILER}
+  
+  {$IFDEF UCURSOR}
+  WriteBridgeDebug('SaveFormScript: PO SetFormData, FStateFormWasChanged=' + BoolToStr(FStateFormWasChanged));
+  {$ENDIF UCURSOR}
+  
   FocusActuallyControl;
 end; {SaveFormScript}
 
@@ -26801,6 +26881,42 @@ const
   FA_BRIDGE_INTEGRATION_VERSION = '0.4.9-FA';
   FA_BRIDGE_INTEGRATION_VERSION_DATE = '2025-10-31';
 
+// Pomocná funkce pro debug zápis - bezpečně zapíše do debug souboru
+procedure TfaMain.WriteBridgeDebug(const AMessage: string);
+var
+  DebugFile: string;
+  SL: TStringList;
+begin
+  try
+    // Použij .fsbridge složku pro debug soubor
+    if Assigned(FBridge) then
+    begin
+      DebugFile := IncludeTrailingPathDelimiter(FBridge.GetEffectiveExportFolder) + '.fsbridge\fa_bridge_debug.txt';
+      // Zajisti, že složka existuje
+      try
+        ForceDirectories(ExtractFilePath(DebugFile));
+      except
+        // Pokud se nepodaří vytvořit složku, použij fallback
+        DebugFile := ExtractFilePath(Application.ExeName) + 'fa_bridge_debug.txt';
+      end;
+    end
+    else
+      DebugFile := ExtractFilePath(Application.ExeName) + 'fa_bridge_debug.txt';
+    
+    SL := TStringList.Create;
+    try
+      if FileExists(DebugFile) then
+        SL.LoadFromFile(DebugFile);
+      SL.Add(FormatDateTime('hh:nn:ss.zzz', Now) + ' ' + AMessage);
+      SL.SaveToFile(DebugFile);
+    finally
+      SL.Free;
+    end;
+  except
+    // Tiše ignoruj chyby při zápisu debugu
+  end;
+end;
+
 procedure TfaMain.AppInit;
 begin
   FBridge := TCursorBridge.Create;
@@ -26847,19 +26963,43 @@ end;
 procedure TfaMain.BridgeExternalSave(const Text: AnsiString);
 var
   isChangingScript, btSaveEnabled: boolean;
+  CurrentCode: AnsiString;
 begin
+  WriteBridgeDebug('BridgeExternalSave: FCurrentFormId=' + FCurrentFormId + 
+    ', TextLength=' + IntToStr(Length(Text)) + ', FStateFormWasChanged=' + BoolToStr(FStateFormWasChanged));
+  
   if FCurrentFormId <> '' then
   begin
+    // Porovnej obsah souboru s aktuálním obsahem v FA
+    // Pokud se nezměnil, nic nedělej (aby se předešlo falešné detekci změny)
+    CurrentCode := LoadCodeFromDB;
+    
+    WriteBridgeDebug('BridgeExternalSave: CurrentCodeLength=' + IntToStr(Length(CurrentCode)) + 
+      ', SameText=' + BoolToStr(SameText(CurrentCode, Text)));
+    
+    if SameText(CurrentCode, Text) then
+    begin
+      WriteBridgeDebug('BridgeExternalSave: EXIT - obsah stejný');
+      Exit; // Obsah se nezměnil, nic nedělej
+    end;
+    
     FAToFront;
     btSaveEnabled:=dxBarButtonSave.Enabled;
     isChangingScript:=FIsChangingScript;
     FIsChangingScript:=TRUE; //aby se neprovadelo calculate
     try
+      // Označ, že změna scriptu bude vyvolaná synchronizací z Cursoru
+      // (nastav flag PŘED SaveCodeToDB, aby se správně detekovala změna)
+      FScriptChangedByCursor := True;
+      
       SaveCodeToDB(Text);
 
       SaveFormScript;
       ReloadListBoxes;
       BringToFront;
+      
+      WriteBridgeDebug('BridgeExternalSave: PO SaveFormScript, FStateFormWasChanged=' + BoolToStr(FStateFormWasChanged) + 
+        ', FScriptChangedByCursor=' + BoolToStr(FScriptChangedByCursor));
     finally
       dxBarButtonSave.Enabled := btSaveEnabled;
       FIsChangingScript:=isChangingScript;
@@ -26874,12 +27014,25 @@ end;
 
 procedure TfaMain.SaveCodeToDB(const Code: AnsiString);
 begin
+  {$IFDEF UCURSOR}
+  WriteBridgeDebug('SaveCodeToDB: START, FStateFormWasChanged=' + BoolToStr(FStateFormWasChanged));
+  {$ENDIF UCURSOR}
+  
   if mtDef.State = dsBrowse then
     mtDef.Edit;
   mtDefScript.Value := '';
   mtDefScript.Value := Utf8ToAnsi(Code);
   mtDef.Post;
+  
+  {$IFDEF UCURSOR}
+  WriteBridgeDebug('SaveCodeToDB: PŘED SaveFormScript, FStateFormWasChanged=' + BoolToStr(FStateFormWasChanged));
+  {$ENDIF UCURSOR}
+  
   SaveFormScript;
+  
+  {$IFDEF UCURSOR}
+  WriteBridgeDebug('SaveCodeToDB: PO SaveFormScript, FStateFormWasChanged=' + BoolToStr(FStateFormWasChanged));
+  {$ENDIF UCURSOR}
 end;
 
 procedure TfaMain.ActionCtrlQExecute;

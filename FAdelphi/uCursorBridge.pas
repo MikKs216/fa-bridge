@@ -73,6 +73,7 @@ type
     FLastWrite: TDateTime;
     FInstanceId: string;         // PID této instance FA pro více-instanční podporu
     FCursorPID: DWORD;           // PID spuštěného cursoru pro tuto instanci FA
+    FIsClosingFile: Boolean;     // Flag pro zakázání PollTick během zavírání záložky
 
     FOnExternalSave: TExternalSaveEvent;
     FOnCommand: TCommandEvent;
@@ -171,6 +172,9 @@ type
     
     // Kontrola a zavření souboru v Cursoru před zavřením FA
     function CheckAndCloseCursorFile: TCursorCloseResult;
+    
+    // Public metoda pro získání efektivní cesty k export složce (pro debug soubory)
+    function GetEffectiveExportFolder: string;
     
     destructor Destroy; override;
   end;
@@ -339,6 +343,7 @@ begin
   FCurrentFile := '';
   FLastWrite := 0;
   FCursorPID := 0;              // PID cursoru zatím neznámý
+  FIsClosingFile := False;      // Flag pro zakázání PollTick během zavírání záložky
 end;
 
 function TCursorBridge.EnsureDir(const Dir: string): Boolean;
@@ -1550,22 +1555,34 @@ var
   T: TDateTime;
   Txt: AnsiString;
 begin
+  // Pokud právě zavíráme záložku, přeskoč kontrolu změn souboru
+  // (aby se předešlo falešné detekci změny způsobené zavřením záložky)
+  if FIsClosingFile then
+    Exit;
+  
   // 1) Kontrola změn v editovaném souboru (Ctrl+S v editoru)
   if (FCurrentFile <> '') then
   begin
     T := GetFileWriteTime(FCurrentFile);
     if (T > 0) and (T > FLastWrite) then
     begin
-      FLastWrite := T;
-      try
-        Txt := ReadAllText(FCurrentFile);
-      except
-        // best-effort (soubor může být krátce zamčený)
-        Txt := '';
-      end;
+      // Debug výpis - detekována změna časového razítka
+      if Assigned(FOnExternalSave) then
+      begin
+        // Zkus načíst obsah souboru
+        try
+          Txt := ReadAllText(FCurrentFile);
+        except
+          // best-effort (soubor může být krátce zamčený)
+          Txt := '';
+        end;
 
-      if (Txt <> '') and Assigned(FOnExternalSave) then
-        FOnExternalSave(Txt);
+        if (Txt <> '') then
+        begin
+          FLastWrite := T;
+          FOnExternalSave(Txt);
+        end;
+      end;
     end;
   end;
   
@@ -1745,6 +1762,7 @@ var
   SL: TStringList;
   MaxWait: Integer;
   I: Integer;
+  CommandFile: string;
 begin
   Result := ccrError;
   
@@ -1755,58 +1773,78 @@ begin
     Exit;
   end;
   
-  // Cesta k souboru pro odpověď z Cursor extension
-  ResponseFile := GetResponseFilePath;
-  
-  // Smaž starou odpověď (pokud existuje)
-  if FileExists(ResponseFile) then
-    DeleteFile(ResponseFile);
-  
-  // Pošli příkaz do Cursor extension
-  WriteFACommandToFile('check_unsaved_and_close');
-  
-  // Počkej na odpověď (max 2 sekundy, každých 100ms kontrola)
-  MaxWait := 20; // 20 × 100ms = 2 sekundy
-  for I := 1 to MaxWait do
-  begin
-    Sleep(100);
+  // Zakáže PollTick během zavírání záložky
+  FIsClosingFile := True;
+  try
+    // Cesta k souboru pro odpověď z Cursor extension
+    ResponseFile := GetResponseFilePath;
+    CommandFile := GetCommandFilePath;
+    
+    // Smaž starou odpověď (pokud existuje)
     if FileExists(ResponseFile) then
+      DeleteFile(ResponseFile);
+    
+    // Pošli příkaz do Cursor extension
+    WriteFACommandToFile('check_unsaved_and_close');
+    
+    // Debug: Zkontroluj, že příkaz byl zapsán
+    if not FileExists(CommandFile) then
     begin
-      // Načti odpověď
-      SL := TStringList.Create;
-      try
-        SL.LoadFromFile(ResponseFile);
-        if SL.Count > 0 then
-        begin
-          Response := Trim(SL[0]);
-          
-          // Smaž soubor s odpovědí
-          DeleteFile(ResponseFile);
-          
-          if SameText(Response, 'OK') then
+      // Příkaz se nezapsal - extension ho nemůže přečíst
+      Result := ccrError;
+      Exit;
+    end;
+    
+    // Počkej na odpověď (max 5 sekund, každých 100ms kontrola)
+    MaxWait := 50; // 50 × 100ms = 5 sekund
+    for I := 1 to MaxWait do
+    begin
+      Sleep(100);
+      if FileExists(ResponseFile) then
+      begin
+        // Načti odpověď
+        SL := TStringList.Create;
+        try
+          SL.LoadFromFile(ResponseFile);
+          if SL.Count > 0 then
           begin
-            Result := ccrClosed;
-            Exit;
-          end
-          else if Pos('UNSAVED:', Response) = 1 then
-          begin
-            Result := ccrUnsaved;
-            Exit;
-          end
-          else if SameText(Response, 'NOT_OPEN') then
-          begin
-            Result := ccrNotOpen;
-            Exit;
+            Response := Trim(SL[0]);
+            
+            // Smaž soubor s odpovědí
+            DeleteFile(ResponseFile);
+            
+            if SameText(Response, 'OK') then
+            begin
+              Result := ccrClosed;
+              // DŮLEŽITÉ: Aktualizuj FLastWrite, aby PollTick nedetekoval změnu
+              // způsobenou zavřením záložky v Cursoru
+              if (FCurrentFile <> '') and FileExists(FCurrentFile) then
+                FLastWrite := GetFileWriteTime(FCurrentFile);
+              Exit;
+            end
+            else if Pos('UNSAVED:', Response) = 1 then
+            begin
+              Result := ccrUnsaved;
+              Exit;
+            end
+            else if SameText(Response, 'NOT_OPEN') then
+            begin
+              Result := ccrNotOpen;
+              Exit;
+            end;
           end;
+        finally
+          SL.Free;
         end;
-      finally
-        SL.Free;
       end;
     end;
+    
+    // Timeout - Cursor extension neodpověděl
+    Result := ccrError;
+  finally
+    // Znovu povol PollTick
+    FIsClosingFile := False;
   end;
-  
-  // Timeout - Cursor extension neodpověděl
-  Result := ccrError;
 end;
 
 // ============================================================================
@@ -1922,6 +1960,11 @@ begin
       FindClose(SearchRec);
     end;
   end;
+end;
+
+function TCursorBridge.GetEffectiveExportFolder: string;
+begin
+  Result := EffectiveExportFolder;
 end;
 
 destructor TCursorBridge.Destroy;

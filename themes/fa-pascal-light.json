@@ -10,7 +10,11 @@
     "editor.inactiveSelectionBackground": "#E5EBF1",
     "editor.lineHighlightBackground": "#F5F5F5",
     "editorCursor.foreground": "#000000",
-    "editorWhitespace.foreground": "#BFBFBF"
+    "editorWhitespace.foreground": "#BFBFBF",
+    "editor.findMatchBackground": "#90EE90",
+    "editor.findMatchHighlightBackground": "#90EE9066",
+    "editor.findMatchBorder": "#90EE90",
+    "editor.findMatchHighlightBorder": "#90EE9066"
   },
   "tokenColors": [
     {

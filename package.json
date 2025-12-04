@@ -3,7 +3,7 @@
   "displayName": "FA Bridge",
   "publisher": "fa-dev",
   "description": "Propojení Cursor/VS Code s editorem FormStudio (FA)",
-  "version": "0.5.60",
+  "version": "0.5.65",
   "engines": {
     "vscode": "^1.85.0"
   },
