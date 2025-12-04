@@ -10,7 +10,9 @@ Features:
 - Aktivace existujícího okna editoru (Cursor.exe / Code.exe)
 - Polling pro detekci externích uložených změn (Ctrl+S v editoru) a callback OnExternalSave
 - Polling pro čtení příkazů z .fsbridge/facmd.txt a callback OnCommand
-- Soubor facmd.txt se maže OKAMŽITĚ po přečtení (před voláním callbacku) aby se předešlo nekonečné smyčce
+- facmd.txt je POUZE pro komunikaci z Cursoru do FA (activate, compile, atd.)
+- facmd_from_fa.txt je pro komunikaci z FA do Cursoru (check_unsaved_and_close)
+- Soubor facmd.txt se přejmenuje na facmd-x-timestamp.txt po přečtení (pro debug)
 - Čtení dat z .fsbridge/fafield.txt pomocí ReadFieldText() (obsah fieldu z Cursor extension)
 - Zápis dat do .fsbridge/fafield.txt pomocí WriteFieldText() (atomicky s UTF-8 BOM)
 - Podpora příkazů: Polling pro čtení příkazů z .fsbridge/fadebug.txt a callback OnDebuggerCommand
@@ -110,6 +112,7 @@ type
     // Podpora více instancí FA - složka pro každou instanci
     function GetInstanceDir: string;
     function GetInstanceFilePath: string;
+    function RenameCommandFileWithTimestamp(const CmdFilePath: string): Boolean;
     procedure WriteInstanceId;
     function ReadInstanceId: string;
     
@@ -131,6 +134,7 @@ type
     
     // Kontrola neuložených změn a zavření souboru v Cursoru
     function GetResponseFilePath: string;
+    function GetFACommandFilePath: string; // Příkazy z FA do Cursoru: facmd_from_fa.txt
     procedure WriteFACommandToFile(const Command: string);
     
     // Mazání starých složek instance
@@ -404,6 +408,31 @@ begin
           + FInstanceId + PathDelim;
 end;
 
+// Pomocná funkce pro přejmenování facmd.txt na facmd-x-timestamp.txt
+function TCursorBridge.RenameCommandFileWithTimestamp(const CmdFilePath: string): Boolean;
+var
+  NewFileName: string;
+  TimestampStr: string;
+  InstanceDir: string;
+begin
+  Result := False;
+  try
+    InstanceDir := ExtractFilePath(CmdFilePath);
+    // Formát: facmd-x-YYYYMMDD-HHNNSS-ZZZ.txt (bez dvojteček a dalších neplatných znaků)
+    // Použijeme GetTickCount mod 1000 pro milisekundy (jednoduché řešení bez DateUtils)
+    TimestampStr := FormatDateTime('yyyymmdd-hhnnss', Now) + '-' + Format('%03d', [GetTickCount mod 1000]);
+    NewFileName := InstanceDir + 'facmd-x-' + TimestampStr + '.txt';
+    
+    if FileExists(CmdFilePath) then
+    begin
+      RenameFile(CmdFilePath, NewFileName);
+      Result := True;
+    end;
+  except
+    Result := False;
+  end;
+end;
+
 function TCursorBridge.GetInstanceFilePath: string;
 begin
   // Instance ID soubor: <workspace>/.fsbridge/{FA_PID}/fa_instance.txt
@@ -413,21 +442,33 @@ end;
 procedure TCursorBridge.WriteInstanceId;
 var
   InstanceFile: string;
-  SL: TStringList;
+  Content: AnsiString;
+  RetryCount: Integer;
+  Success: Boolean;
 begin
-  // Zapíše PID této instance FA do fa_instance.txt
+  // Zapíše PID této instance FA do fa_instance.txt (atomicky s retry)
   FInstanceId := IntToStr(GetCurrentProcessId);
   InstanceFile := GetInstanceFilePath;
   
   // Zajisti existenci složky .fsbridge
   EnsureDir(ExtractFilePath(InstanceFile));
   
-  SL := TStringList.Create;
-  try
-    SL.Text := FInstanceId;
-    SL.SaveToFile(InstanceFile);
-  finally
-    SL.Free;
+  // Použij atomický zápis s retry mechanismem
+  Content := AnsiString(FInstanceId);
+  Success := False;
+  RetryCount := 0;
+  
+  while (not Success) and (RetryCount < 5) do
+  begin
+    try
+      AtomicWriteAllText(InstanceFile, Content);
+      Success := True;
+    except
+      Inc(RetryCount);
+      if RetryCount < 5 then
+        Sleep(50); // Počkej 50ms před dalším pokusem
+      // Pokud se nepodaří ani po 5 pokusech, tiše ignoruj (nechceme blokovat aplikaci)
+    end;
   end;
 end;
 
@@ -462,9 +503,11 @@ end;
 procedure TCursorBridge.WriteCursorInstanceId;
 var
   InstanceFile: string;
-  SL: TStringList;
+  Content: AnsiString;
+  RetryCount: Integer;
+  Success: Boolean;
 begin
-  // Zapíše PID spuštěného cursoru do cursor_instance.txt
+  // Zapíše PID spuštěného cursoru do cursor_instance.txt (atomicky s retry)
   if FCursorPID = 0 then Exit;
   
   InstanceFile := GetCursorInstanceFilePath;
@@ -472,12 +515,22 @@ begin
   // Zajisti existenci složky .fsbridge
   EnsureDir(ExtractFilePath(InstanceFile));
   
-  SL := TStringList.Create;
-  try
-    SL.Text := IntToStr(FCursorPID);
-    SL.SaveToFile(InstanceFile);
-  finally
-    SL.Free;
+  // Použij atomický zápis s retry mechanismem
+  Content := AnsiString(IntToStr(FCursorPID));
+  Success := False;
+  RetryCount := 0;
+  
+  while (not Success) and (RetryCount < 5) do
+  begin
+    try
+      AtomicWriteAllText(InstanceFile, Content);
+      Success := True;
+    except
+      Inc(RetryCount);
+      if RetryCount < 5 then
+        Sleep(50); // Počkej 50ms před dalším pokusem
+      // Pokud se nepodaří ani po 5 pokusech, tiše ignoruj
+    end;
   end;
 end;
 
@@ -524,9 +577,11 @@ end;
 procedure TCursorBridge.WriteCurrentForm(const FormId: string);
 var
   FormFile: string;
-  SL: TStringList;
+  Content: AnsiString;
+  RetryCount: Integer;
+  Success: Boolean;
 begin
-  // Zapíše aktuální FormId do current_form.txt
+  // Zapíše aktuální FormId do current_form.txt (atomicky s retry)
   // Cursor extension používá tento soubor pro určení, která FA instance edituje který script
   if FormId = '' then Exit;
   
@@ -535,12 +590,22 @@ begin
   // Zajisti existenci složky .fsbridge/{FA_PID}
   EnsureDir(ExtractFilePath(FormFile));
   
-  SL := TStringList.Create;
-  try
-    SL.Text := FormId;
-    SL.SaveToFile(FormFile);
-  finally
-    SL.Free;
+  // Použij atomický zápis s retry mechanismem
+  Content := AnsiString(FormId);
+  Success := False;
+  RetryCount := 0;
+  
+  while (not Success) and (RetryCount < 5) do
+  begin
+    try
+      AtomicWriteAllText(FormFile, Content);
+      Success := True;
+    except
+      Inc(RetryCount);
+      if RetryCount < 5 then
+        Sleep(50); // Počkej 50ms před dalším pokusem
+      // Pokud se nepodaří ani po 5 pokusech, tiše ignoruj
+    end;
   end;
 end;
 
@@ -549,44 +614,46 @@ var
   PID: DWORD;
   H: HWND;
   {$IFNDEF FINALBUILD}
-  DebugFile: string;
-  SL: TStringList;
+  // Debug logování zakomentováno - může blokovat aktivaci FA
+  // DebugFile: string;
+  // SL: TStringList;
   {$ENDIF}
 begin
   Result := False;
   
-  {$IFNDEF FINALBUILD}
-  DebugFile := GetDebugFilePath;
-  SL := TStringList.Create;
-  try
-    SL.Add('=== IsCursorProcessAlive - START ===');
-    SL.Add('FCurrentFormId: ' + FCurrentFormId);
-    SL.Add('FCursorPID: ' + IntToStr(FCursorPID));
-  {$ENDIF}
+  {.$IFNDEF FINALBUILD}
+  // Debug logování zakomentováno - může blokovat aktivaci FA
+  // DebugFile := GetDebugFilePath;
+  // SL := TStringList.Create;
+  // try
+  //   SL.Add('=== IsCursorProcessAlive - START ===');
+  //   SL.Add('FCurrentFormId: ' + FCurrentFormId);
+  //   SL.Add('FCursorPID: ' + IntToStr(FCursorPID));
+  {.$ENDIF}
   
   // Hledej okno podle "fa_scripts" v titulku
   // Všechny FA instance sdílejí jeden workspace fa_scripts.code-workspace
   // Cursor zobrazuje v titulku: "soubor.pas - fa_scripts (Workspace) - Cursor"
   
-  {$IFNDEF FINALBUILD}
-  SL.Add('Looking for fa_scripts in window title...');
-  {$ENDIF}
+  {.$IFNDEF FINALBUILD}
+  // SL.Add('Looking for fa_scripts in window title...');
+  {.$ENDIF}
   
   H := FindWindowByWorkspaceFile('fa_scripts');
   
-  {$IFNDEF FINALBUILD}
-  SL.Add('FindWindowByWorkspaceFile(fa_scripts) result: ' + IntToStr(H));
-  {$ENDIF}
+  {.$IFNDEF FINALBUILD}
+  // SL.Add('FindWindowByWorkspaceFile(fa_scripts) result: ' + IntToStr(H));
+  {.$ENDIF}
   
   if H <> 0 then
   begin
     // Aktualizuj FCursorPID z nalezeného okna
     GetWindowThreadProcessId(H, @FCursorPID);
     
-    {$IFNDEF FINALBUILD}
-    SL.Add('Updated FCursorPID to: ' + IntToStr(FCursorPID));
-    SL.Add('Result: TRUE (found by workspace file)');
-    {$ENDIF}
+    {.$IFNDEF FINALBUILD}
+    // SL.Add('Updated FCursorPID to: ' + IntToStr(FCursorPID));
+    // SL.Add('Result: TRUE (found by workspace file)');
+    {.$ENDIF}
     Result := True;
   end
   else
@@ -594,32 +661,33 @@ begin
     // Fallback: zkus najít okno podle PID
     PID := ReadCursorInstanceId;
     
-    {$IFNDEF FINALBUILD}
-    SL.Add('Fallback: ReadCursorInstanceId returned: ' + IntToStr(PID));
-    {$ENDIF}
+    {.$IFNDEF FINALBUILD}
+    // SL.Add('Fallback: ReadCursorInstanceId returned: ' + IntToStr(PID));
+    {.$ENDIF}
     
     if PID <> 0 then
     begin
       H := FindWindowByPID(PID);
       
-      {$IFNDEF FINALBUILD}
-      SL.Add('FindWindowByPID(' + IntToStr(PID) + ') returned: ' + IntToStr(H));
-      {$ENDIF}
+      {.$IFNDEF FINALBUILD}
+      // SL.Add('FindWindowByPID(' + IntToStr(PID) + ') returned: ' + IntToStr(H));
+      {.$ENDIF}
       
       Result := (H <> 0);
     end;
   end;
   
-  {$IFNDEF FINALBUILD}
-  SL.Add('=== IsCursorProcessAlive - Result: ' + BoolToStr(Result, True) + ' ===');
-  try
-    SL.SaveToFile(DebugFile);
-  except
-  end;
-  finally
-    SL.Free;
-  end;
-  {$ENDIF}
+  {.$IFNDEF FINALBUILD}
+  // Debug logování zakomentováno - může blokovat aktivaci FA
+  // SL.Add('=== IsCursorProcessAlive - Result: ' + BoolToStr(Result, True) + ' ===');
+  // try
+  //   SL.SaveToFile(DebugFile);
+  // except
+  // end;
+  // finally
+  //   SL.Free;
+  // end;
+  {.$ENDIF}
 end;
 
 // Najde okno Cursor/Code které má v titulku daný workspace název
@@ -653,10 +721,11 @@ type
       begin
         TitleStr := string(Title);
         
-        {$IFNDEF FINALBUILD}
-        if Assigned(Data^.DebugList) then
-          Data^.DebugList.Add('Window: ' + TitleStr);
-        {$ENDIF}
+        {.$IFNDEF FINALBUILD}
+        // Debug logování zakomentováno - může blokovat aktivaci FA
+        // if Assigned(Data^.DebugList) then
+        //   Data^.DebugList.Add('Window: ' + TitleStr);
+        {.$ENDIF}
         
         // Cursor/Code zobrazuje workspace v titulku (bez .code-workspace přípony!)
         // např: "FormName - workspace_FormId_FA_12345 (Workspace) - Cursor"
@@ -665,10 +734,11 @@ type
           Data^.ResultHandle := H;
           Result := False; // Zastavit enumeraci
           
-          {$IFNDEF FINALBUILD}
-          if Assigned(Data^.DebugList) then
-            Data^.DebugList.Add('MATCH FOUND!');
-          {$ENDIF}
+          {.$IFNDEF FINALBUILD}
+          // Debug logování zakomentováno - může blokovat aktivaci FA
+          // if Assigned(Data^.DebugList) then
+          //   Data^.DebugList.Add('MATCH FOUND!');
+          {.$ENDIF}
         end;
       end;
     end;
@@ -680,25 +750,27 @@ begin
   Data.SearchTitle := WorkspaceFileName;
   Data.ResultHandle := 0;
   
-  {$IFNDEF FINALBUILD}
-  Data.DebugList := TStringList.Create;
-  try
-    Data.DebugList.Add('FindWindowByWorkspaceFile: ' + WorkspaceFileName);
-  {$ENDIF}
+  {.$IFNDEF FINALBUILD}
+  // Debug logování zakomentováno - může blokovat aktivaci FA
+  // Data.DebugList := TStringList.Create;
+  // try
+  //   Data.DebugList.Add('FindWindowByWorkspaceFile: ' + WorkspaceFileName);
+  {.$ENDIF}
   
   EnumWindows(@EnumCallback, LPARAM(@Data));
   Result := Data.ResultHandle;
   
-  {$IFNDEF FINALBUILD}
-    Data.DebugList.Add('Result HWND: ' + IntToStr(Result));
-    try
-      Data.DebugList.SaveToFile(GetDebugFilePath + '.windows');
-    except
-    end;
-  finally
-    Data.DebugList.Free;
-  end;
-  {$ENDIF}
+  {.$IFNDEF FINALBUILD}
+  // Debug logování zakomentováno - může blokovat aktivaci FA
+  //   Data.DebugList.Add('Result HWND: ' + IntToStr(Result));
+  //   try
+  //     Data.DebugList.SaveToFile(GetDebugFilePath + '.windows');
+  //   except
+  //   end;
+  // finally
+  //   Data.DebugList.Free;
+  // end;
+  {.$ENDIF}
 end;
 
 function TCursorBridge.FindWindowByPID(PID: DWORD): HWND;
@@ -834,7 +906,9 @@ end;
 
 function TCursorBridge.GetCommandFilePath: string;
 begin
-  // Příkazy z Cursor extension: <workspace>/.fsbridge/{FA_PID}/facmd.txt
+  // Příkazy z Cursor extension do FA: <workspace>/.fsbridge/{FA_PID}/facmd.txt
+  // Tento soubor je POUZE pro komunikaci z Cursoru do FA (activate, compile, atd.)
+  // Pro komunikaci z FA do Cursoru použij GetFACommandFilePath (facmd_from_fa.txt)
   Result := GetInstanceDir + 'facmd.txt';
 end;
 
@@ -913,6 +987,9 @@ var
   BOM: array[0..2] of Byte;
   FS: TFileStream;
   HasBOM: Boolean;
+  DebugFile: string;
+  DebugFS: TFileStream;
+  DebugMsg: AnsiString;
 begin
   CmdFilePath := GetCommandFilePath;
   
@@ -949,32 +1026,134 @@ begin
       begin
         Command := Trim(Commands[0]); // První řádek = příkaz
         
-        // Pokud je příkaz prázdný, jen smaž soubor
+        // Debug: zapiš načtený příkaz
+        try
+          DebugFile := GetInstanceDir + 'facmd-debug.txt';
+          DebugMsg := FormatDateTime('hh:nn:ss.zzz', Now) + ' [ProcessCommandFile] Načten příkaz: [' + AnsiString(Command) + ']' + #13#10;
+          DebugFS := TFileStream.Create(DebugFile, fmOpenWrite or fmShareDenyNone);
+          try
+            DebugFS.Seek(0, soEnd);
+            DebugFS.WriteBuffer(DebugMsg[1], Length(DebugMsg));
+          finally
+            DebugFS.Free;
+          end;
+        except
+          // Ignoruj chyby debug zápisu
+        end;
+        
+        // Pokud je příkaz prázdný, přejmenuj soubor s timestampem
         if Command = '' then
         begin
-          DeleteFile(CmdFilePath);
+          RenameCommandFileWithTimestamp(CmdFilePath);
           Exit;
         end;
         
-        // NEJDŘÍV smaž soubor (před voláním callbacku!)
-        DeleteFile(CmdFilePath);
+        // NEJDŘÍV přejmenuj soubor s timestampem (před voláním callbacku!)
+        RenameCommandFileWithTimestamp(CmdFilePath);
+        
+        // Debug: zapiš před voláním callbacku
+        try
+          DebugFile := GetInstanceDir + 'facmd-debug.txt';
+          DebugMsg := FormatDateTime('hh:nn:ss.zzz', Now) + ' [ProcessCommandFile] Před voláním callback, Assigned(FOnCommand)=' + BoolToStr(Assigned(FOnCommand), True) + #13#10;
+          DebugFS := TFileStream.Create(DebugFile, fmOpenWrite or fmShareDenyNone);
+          try
+            DebugFS.Seek(0, soEnd);
+            DebugFS.WriteBuffer(DebugMsg[1], Length(DebugMsg));
+          finally
+            DebugFS.Free;
+          end;
+        except
+          // Ignoruj chyby debug zápisu
+        end;
         
         // PAK teprve zavolej callback pro zpracování příkazu
         if Assigned(FOnCommand) then
-          FOnCommand(Command);
+        begin
+          try
+            FOnCommand(Command);
+            
+            // Debug: zapiš po volání callbacku
+            try
+              DebugFile := GetInstanceDir + 'facmd-debug.txt';
+              DebugMsg := FormatDateTime('hh:nn:ss.zzz', Now) + ' [ProcessCommandFile] Po volání callback' + #13#10;
+              DebugFS := TFileStream.Create(DebugFile, fmOpenWrite or fmShareDenyNone);
+              try
+                DebugFS.Seek(0, soEnd);
+                DebugFS.WriteBuffer(DebugMsg[1], Length(DebugMsg));
+              finally
+                DebugFS.Free;
+              end;
+            except
+              // Ignoruj chyby debug zápisu
+            end;
+          except
+            on E: Exception do
+            begin
+              // Debug: zapiš chybu při volání callbacku
+              try
+                DebugFile := GetInstanceDir + 'facmd-debug.txt';
+                DebugMsg := FormatDateTime('hh:nn:ss.zzz', Now) + ' [ProcessCommandFile] CHYBA při volání callback: ' + AnsiString(E.Message) + #13#10;
+                DebugFS := TFileStream.Create(DebugFile, fmOpenWrite or fmShareDenyNone);
+                try
+                  DebugFS.Seek(0, soEnd);
+                  DebugFS.WriteBuffer(DebugMsg[1], Length(DebugMsg));
+                finally
+                  DebugFS.Free;
+                end;
+              except
+                // Ignoruj chyby debug zápisu
+              end;
+            end;
+          end;
+        end
+        else
+        begin
+          // Debug: callback není nastaven
+          try
+            DebugFile := GetInstanceDir + 'facmd-debug.txt';
+            DebugMsg := FormatDateTime('hh:nn:ss.zzz', Now) + ' [ProcessCommandFile] CHYBA: FOnCommand není nastaven!' + #13#10;
+            DebugFS := TFileStream.Create(DebugFile, fmOpenWrite or fmShareDenyNone);
+            try
+              DebugFS.Seek(0, soEnd);
+              DebugFS.WriteBuffer(DebugMsg[1], Length(DebugMsg));
+            finally
+              DebugFS.Free;
+            end;
+          except
+            // Ignoruj chyby debug zápisu
+          end;
+        end;
       end
       else
       begin
-        // Pokud není žádný příkaz, smaž prázdný soubor
-        DeleteFile(CmdFilePath);
+        // Pokud není žádný příkaz, přejmenuj prázdný soubor s timestampem
+        RenameCommandFileWithTimestamp(CmdFilePath);
       end;
       
     except
-      // Při chybě zkus soubor smazat, aby se neblokoval
-      try
-        DeleteFile(CmdFilePath);
-      except
-        // Tiše ignoruj chybu při mazání
+      on E: Exception do
+      begin
+        // Debug: zapiš chybu
+        try
+          DebugFile := GetInstanceDir + 'facmd-debug.txt';
+          DebugMsg := FormatDateTime('hh:nn:ss.zzz', Now) + ' [ProcessCommandFile] VÝJIMKA: ' + AnsiString(E.Message) + #13#10;
+          DebugFS := TFileStream.Create(DebugFile, fmOpenWrite or fmShareDenyNone);
+          try
+            DebugFS.Seek(0, soEnd);
+            DebugFS.WriteBuffer(DebugMsg[1], Length(DebugMsg));
+          finally
+            DebugFS.Free;
+          end;
+        except
+          // Ignoruj chyby debug zápisu
+        end;
+        
+        // Při chybě zkus soubor přejmenovat s timestampem, aby se neblokoval
+        try
+          RenameCommandFileWithTimestamp(CmdFilePath);
+        except
+          // Tiše ignoruj chybu při přejmenování
+        end;
       end;
     end;
     
@@ -1738,20 +1917,40 @@ begin
   Result := GetInstanceDir + 'facmd_response.txt';
 end;
 
+function TCursorBridge.GetFACommandFilePath: string;
+begin
+  // Příkazy z FA do Cursor extension: <workspace>/.fsbridge/{FA_PID}/facmd_from_fa.txt
+  // facmd.txt je pouze pro komunikaci z Cursoru do FA!
+  Result := GetInstanceDir + 'facmd_from_fa.txt';
+end;
+
 procedure TCursorBridge.WriteFACommandToFile(const Command: string);
 var
   CmdFilePath: string;
-  SL: TStringList;
+  Content: AnsiString;
+  RetryCount: Integer;
+  Success: Boolean;
 begin
-  CmdFilePath := GetCommandFilePath;
+  // Použij facmd_from_fa.txt místo facmd.txt (který je pouze pro komunikaci z Cursoru do FA)
+  // Atomický zápis s retry mechanismem
+  CmdFilePath := GetFACommandFilePath;
   EnsureDir(ExtractFilePath(CmdFilePath));
   
-  SL := TStringList.Create;
-  try
-    SL.Text := Command;
-    SL.SaveToFile(CmdFilePath);
-  finally
-    SL.Free;
+  Content := AnsiString(Command);
+  Success := False;
+  RetryCount := 0;
+  
+  while (not Success) and (RetryCount < 5) do
+  begin
+    try
+      AtomicWriteAllText(CmdFilePath, Content);
+      Success := True;
+    except
+      Inc(RetryCount);
+      if RetryCount < 5 then
+        Sleep(50); // Počkej 50ms před dalším pokusem
+      // Pokud se nepodaří ani po 5 pokusech, tiše ignoruj
+    end;
   end;
 end;
 
@@ -1778,13 +1977,13 @@ begin
   try
     // Cesta k souboru pro odpověď z Cursor extension
     ResponseFile := GetResponseFilePath;
-    CommandFile := GetCommandFilePath;
+    CommandFile := GetFACommandFilePath; // facmd_from_fa.txt (ne facmd.txt!)
     
     // Smaž starou odpověď (pokud existuje)
     if FileExists(ResponseFile) then
       DeleteFile(ResponseFile);
     
-    // Pošli příkaz do Cursor extension
+    // Pošli příkaz do Cursor extension přes facmd_from_fa.txt
     WriteFACommandToFile('check_unsaved_and_close');
     
     // Debug: Zkontroluj, že příkaz byl zapsán

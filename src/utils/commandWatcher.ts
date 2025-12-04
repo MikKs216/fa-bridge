@@ -61,7 +61,9 @@ export class CommandWatcher implements vscode.Disposable {
 			return;
 		}
 
-		const facmdPath = path.join(instanceDir, 'facmd.txt');
+		// facmd_from_fa.txt je pro příkazy z FA do Cursoru (např. check_unsaved_and_close)
+		// facmd.txt je pouze pro příkazy z Cursoru do FA (activate, compile, atd.)
+		const facmdPath = path.join(instanceDir, 'facmd_from_fa.txt');
 		const facmdDir = path.dirname(facmdPath);
 
 		this.log(`[CommandWatcher] Watching file: ${facmdPath}`);
@@ -69,7 +71,7 @@ export class CommandWatcher implements vscode.Disposable {
 		// Sleduj změny v instance složce
 		if (fs.existsSync(facmdDir)) {
 			this.fileWatcher = fs.watch(facmdDir, (eventType, filename) => {
-				if (filename === 'facmd.txt' && (eventType === 'rename' || eventType === 'change')) {
+				if (filename === 'facmd_from_fa.txt' && (eventType === 'rename' || eventType === 'change')) {
 					// Malé zpoždění pro zajištění, že soubor je plně zapsán
 					setTimeout(() => {
 						this.processCommand(facmdPath);
@@ -83,7 +85,7 @@ export class CommandWatcher implements vscode.Disposable {
 	}
 
 	private startPolling(workspaceRoot: string): void {
-		// Polling každých 500ms - zkontroluj, jestli se neobjevila instance složka nebo facmd.txt
+		// Polling každých 500ms - zkontroluj, jestli se neobjevila instance složka nebo facmd_from_fa.txt
 		this.pollingInterval = setInterval(() => {
 			const instanceDir = getFAInstanceDir(workspaceRoot);
 			if (instanceDir) {
@@ -93,16 +95,16 @@ export class CommandWatcher implements vscode.Disposable {
 				return;
 			}
 
-			// Zkontroluj všechny možné instance složky a zkus najít facmd.txt
+			// Zkontroluj všechny možné instance složky a zkus najít facmd_from_fa.txt
 			const fsbridgeDir = path.join(workspaceRoot, '.fsbridge');
 			if (fs.existsSync(fsbridgeDir)) {
 				try {
 					const entries = fs.readdirSync(fsbridgeDir, { withFileTypes: true });
 					for (const entry of entries) {
 						if (entry.isDirectory() && /^\d+$/.test(entry.name)) {
-							const facmdPath = path.join(fsbridgeDir, entry.name, 'facmd.txt');
+							const facmdPath = path.join(fsbridgeDir, entry.name, 'facmd_from_fa.txt');
 							if (fs.existsSync(facmdPath)) {
-								this.log(`[CommandWatcher] Nalezen facmd.txt v polling módu: ${facmdPath}`);
+								this.log(`[CommandWatcher] Nalezen facmd_from_fa.txt v polling módu: ${facmdPath}`);
 								this.processCommand(facmdPath);
 							}
 						}
@@ -144,14 +146,20 @@ export class CommandWatcher implements vscode.Disposable {
 
 			this.log(`[CommandWatcher] Příkaz přijat: ${command}`);
 
-			// Zpracuj příkaz
-			await this.handleCommand(command, facmdPath);
+			// Zpracuj příkaz - vrať true pokud byl příkaz zpracován
+			const wasProcessed = await this.handleCommand(command, facmdPath);
 
-			// Smaž soubor po zpracování
-			try {
-				fs.unlinkSync(facmdPath);
-			} catch (error) {
-				this.log(`[CommandWatcher] Chyba při mazání facmd.txt: ${error}`);
+			// Smaž soubor POUZE pokud byl příkaz skutečně zpracován
+			// (jinak může být příkaz určený pro FA, ne pro Cursor)
+			if (wasProcessed) {
+				try {
+					fs.unlinkSync(facmdPath);
+					this.log(`[CommandWatcher] Soubor smazán po zpracování příkazu`);
+				} catch (error) {
+					this.log(`[CommandWatcher] Chyba při mazání facmd.txt: ${error}`);
+				}
+			} else {
+				this.log(`[CommandWatcher] Příkaz není pro Cursor - soubor ponechán (FA ho zpracuje)`);
 			}
 		} catch (error) {
 			const msg = error instanceof Error ? error.message : String(error);
@@ -159,11 +167,13 @@ export class CommandWatcher implements vscode.Disposable {
 		}
 	}
 
-	private async handleCommand(command: string, facmdPath: string): Promise<void> {
+	private async handleCommand(command: string, facmdPath: string): Promise<boolean> {
 		if (command === 'check_unsaved_and_close') {
 			await this.handleCheckUnsavedAndClose(facmdPath);
+			return true; // Příkaz byl zpracován
 		}
 		// Zde můžeme přidat další příkazy v budoucnu
+		return false; // Příkaz není pro Cursor - necháme ho pro FA
 	}
 
 	private async handleCheckUnsavedAndClose(facmdPath: string): Promise<void> {

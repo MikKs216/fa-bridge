@@ -26883,11 +26883,15 @@ const
 
 // Pomocná funkce pro debug zápis - bezpečně zapíše do debug souboru
 procedure TfaMain.WriteBridgeDebug(const AMessage: string);
-var
-  DebugFile: string;
-  SL: TStringList;
+//var
+  // Debug logování zakomentováno - může blokovat aktivaci FA
+  // DebugFile: string;
+  // SL: TStringList;
 begin
-  try
+  // Debug logování zakomentováno - může blokovat aktivaci FA
+  Exit; // Rychlý výstup bez zápisu
+  
+  {try
     // Použij .fsbridge složku pro debug soubor
     if Assigned(FBridge) then
     begin
@@ -26914,7 +26918,7 @@ begin
     end;
   except
     // Tiše ignoruj chyby při zápisu debugu
-  end;
+  end;}
 end;
 
 procedure TfaMain.AppInit;
@@ -27067,11 +27071,82 @@ begin
 end;
 
 procedure TfaMain.ProcessFACommand(const Command: string);
-var s: string;
+var 
+  s: string;
+  DebugFile: string;
+  DebugFS: TFileStream;
+  DebugMsg: AnsiString;
 begin
+  // Debug: zapiš začátek zpracování příkazu
+  try
+    if Assigned(FBridge) then
+    begin
+      DebugFile := IncludeTrailingPathDelimiter(FBridge.GetEffectiveExportFolder) + '.fsbridge\' + IntToStr(GetCurrentProcessId) + '\facmd-debug.txt';
+      DebugMsg := FormatDateTime('hh:nn:ss.zzz', Now) + ' [ProcessFACommand] START, Command=[' + AnsiString(Command) + ']' + #13#10;
+      try
+        ForceDirectories(ExtractFilePath(DebugFile));
+        DebugFS := TFileStream.Create(DebugFile, fmOpenWrite or fmShareDenyNone);
+        try
+          DebugFS.Seek(0, soEnd);
+          DebugFS.WriteBuffer(DebugMsg[1], Length(DebugMsg));
+        finally
+          DebugFS.Free;
+        end;
+      except
+        // Ignoruj chyby debug zápisu
+      end;
+    end;
+  except
+    // Ignoruj chyby
+  end;
+  
   if Command = 'Aktivovat_formular' then
   begin
+    // Debug: před FAToFront
+    try
+      if Assigned(FBridge) then
+      begin
+        DebugFile := IncludeTrailingPathDelimiter(FBridge.GetEffectiveExportFolder) + '.fsbridge\' + IntToStr(GetCurrentProcessId) + '\facmd-debug.txt';
+        DebugMsg := FormatDateTime('hh:nn:ss.zzz', Now) + ' [ProcessFACommand] Před FAToFront' + #13#10;
+        try
+          DebugFS := TFileStream.Create(DebugFile, fmOpenWrite or fmShareDenyNone);
+          try
+            DebugFS.Seek(0, soEnd);
+            DebugFS.WriteBuffer(DebugMsg[1], Length(DebugMsg));
+          finally
+            DebugFS.Free;
+          end;
+        except
+          // Ignoruj chyby
+        end;
+      end;
+    except
+      // Ignoruj chyby
+    end;
+    
     FAToFront;
+    
+    // Debug: po FAToFront
+    try
+      if Assigned(FBridge) then
+      begin
+        DebugFile := IncludeTrailingPathDelimiter(FBridge.GetEffectiveExportFolder) + '.fsbridge\' + IntToStr(GetCurrentProcessId) + '\facmd-debug.txt';
+        DebugMsg := FormatDateTime('hh:nn:ss.zzz', Now) + ' [ProcessFACommand] Po FAToFront' + #13#10;
+        try
+          DebugFS := TFileStream.Create(DebugFile, fmOpenWrite or fmShareDenyNone);
+          try
+            DebugFS.Seek(0, soEnd);
+            DebugFS.WriteBuffer(DebugMsg[1], Length(DebugMsg));
+          finally
+            DebugFS.Free;
+          end;
+        except
+          // Ignoruj chyby
+        end;
+      end;
+    except
+      // Ignoruj chyby
+    end;
   end
   else if Command = 'Zkompilovat_script' then
   begin
@@ -27087,6 +27162,52 @@ begin
     s:=FBridge.ReadFieldText;
     SearchField(s);
   end
+  else
+  begin
+    // Debug: neznámý příkaz
+    try
+      if Assigned(FBridge) then
+      begin
+        DebugFile := IncludeTrailingPathDelimiter(FBridge.GetEffectiveExportFolder) + '.fsbridge\' + IntToStr(GetCurrentProcessId) + '\facmd-debug.txt';
+        DebugMsg := FormatDateTime('hh:nn:ss.zzz', Now) + ' [ProcessFACommand] Neznámý příkaz: [' + AnsiString(Command) + ']' + #13#10;
+        try
+          DebugFS := TFileStream.Create(DebugFile, fmOpenWrite or fmShareDenyNone);
+          try
+            DebugFS.Seek(0, soEnd);
+            DebugFS.WriteBuffer(DebugMsg[1], Length(DebugMsg));
+          finally
+            DebugFS.Free;
+          end;
+        except
+          // Ignoruj chyby
+        end;
+      end;
+    except
+      // Ignoruj chyby
+    end;
+  end;
+  
+  // Debug: konec zpracování příkazu
+  try
+    if Assigned(FBridge) then
+    begin
+      DebugFile := IncludeTrailingPathDelimiter(FBridge.GetEffectiveExportFolder) + '.fsbridge\' + IntToStr(GetCurrentProcessId) + '\facmd-debug.txt';
+      DebugMsg := FormatDateTime('hh:nn:ss.zzz', Now) + ' [ProcessFACommand] END' + #13#10;
+      try
+        DebugFS := TFileStream.Create(DebugFile, fmOpenWrite or fmShareDenyNone);
+        try
+          DebugFS.Seek(0, soEnd);
+          DebugFS.WriteBuffer(DebugMsg[1], Length(DebugMsg));
+        finally
+          DebugFS.Free;
+        end;
+      except
+        // Ignoruj chyby
+      end;
+    end;
+  except
+    // Ignoruj chyby
+  end;
 end;
 
 // Zpracování příkazů z Cursor extension
