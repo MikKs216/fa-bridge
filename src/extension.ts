@@ -15,7 +15,7 @@ import {
 	vlozitUdajSDvojteckami,
 	hledatOdZacatku,
 } from './commands/sendCommand';
-import { writeFACommand, getValidInstanceId, getFsBridgeWorkspaceRoot } from './utils/fsBridge';
+import { getValidInstanceId, getFsBridgeWorkspaceRoot } from './utils/fsBridge';
 import { registerFABridgePanel } from './views/FABridgePanel';
 import { registerSnippetProvider } from './providers/SnippetProvider';
 import { registerMsgWatchPanel } from './debugger/msgWatch';
@@ -228,55 +228,6 @@ export function activate(context: vscode.ExtensionContext) {
 	});
 	context.subscriptions.push(saveListener);
 
-	// Sleduj aktivaci okna Cursoru - když se aktivuje myší, aktualizuj aktuální údaj z FA
-	const windowStateListener = vscode.window.onDidChangeWindowState((state) => {
-		if (state.focused) {
-			// Okno získalo focus - zkontroluj/aktualizuj fafield.txt
-			// Pošleme příkaz do FA, aby aktualizoval aktuální údaj
-			setTimeout(async () => {
-				try {
-					// Zkontroluj, jestli existuje workspace a .fsbridge složka
-					const workspaceRoot = getFsBridgeWorkspaceRoot();
-					if (!workspaceRoot) {
-						return;
-					}
-
-					const fsbridgeDir = path.join(workspaceRoot, '.fsbridge');
-					if (!fs.existsSync(fsbridgeDir)) {
-						return;
-					}
-
-					// DŮLEŽITÉ: Pošli příkaz pouze pokud je otevřený FA script soubor
-					// Jinak by se mohlo použít fallback a zapisovat do špatné instance složky
-					const activeEditor = vscode.window.activeTextEditor;
-					if (!activeEditor) {
-						return; // Žádný aktivní editor - nepokračuj
-					}
-
-					const activeFileName = activeEditor.document.fileName;
-					// Zkontroluj, jestli je to FA script soubor (script_*.pas nebo u_*.pas)
-					const isFAScript = /(?:script_|u_)[^\\/]+\.pas$/i.test(activeFileName);
-					if (!isFAScript) {
-						return; // Není to FA script - nepokračuj
-					}
-
-					// Pošli příkaz do FA pro aktualizaci aktuálního údaje
-					// FA by mělo aktualizovat fafield.txt když dostane tento příkaz
-					await writeFACommand('GetCurrentField');
-					if (outputChannel) {
-						outputChannel.appendLine('[FA Bridge] Požádáno o aktualizaci aktuálního údaje při aktivaci okna');
-					}
-				} catch (error) {
-					// Tichá chyba - není kritické
-					if (outputChannel) {
-						const msg = error instanceof Error ? error.message : String(error);
-						outputChannel.appendLine(`[FA Bridge] Chyba při aktualizaci údaje: ${msg}`);
-					}
-				}
-			}, 100); // Malé zpoždění pro zajištění, že okno je plně aktivní
-		}
-	});
-	context.subscriptions.push(windowStateListener);
 
 	// Automaticky otevři FA Bridge panel při každém startu (pokud je to povoleno v nastavení)
 	const config = vscode.workspace.getConfiguration('faBridge');

@@ -27153,10 +27153,6 @@ begin
   begin
 
   end
-  else if Command = 'Vlozit_nazev_udaje' then
-  begin
-    // TODO: tvoje implementace
-  end
   else if Command = 'Najit_udaj' then
   begin
     FAToFront;
