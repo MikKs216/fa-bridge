@@ -341,6 +341,14 @@ export class CommandWatcher implements vscode.Disposable {
 			await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
 			fs.writeFileSync(responsePath, 'OK', 'utf-8');
 			this.log('[CommandWatcher] Zavřena záložka (není FA script)');
+			
+			// Zkontroluj, zda jsou ještě nějaké otevřené záložky
+			if (vscode.window.visibleTextEditors.length === 0) {
+				this.log('[CommandWatcher] Žádné otevřené záložky - zavírám Cursor');
+				setTimeout(() => {
+					vscode.commands.executeCommand('workbench.action.quit');
+				}, 100);
+			}
 			return;
 		}
 
@@ -348,6 +356,14 @@ export class CommandWatcher implements vscode.Disposable {
 		await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
 		fs.writeFileSync(responsePath, 'OK', 'utf-8');
 		this.log('[CommandWatcher] Script zavřen');
+		
+		// Zkontroluj, zda jsou ještě nějaké otevřené záložky
+		if (vscode.window.visibleTextEditors.length === 0) {
+			this.log('[CommandWatcher] Žádné otevřené záložky - zavírám Cursor');
+			setTimeout(() => {
+				vscode.commands.executeCommand('workbench.action.quit');
+			}, 100);
+		}
 	}
 
 	public dispose(): void {
