@@ -2237,7 +2237,7 @@ type
     procedure BridgeExternalSave(const Text: AnsiString); // událost z bridge
     procedure WriteBridgeDebug(const AMessage: string); // bezpečný debug zápis
     procedure TimerPollTimer(Sender: TObject);
-    procedure ActionCtrlQExecute;
+    procedure OpenScriptInCursor;
     procedure ProcessFACommand(const Command: string);
     function BuildVariablesJson: string; // sestavení JSON s proměnnými ze skriptu
     function BuildMtValuesCurrentRowJson: string; // sestavení JSON s aktuálním záznamem mtValues
@@ -6674,6 +6674,13 @@ begin
   LoadPage; //aby zmizely poznamky pokud byly aktivni
   SetDesignButtons;
   SetLastFiles;
+  
+  {$IFDEF UCURSOR}
+  // Vyprázdni FCurrentFile při zavření definice
+  if Assigned(FBridge) then
+    FBridge.ClearCurrentFile;
+  {$ENDIF UCURSOR}
+  
   CloseData;
   FDefFileName := '';
   ApplyMainCaption(FDefFileName);
@@ -17225,6 +17232,12 @@ end; {EditFormScript}
 procedure TfaMain.EditFormScriptUnModal;
 begin
  {$IFNDEF FINALBUILD}
+  {$IFDEF UCURSOR}
+  // Vyprázdni FCurrentFile když otevíráme původní editor kódu v FA (ne v Cursoru)
+  if Assigned(FBridge) then
+    FBridge.ClearCurrentFile;
+  {$ENDIF UCURSOR}
+  
   if not FNestedState then
     EditScriptUnModal(mtDefScript.Value,
       'Script [' + ExtractFileName(FDefFileName) + ']');
@@ -17236,7 +17249,7 @@ begin
  {$IFNDEF FINALBUILD}
   if not FNestedState then begin
     {$IFDEF UCURSOR}
-    ActionCtrlQExecute;
+    OpenScriptInCursor;
     {$ENDIF UCURSOR}
   end;
  {$ENDIF FINALBUILD}
@@ -19206,7 +19219,9 @@ begin
         except
           on e: Exception do begin
             {$IFDEF UCURSOR}
-            MsgBoxErr('FA - cursor editor','Chyba: ' + E.Message, MB_OK);
+            // Zobraz hlášení jen když editujeme v Cursoru
+            if Assigned(FBridge) and (FBridge.CurrentFile <> '') then
+              MsgBoxErr('FORM sistent - Cursor editor','Chyba: ' + E.Message, MB_OK);
             {$ENDIF UCURSOR}
             raise; // Přehodí výjimku dál
           end;
@@ -27052,7 +27067,7 @@ begin
   {$ENDIF UCURSOR}
 end;
 
-procedure TfaMain.ActionCtrlQExecute;
+procedure TfaMain.OpenScriptInCursor;
 var
   Code: AnsiString;
   JumpLine, JumpCol: Integer;

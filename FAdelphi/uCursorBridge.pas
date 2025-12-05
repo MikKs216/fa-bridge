@@ -176,6 +176,9 @@ type
     // Pouze zavření souboru v Cursoru (bez kontroly neuložených změn)
     function CloseCursorFile: TCursorCloseResult;
     
+    // Vyprázdní FCurrentFile a FCurrentFormId (např. při zavření definice)
+    procedure ClearCurrentFile;
+    
     // Public metoda pro získání efektivní cesty k export složce (pro debug soubory)
     function GetEffectiveExportFolder: string;
     
@@ -1670,6 +1673,10 @@ var
   T: TDateTime;
   Txt: AnsiString;
 begin
+  // Pokud nemáme otevřený soubor v Cursoru, přeskoč kontrolu
+  if FCurrentFile = '' then
+    Exit;
+    
   // Pokud právě zavíráme záložku, přeskoč kontrolu změn souboru
   // (aby se předešlo falešné detekci změny způsobené zavřením záložky)
   if FIsClosingFile then
@@ -2146,6 +2153,12 @@ begin
     // Znovu povol PollTick
     FIsClosingFile := False;
   end;
+end;
+
+procedure TCursorBridge.ClearCurrentFile;
+begin
+  FCurrentFile := '';
+  FCurrentFormId := '';
 end;
 
 // ============================================================================
