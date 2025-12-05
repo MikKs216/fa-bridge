@@ -5013,24 +5013,22 @@ var
   s: string;
   {$IFDEF UCURSOR}
   CloseResult: TCursorCloseResult;
+  ScriptContent: AnsiString;
   {$ENDIF UCURSOR}
 begin
 
   {$IFDEF UCURSOR}
   // WriteBridgeDebug('FormCloseQuery: START, FStateFormWasChanged=' + BoolToStr(FStateFormWasChanged)); // ZAKOMENTOVÁNO
   
-  // Zkontroluj a zavři Cursor soubor před zavřením FA
+  // KROK 1: Zkontroluj neuložené změny v Cursoru
   if Assigned(FBridge) then
   begin
-    CloseResult := FBridge.CheckAndCloseCursorFile;
-    
-    // WriteBridgeDebug('FormCloseQuery: PO CheckAndCloseCursorFile, CloseResult=' + 
-    //   IntToStr(Ord(CloseResult)) + ', FStateFormWasChanged=' + BoolToStr(FStateFormWasChanged)); // ZAKOMENTOVÁNO
+    CloseResult := FBridge.CheckUnsavedChanges;
     
     case CloseResult of
       ccrUnsaved:
       begin
-        // Soubor má neuložené změny - upozorni uživatele
+        // Soubor má neuložené změny - upozorni uživatele a zastav zavírání
         MsgBoxWarn(Caption, 
           'Script v Cursoru má neuložené změny. Nejdříve uložte změny v Cursoru (Ctrl+S) a pak znovu zavřete FORM asistenta.', 
           MB_OK);
@@ -5041,16 +5039,9 @@ begin
       
       ccrError:
       begin
-        // Chyba komunikace - upozorni uživatele
-        res := MessageAsk(Caption, 
-          'Nepodařilo se zkontrolovat stav scriptu v Cursoru. Zavřít FORM asistenta i tak?', 
-          [MBYES, MBNO]);
-        if res <> IDYES then
-        begin
-          FBridge.ActivateCursorWindow;
-          CanClose := False;
-          Exit;
-        end;
+        // Chyba komunikace - pokud Cursor není spuštěný nebo neodpovídá, pokračuj bez hlášení
+        // (běžná situace když uživatel zavřel Cursor před zavřením FA)
+        // Pouze loguj, ale neblokuj zavírání FA
       end;
       
       ccrNotOpen:
@@ -5060,7 +5051,39 @@ begin
       
       ccrClosed:
       begin
-        // Script byl úspěšně zavřen - OK, můžeme pokračovat
+        // Script je uložený - pokračuj dál
+      end;
+    end;
+    
+    // KROK 2: Načti a zkompiluj script (pokud je otevřený)
+    if (CloseResult = ccrClosed) and Assigned(FBridge.OnExternalSave) and (FCurrentFormId <> '') then
+    begin
+      try
+        // Načti aktuální stav souboru z disku
+        ScriptContent := FBridge.ReadScriptFileContent;
+        if ScriptContent <> '' then
+        begin
+          // Zavolej BridgeExternalSave, která načte změny a zkompiluje script
+          // (stejná logika jako při Alt+Q z Cursoru)
+          // Pokud je v scriptu chyba, vyvolá se výjimka (zachycena v BridgeExternalSave)
+          BridgeExternalSave(ScriptContent);
+        end;
+      except
+        // Pokud nastala chyba při kompilaci, nezavři FA
+        // (BridgeExternalSave už zobrazil chybové hlášení díky try-except v CheckAndLoadScript)
+        FBridge.ActivateCursorWindow; // Přepni na Cursor okno, aby uživatel mohl opravit chybu
+        CanClose := False;
+        Exit;
+      end;
+    end;
+    
+    // KROK 3: Zavři soubor v Cursoru (pokud byl otevřený)
+    if CloseResult = ccrClosed then
+    begin
+      CloseResult := FBridge.CloseCursorFile;
+      // Pokud bylo zavření úspěšné, aktualizuj FLastWrite
+      if CloseResult = ccrClosed then
+      begin
         // Pokud byl script úspěšně zavřen a změna byla vyvolaná pouze synchronizací z Cursoru,
         // resetuj FStateFormWasChanged
         if FStateFormWasChanged and FScriptChangedByCursor then
@@ -19183,7 +19206,7 @@ begin
         except
           on e: Exception do begin
             {$IFDEF UCURSOR}
-            MsgBoxErr('FA-cursor','Chyba: ' + E.Message);
+            MsgBoxErr('FA - cursor editor','Chyba: ' + E.Message, MB_OK);
             {$ENDIF UCURSOR}
             raise; // Přehodí výjimku dál
           end;

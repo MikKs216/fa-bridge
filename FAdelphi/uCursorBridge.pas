@@ -128,6 +128,7 @@ type
     function GetResponseFilePath: string;
     function GetFACommandFilePath: string; // Příkazy z FA do Cursoru: facmd_from_fa.txt
     procedure WriteFACommandToFile(const Command: string);
+    function ReadCursorResponse(const Command: string; out Response: string): TCursorCloseResult; // Pomocná funkce pro čtení odpovědi z Cursor extension
     
     // Mazání starých složek instance
     function IsFAProcessAlive(PID: DWORD): Boolean;
@@ -168,6 +169,12 @@ type
     
     // Kontrola a zavření souboru v Cursoru před zavřením FA
     function CheckAndCloseCursorFile: TCursorCloseResult;
+    
+    // Pouze kontrola neuložených změn (bez zavírání souboru)
+    function CheckUnsavedChanges: TCursorCloseResult;
+    
+    // Pouze zavření souboru v Cursoru (bez kontroly neuložených změn)
+    function CloseCursorFile: TCursorCloseResult;
     
     // Public metoda pro získání efektivní cesty k export složce (pro debug soubory)
     function GetEffectiveExportFolder: string;
@@ -1668,7 +1675,8 @@ begin
   if FIsClosingFile then
     Exit;
   
-  // 1) Kontrola změn v editovaném souboru (Ctrl+S v editoru)
+  // Kontrola změn v editovaném souboru (Ctrl+S v editoru)
+  // zakázáno, nejde používat pro AI, kdy průběžně ukládá
  { if (FCurrentFile <> '') then
   begin
     T := GetFileWriteTime(FCurrentFile);
@@ -1694,7 +1702,7 @@ begin
     end;
   end;}
 
-  // 2) Kontrola příkazů z Cursor extension
+  // Kontrola příkazů z Cursor extension
   ProcessCommandFile;
 end;
 
@@ -1888,6 +1896,7 @@ var
   MaxWait: Integer;
   I: Integer;
   CommandFile: string;
+  RetryCount: Integer;
 begin
   Result := ccrError;
   
@@ -1905,9 +1914,15 @@ begin
     ResponseFile := GetResponseFilePath;
     CommandFile := GetFACommandFilePath; // facmd_from_fa.txt (ne facmd.txt!)
     
-    // Smaž starou odpověď (pokud existuje)
+    // Smaž starou odpověď (pokud existuje) - ošetřeno proti zamykání souboru
     if FileExists(ResponseFile) then
-      DeleteFile(ResponseFile);
+    begin
+      try
+        DeleteFile(ResponseFile);
+      except
+        // Ignoruj chybu - soubor může být zamčený, ale to nevadí
+      end;
+    end;
     
     // Pošli příkaz do Cursor extension přes facmd_from_fa.txt
     WriteFACommandToFile('check_unsaved_and_close');
@@ -1927,16 +1942,37 @@ begin
       Sleep(100);
       if FileExists(ResponseFile) then
       begin
-        // Načti odpověď
+        // Načti odpověď - s retry mechanismem pro případ zamykání souboru
         SL := TStringList.Create;
         try
-          SL.LoadFromFile(ResponseFile);
+          // Zkus načíst soubor (max 3 pokusy s krátkým čekáním)
+          RetryCount := 1;
+          while RetryCount <= 3 do
+          begin
+            try
+              SL.LoadFromFile(ResponseFile);
+              Break; // Úspěch - pokračuj
+            except
+              if RetryCount < 3 then
+              begin
+                Sleep(50); // Počkej 50ms před dalším pokusem
+                Inc(RetryCount);
+              end
+              else
+                raise; // Po 3 pokusech přehod výjimku
+            end;
+          end;
+          
           if SL.Count > 0 then
           begin
             Response := Trim(SL[0]);
             
-            // Smaž soubor s odpovědí
-            DeleteFile(ResponseFile);
+            // Smaž soubor s odpovědí - ošetřeno proti zamykání
+            try
+              DeleteFile(ResponseFile);
+            except
+              // Ignoruj chybu - soubor může být zamčený, ale už jsme ho načetli
+            end;
             
             if SameText(Response, 'OK') then
             begin
@@ -1966,6 +2002,146 @@ begin
     
     // Timeout - Cursor extension neodpověděl
     Result := ccrError;
+  finally
+    // Znovu povol PollTick
+    FIsClosingFile := False;
+  end;
+end;
+
+// Pomocná funkce pro čtení odpovědi z Cursor extension
+function TCursorBridge.ReadCursorResponse(const Command: string; out Response: string): TCursorCloseResult;
+var
+  ResponseFile: string;
+  SL: TStringList;
+  MaxWait: Integer;
+  I: Integer;
+  CommandFile: string;
+  RetryCount: Integer;
+begin
+  Result := ccrError;
+  Response := '';
+  
+  // Pokud Cursor neběží, není co kontrolovat
+  if not IsCursorProcessAlive then
+  begin
+    Result := ccrNotOpen;
+    Exit;
+  end;
+  
+  // Cesta k souboru pro odpověď z Cursor extension
+  ResponseFile := GetResponseFilePath;
+  CommandFile := GetFACommandFilePath; // facmd_from_fa.txt (ne facmd.txt!)
+  
+  // Smaž starou odpověď (pokud existuje) - ošetřeno proti zamykání souboru
+  if FileExists(ResponseFile) then
+  begin
+    try
+      DeleteFile(ResponseFile);
+    except
+      // Ignoruj chybu - soubor může být zamčený, ale to nevadí
+    end;
+  end;
+  
+  // Pošli příkaz do Cursor extension přes facmd_from_fa.txt
+  WriteFACommandToFile(Command);
+  
+  // Debug: Zkontroluj, že příkaz byl zapsán
+  if not FileExists(CommandFile) then
+  begin
+    // Příkaz se nezapsal - extension ho nemůže přečíst
+    Result := ccrError;
+    Exit;
+  end;
+  
+  // Počkej na odpověď (max 1 sekunda, každých 100ms kontrola)
+  MaxWait := 10; // 10 × 100ms = 1 sekunda
+  for I := 1 to MaxWait do
+  begin
+    Sleep(100);
+    if FileExists(ResponseFile) then
+    begin
+      // Načti odpověď - s retry mechanismem pro případ zamykání souboru
+      SL := TStringList.Create;
+      try
+        // Zkus načíst soubor (max 3 pokusy s krátkým čekáním)
+        RetryCount := 1;
+        while RetryCount <= 3 do
+        begin
+          try
+            SL.LoadFromFile(ResponseFile);
+            Break; // Úspěch - pokračuj
+          except
+            if RetryCount < 3 then
+            begin
+              Sleep(50); // Počkej 50ms před dalším pokusem
+              Inc(RetryCount);
+            end
+            else
+              raise; // Po 3 pokusech přehod výjimku
+          end;
+        end;
+        
+        if SL.Count > 0 then
+        begin
+          Response := Trim(SL[0]);
+          
+          // Smaž soubor s odpovědí - ošetřeno proti zamykání
+          try
+            DeleteFile(ResponseFile);
+          except
+            // Ignoruj chybu - soubor může být zamčený, ale už jsme ho načetli
+          end;
+          
+          if SameText(Response, 'OK') then
+          begin
+            Result := ccrClosed;
+            Exit;
+          end
+          else if Pos('UNSAVED:', Response) = 1 then
+          begin
+            Result := ccrUnsaved;
+            Exit;
+          end
+          else if SameText(Response, 'NOT_OPEN') then
+          begin
+            Result := ccrNotOpen;
+            Exit;
+          end;
+        end;
+      finally
+        SL.Free;
+      end;
+    end;
+  end;
+  
+  // Timeout - Cursor extension neodpověděl
+  Result := ccrError;
+end;
+
+function TCursorBridge.CheckUnsavedChanges: TCursorCloseResult;
+var
+  Response: string;
+begin
+  Result := ReadCursorResponse('check_unsaved', Response);
+end;
+
+function TCursorBridge.CloseCursorFile: TCursorCloseResult;
+var
+  Response: string;
+begin
+  // Zakáže PollTick během zavírání záložky
+  FIsClosingFile := True;
+  try
+    Result := ReadCursorResponse('close_file', Response);
+    
+    // Pokud bylo zavření úspěšné, aktualizuj FLastWrite
+    if Result = ccrClosed then
+    begin
+      // DŮLEŽITÉ: Aktualizuj FLastWrite, aby PollTick nedetekoval změnu
+      // způsobenou zavřením záložky v Cursoru
+      if (FCurrentFile <> '') and FileExists(FCurrentFile) then
+        FLastWrite := GetFileWriteTime(FCurrentFile);
+    end;
   finally
     // Znovu povol PollTick
     FIsClosingFile := False;

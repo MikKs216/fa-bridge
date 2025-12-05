@@ -75,9 +75,17 @@ export class CommandWatcher implements vscode.Disposable {
 					// Malé zpoždění pro zajištění, že soubor je plně zapsán
 					setTimeout(() => {
 						this.processCommand(facmdPath);
-					}, 100);
+					}, 50); // Zkráceno z 100ms na 50ms pro rychlejší reakci
 				}
 			});
+			
+			// Spusť také polling jako fallback mechanismus (pro případ, že file watcher nefunguje)
+			// Polling kontroluje každých 200ms, jestli se neobjevil nový příkaz
+			this.pollingInterval = setInterval(() => {
+				if (fs.existsSync(facmdPath)) {
+					this.processCommand(facmdPath);
+				}
+			}, 200);
 		} else {
 			this.log(`[CommandWatcher] WARNING: Directory does not exist: ${facmdDir} - použiji polling`);
 			this.startPolling(workspaceRoot);
@@ -85,7 +93,7 @@ export class CommandWatcher implements vscode.Disposable {
 	}
 
 	private startPolling(workspaceRoot: string): void {
-		// Polling každých 500ms - zkontroluj, jestli se neobjevila instance složka nebo facmd_from_fa.txt
+		// Polling každých 200ms - zkontroluj, jestli se neobjevila instance složka nebo facmd_from_fa.txt
 		this.pollingInterval = setInterval(() => {
 			const instanceDir = getFAInstanceDir(workspaceRoot);
 			if (instanceDir) {
@@ -113,7 +121,7 @@ export class CommandWatcher implements vscode.Disposable {
 					// Ignoruj chyby při čtení složky
 				}
 			}
-		}, 500);
+		}, 200); // Zkráceno z 500ms na 200ms pro rychlejší reakci
 	}
 
 	private async processCommand(facmdPath: string): Promise<void> {
@@ -172,6 +180,14 @@ export class CommandWatcher implements vscode.Disposable {
 			await this.handleCheckUnsavedAndClose(facmdPath);
 			return true; // Příkaz byl zpracován
 		}
+		if (command === 'check_unsaved') {
+			await this.handleCheckUnsaved(facmdPath);
+			return true; // Příkaz byl zpracován
+		}
+		if (command === 'close_file') {
+			await this.handleCloseFile(facmdPath);
+			return true; // Příkaz byl zpracován
+		}
 		// Zde můžeme přidat další příkazy v budoucnu
 		return false; // Příkaz není pro Cursor - necháme ho pro FA
 	}
@@ -223,6 +239,115 @@ export class CommandWatcher implements vscode.Disposable {
 		await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
 		fs.writeFileSync(responsePath, 'OK', 'utf-8');
 		this.log('[CommandWatcher] Script zavřen (uložený)');
+	}
+
+	private async handleCheckUnsaved(facmdPath: string): Promise<void> {
+		try {
+			const workspaceRoot = getFsBridgeWorkspaceRoot();
+			if (!workspaceRoot) {
+				this.log('[CommandWatcher] handleCheckUnsaved: Workspace root nenalezen');
+				return;
+			}
+
+			const instanceDir = getFAInstanceDir(workspaceRoot);
+			if (!instanceDir) {
+				this.log('[CommandWatcher] handleCheckUnsaved: Instance dir nenalezena');
+				return;
+			}
+
+			const responsePath = path.join(instanceDir, 'facmd_response.txt');
+			this.log(`[CommandWatcher] handleCheckUnsaved: Response path: ${responsePath}`);
+			
+			const editor = vscode.window.activeTextEditor;
+
+			if (!editor) {
+				// Žádný editor otevřený
+				fs.writeFileSync(responsePath, 'NOT_OPEN', 'utf-8');
+				this.log('[CommandWatcher] handleCheckUnsaved: Žádný editor otevřený - NOT_OPEN');
+				return;
+			}
+
+			const document = editor.document;
+			const fileName = path.basename(document.fileName);
+			this.log(`[CommandWatcher] handleCheckUnsaved: Kontroluji soubor: ${fileName}, isDirty: ${document.isDirty}`);
+
+			// Zkontroluj, jestli je to FA script soubor
+			if (!fileName.match(/^(script_|u_)[a-zA-Z0-9_]+\.pas$/)) {
+				// Není to FA script - odpověz OK (není co kontrolovat)
+				fs.writeFileSync(responsePath, 'OK', 'utf-8');
+				this.log('[CommandWatcher] handleCheckUnsaved: Není FA script - OK');
+				return;
+			}
+
+			// Zkontroluj neuložené změny
+			if (document.isDirty) {
+				// Má neuložené změny - odpověz
+				const formId = extractFormIdFromFileName(fileName);
+				const message = `UNSAVED:Script ${formId} má neuložené změny`;
+				fs.writeFileSync(responsePath, message, 'utf-8');
+				this.log(`[CommandWatcher] handleCheckUnsaved: Script má neuložené změny: ${formId} - UNSAVED`);
+				return;
+			}
+
+			// Soubor je uložený - odpověz OK
+			fs.writeFileSync(responsePath, 'OK', 'utf-8');
+			this.log('[CommandWatcher] handleCheckUnsaved: Script je uložený - OK');
+		} catch (error) {
+			const msg = error instanceof Error ? error.message : String(error);
+			this.log(`[CommandWatcher] handleCheckUnsaved: Chyba: ${msg}`);
+			// Zkus zapsat chybovou odpověď
+			try {
+				const workspaceRoot = getFsBridgeWorkspaceRoot();
+				if (workspaceRoot) {
+					const instanceDir = getFAInstanceDir(workspaceRoot);
+					if (instanceDir) {
+						const responsePath = path.join(instanceDir, 'facmd_response.txt');
+						fs.writeFileSync(responsePath, 'ERROR', 'utf-8');
+					}
+				}
+			} catch (e) {
+				// Ignoruj chybu při zápisu chybové odpovědi
+			}
+		}
+	}
+
+	private async handleCloseFile(facmdPath: string): Promise<void> {
+		const workspaceRoot = getFsBridgeWorkspaceRoot();
+		if (!workspaceRoot) {
+			return;
+		}
+
+		const instanceDir = getFAInstanceDir(workspaceRoot);
+		if (!instanceDir) {
+			return;
+		}
+
+		const responsePath = path.join(instanceDir, 'facmd_response.txt');
+		const editor = vscode.window.activeTextEditor;
+
+		if (!editor) {
+			// Žádný editor otevřený
+			fs.writeFileSync(responsePath, 'NOT_OPEN', 'utf-8');
+			this.log('[CommandWatcher] Žádný editor otevřený');
+			return;
+		}
+
+		const document = editor.document;
+		const fileName = path.basename(document.fileName);
+
+		// Zkontroluj, jestli je to FA script soubor
+		if (!fileName.match(/^(script_|u_)[a-zA-Z0-9_]+\.pas$/)) {
+			// Není to FA script - zavři záložku bez kontroly
+			await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
+			fs.writeFileSync(responsePath, 'OK', 'utf-8');
+			this.log('[CommandWatcher] Zavřena záložka (není FA script)');
+			return;
+		}
+
+		// Zavři záložku (bez kontroly neuložených změn - to už bylo zkontrolováno dříve)
+		await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
+		fs.writeFileSync(responsePath, 'OK', 'utf-8');
+		this.log('[CommandWatcher] Script zavřen');
 	}
 
 	public dispose(): void {
