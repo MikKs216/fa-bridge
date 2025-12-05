@@ -23,6 +23,9 @@ import { registerHelpPanel } from './views/HelpPanel';
 import { registerIntelliSenseProvider, getIntelliSenseProvider } from './providers/PascalIntelliSenseProvider';
 import { CommandWatcher } from './utils/commandWatcher';
 import { registerBeginEndMatcher } from './providers/BeginEndMatcher';
+import { compareWithPreviousVersion, showHistoryVersions } from './utils/fileHistory';
+import { HistoryPanel } from './historyPanel';
+import { HistoryProvider, HistoryItem } from './historyProvider';
 
 let outputChannel: vscode.OutputChannel | null = null;
 
@@ -76,6 +79,148 @@ function hasFsBridgeInWorkspace(): boolean {
 }
 
 export function activate(context: vscode.ExtensionContext) {
+	// ============================================================================
+	// KÓD PRO PANEL HISTORIE - registruje se vždy (nezávisle na .fsbridge)
+	// ============================================================================
+	
+	// Zkontroluj, zda je historie zapnutá
+	const historyConfig = vscode.workspace.getConfiguration();
+	const historyEnabled = historyConfig.get<boolean>('local-history.enabled', true);
+
+	// Sleduj změny nastavení a aktualizuj panel
+	const updatePanelVisibility = () => {
+		const enabled = historyConfig.get<boolean>('local-history.enabled', true);
+		if (!enabled && HistoryPanel.currentPanel) {
+			HistoryPanel.currentPanel.dispose();
+		}
+	};
+
+	if (historyEnabled) {
+		// Vytvoř provider pro historii
+		const historyProvider = new HistoryProvider(context);
+
+		// Registruj příkazy
+		const showDiffCommand = vscode.commands.registerCommand('faHistory.showDiff', 
+			async (filePath: string, commitIndex: number, patchIndex: number) => {
+				// filePath je cesta k souboru v .history složce
+				const historyDir = path.dirname(filePath);
+				const sourceFile = path.join(path.dirname(historyDir), path.basename(filePath).replace(/-\d{8}-\d{6}\./, '.'));
+				
+				await HistoryPanel.showDiffStatic(filePath, sourceFile);
+			}
+		);
+
+		const restoreFileCommand = vscode.commands.registerCommand('faHistory.restoreFile',
+			async (item?: vscode.TreeItem | HistoryItem, ...args: any[]) => {
+				// VS Code předává TreeItem jako první argument z context menu
+				// Nebo můžeme získat argumenty z TreeItem.command.arguments
+				let filePath: string | undefined;
+				
+				if (item) {
+					// Zkus získat z TreeItem
+					if (item instanceof HistoryItem) {
+						filePath = item.filePath;
+					} else if ('filePath' in item && typeof (item as any).filePath === 'string') {
+						filePath = (item as any).filePath;
+					} else if (item.command && item.command.arguments && item.command.arguments.length > 0) {
+						// Zkus získat z command.arguments
+						filePath = item.command.arguments[0];
+					}
+				}
+				
+				// Pokud máme argumenty přímo
+				if (!filePath && args.length > 0 && typeof args[0] === 'string') {
+					filePath = args[0];
+				}
+				
+				if (!filePath) {
+					vscode.window.showErrorMessage('Nelze získat cestu k souboru historie. Zkuste kliknout přímo na verzi v panelu.');
+					return;
+				}
+				
+				await HistoryPanel.restoreFileStatic(filePath, historyProvider);
+			}
+		);
+
+		const compareWithPreviousCommand = vscode.commands.registerCommand('faHistory.compareWithPrevious',
+			async (item?: vscode.TreeItem | HistoryItem, ...args: any[]) => {
+				// VS Code předává TreeItem jako první argument z context menu
+				let filePath: string | undefined;
+				
+				if (item) {
+					// Zkus získat z TreeItem
+					if (item instanceof HistoryItem) {
+						filePath = item.filePath;
+					} else if ('filePath' in item && typeof (item as any).filePath === 'string') {
+						filePath = (item as any).filePath;
+					} else if (item.command && item.command.arguments && item.command.arguments.length > 0) {
+						// Zkus získat z command.arguments
+						filePath = item.command.arguments[0];
+					}
+				}
+				
+				// Pokud máme argumenty přímo
+				if (!filePath && args.length > 0 && typeof args[0] === 'string') {
+					filePath = args[0];
+				}
+				
+				if (!filePath) {
+					vscode.window.showErrorMessage('Nelze získat cestu k souboru historie');
+					return;
+				}
+				
+				await HistoryPanel.compareWithPreviousStatic(filePath, historyProvider);
+			}
+		);
+
+		const refreshCommand = vscode.commands.registerCommand('faHistory.refresh',
+			() => {
+				historyProvider.refresh();
+			}
+		);
+
+		// Vytvoř TreeView pro historii
+		const historyTreeView = vscode.window.createTreeView('faHistoryPanel', {
+			treeDataProvider: historyProvider,
+			showCollapseAll: true
+		});
+
+		// Aktualizuj panel při změně aktivního editoru
+		const editorChangeWatcher = vscode.window.onDidChangeActiveTextEditor(() => {
+			historyProvider.refresh();
+		});
+
+		// Aktualizuj panel při změně nastavení
+		const configWatcher = vscode.workspace.onDidChangeConfiguration(e => {
+			if (e.affectsConfiguration('local-history.enabled')) {
+				updatePanelVisibility();
+				const enabled = vscode.workspace.getConfiguration().get<boolean>('local-history.enabled', true);
+				if (!enabled) {
+					historyTreeView.dispose();
+				}
+			}
+		});
+
+		context.subscriptions.push(
+			showDiffCommand,
+			restoreFileCommand,
+			compareWithPreviousCommand,
+			refreshCommand,
+			historyTreeView,
+			configWatcher,
+			editorChangeWatcher
+		);
+	} else {
+		// Přesto zaregistruj listener pro případné zapnutí později
+		context.subscriptions.push(
+			vscode.workspace.onDidChangeConfiguration(e => {
+				if (e.affectsConfiguration('local-history.enabled')) {
+					updatePanelVisibility();
+				}
+			})
+		);
+	}
+
 	// Zkontroluj, jestli workspace obsahuje .fsbridge
 	if (!hasFsBridgeInWorkspace()) {
 		// Workspace neobsahuje .fsbridge - doplněk se neaktivuje
@@ -164,6 +309,24 @@ export function activate(context: vscode.ExtensionContext) {
 		vscode.commands.registerCommand('faBridge.vlozitUdajSDvojteckami', vlozitUdajSDvojteckami),
 		vscode.commands.registerCommand('faBridge.hledatOdZacatku', hledatOdZacatku),
 		
+		// Commands pro historii souborů
+		vscode.commands.registerCommand('faBridge.compareWithPrevious', async () => {
+			const editor = vscode.window.activeTextEditor;
+			if (!editor) {
+				vscode.window.showErrorMessage('Žádný editor otevřen');
+				return;
+			}
+			await compareWithPreviousVersion(editor.document.fileName);
+		}),
+		vscode.commands.registerCommand('faBridge.showHistoryVersions', async () => {
+			const editor = vscode.window.activeTextEditor;
+			if (!editor) {
+				vscode.window.showErrorMessage('Žádný editor otevřen');
+				return;
+			}
+			await showHistoryVersions(editor.document.fileName);
+		}),
+		
 		// Commands pro přepínání color themes
 		vscode.commands.registerCommand('faBridge.setLightTheme', () => {
 			vscode.workspace.getConfiguration('workbench').update(
@@ -227,6 +390,7 @@ export function activate(context: vscode.ExtensionContext) {
 		deleteFamsgState(outputChannel);
 	});
 	context.subscriptions.push(saveListener);
+
 
 
 	// Automaticky otevři FA Bridge panel při každém startu (pokud je to povoleno v nastavení)

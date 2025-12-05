@@ -15,9 +15,11 @@ Tato extension poskytuje:
 
 Extension přidává vlastní panel do Activity Bar (levý panel). Panel se automaticky otevře při každém startu Cursoru/VS Code. Kliknutím na ikonu FA Bridge zobrazíš seznam všech dostupných příkazů.
 
-Panel obsahuje dvě sekce:
+Panel obsahuje čtyři sekce:
 - **Příkazy** - Seznam všech dostupných příkazů s klávesovými zkratkami
 - **Msg Watch** - Zobrazuje zprávy z běžícího skriptu (viditelné pouze když skript běží)
+- **HISTORIE** - Zobrazuje historii verzí aktuálně otevřeného souboru (viditelné pouze když je historie zapnutá)
+- **NÁPOVĚDA** - Zobrazuje obsah z `_source/fa-bridge-help.txt`
 
 ### Dostupné příkazy
 
@@ -34,6 +36,8 @@ Panel obsahuje dvě sekce:
 | **Toggle field**                | Alt+A                          | Mění formát slova:`'slovo'` → `[:slovo:]` → `[.slovo.]` → `'slovo'` |
 | **Vložit [.udaj.]** | Shift+Ctrl+[ | Vloží údaj z FA ve formátu [.názevÚdaje.] |
 | **Vložit [:udaj:]** | Shift+Ctrl+] | Vloží údaj z FA ve formátu [:názevÚdaje:] |
+| **Porovnat s předchozí verzí** | - | Porovná aktuální soubor s předchozí verzí z historie |
+| **Zobrazit historii verzí** | - | Zobrazí seznam všech verzí souboru v historii |
 
 > **Tip na macOS:** Nahraď Ctrl za Cmd
 
@@ -118,44 +122,54 @@ Nebo přímo v `settings.json`:
 
 ## ⚙️ Nastavení
 
-### Cesta k `.fsbridge` složce
+Extension poskytuje několik konfigurovatelných nastavení:
 
-**DŮLEŽITÉ:** Extension komunikuje s FA přes `.fsbridge` složku. Tato cesta **MUSÍ** být nastavena správně, aby debugger a ostatní funkce fungovali i pro soubory otevřené **MIMO workspace** (např. soubory otevřené přímo z FA).
+### Automatické otevírání panelu
 
-#### Jak nastavit cestu:
+- **Nastavení:** `faBridge.autoOpenPanel` (výchozí: `true`)
+- **Popis:** Automaticky otevře FA Bridge panel při každém startu Cursoru/VS Code
+
+### Zapnutí/vypnutí snippetů
+
+- **Nastavení:** `faBridge.enableSnippets` (výchozí: `true`)
+- **Popis:** Povolí nebo zakáže Pascal snippety (function, procedure, if, for, try, atd.)
+
+### FA kompatibilní hotkeys
+
+- **Nastavení:** `faBridge.faCompatibleHotkeys` (výchozí: `false`)
+- **Popis:** Použije hotkeys kompatibilní s FA (Shift+Ctrl+C/L/F místo Shift+Alt+C/L/F)
+- **Poznámka:** Pokud je zapnuto, některé zkratky se změní:
+  - Kopírovat název údaje: `Shift+Alt+C` → `Shift+Ctrl+C`
+  - Hledat podle akt. údaje: `Shift+Alt+F` → `Shift+Ctrl+F`
+
+### Historie souborů
+
+- **Nastavení:** `local-history.enabled` (výchozí: `true`)
+- **Popis:** Ukládá historii změn editovaných souborů do složky `.history`
+- **Funkce:** 
+  - Automaticky ukládá kopie souborů při každém uložení (pouze pro FA script soubory: `script_*.pas` a `u_*.pas`)
+  - Umožňuje porovnání s předchozími verzemi
+  - Historie se ukládá do `.history` složky vedle editovaného souboru
+  - Formát názvu: `script_test-20250115-143022.pas` (název-timestamp.pas)
+  - Panel **HISTORIE** v sidebaru zobrazuje všechny verze aktuálně otevřeného souboru
+
+#### Jak nastavit nastavení:
 
 1. Otevři nastavení: Ctrl+, (nebo File > Preferences > Settings)
-2. Vyhledej: `faBridge.fsbridgePath`
-3. Nastav cestu k `.fsbridge` složce (výchozí: `D:\FA DESIGN\DataPrg\Scripts\.fsbridge`)
+2. Vyhledej: `faBridge`
+3. Uprav požadované nastavení
 
 Nebo přímo v `settings.json`:
 
 ```json
 {
-  "faBridge.fsbridgePath": "D:\\FA DESIGN\\DataPrg\\Scripts\\.fsbridge"
+  "faBridge.autoOpenPanel": true,
+  "faBridge.enableSnippets": true,
+  "faBridge.faCompatibleHotkeys": false,
+  "local-history.enabled": true,
+  "faHistory.maxFiles": 50,
+  "faHistory.showDates": true
 }
-```
-
-**Poznámka:** Cesta **MUSÍ** odpovídat cestě nastavené v FA aplikaci (`FBridge.ExportFolder`). Pokud máš FA v jiném adresáři, uprav cestu odpovídajícím způsobem.
-
-#### Jak zjistit správnou cestu?
-
-Ve FA aplikaci je nastaveno:
-
-```pascal
-FBridge.ExportFolder := 'DataPrg\Scripts';
-```
-
-To znamená že `.fsbridge` složka je:
-
-```
-<adresář_kde_běží_FA.exe>\DataPrg\Scripts\.fsbridge\
-```
-
-Např. pokud je FA v `D:\FA DESIGN\`, pak cesta je:
-
-```
-D:\FA DESIGN\DataPrg\Scripts\.fsbridge
 ```
 
 ## Instalace
@@ -192,13 +206,22 @@ V PowerShell z projektu:
 
 ```
 src/
-├── extension.ts          # Hlavní soubor (aktivace, registrace příkazů)
+├── extension.ts              # Hlavní soubor (aktivace, registrace příkazů)
 ├── commands/
-│   └── sendCommand.ts    # Implementace všech příkazů
+│   └── sendCommand.ts       # Implementace všech příkazů
 ├── utils/
-│   └── fsBridge.ts       # Komunikace s FA (zápis do .fsbridge/facmd.txt)
-└── views/
-    └── FABridgePanel.ts  # Sidebar TreeView panel
+│   ├── fsBridge.ts          # Komunikace s FA (zápis do .fsbridge/facmd.txt)
+│   ├── fileHistory.ts       # Historie souborů a porovnání verzí
+│   └── commandWatcher.ts    # Sledování příkazů z FA
+├── views/
+│   ├── FABridgePanel.ts     # Sidebar TreeView panel (Příkazy)
+│   └── HelpPanel.ts         # Help panel (NÁPOVĚDA)
+├── providers/
+│   ├── PascalIntelliSenseProvider.ts  # IntelliSense (Completion + Hover)
+│   ├── SnippetProvider.ts             # Pascal snippety
+│   └── BeginEndMatcher.ts              # Zvýrazňování begin/end bloků
+└── debugger/
+    └── msgWatch.ts          # Msg Watch panel
 ```
 
 ### Kompilace
@@ -241,6 +264,64 @@ IntelliSense čerpá dokumentaci ze souboru `FsUtils.pas` v workspace. Funkce a 
 
 Pro zobrazení statistik parsování použij příkaz: Ctrl+Shift+P → "FA Bridge: Zobrazit IntelliSense statistiky"
 
+## 📚 Historie souborů
+
+Extension automaticky ukládá historii změn editovaných souborů:
+
+- **Automatické ukládání:** Při každém uložení souboru (Ctrl+S nebo Alt+Q) se vytvoří kopie v `.history` složce
+- **Podporované soubory:** Pouze FA script soubory (`script_*.pas` a `u_*.pas`)
+- **Formát názvu:** `script_test-20250115-143022.pas` (název-timestamp.pas)
+- **Umístění:** Historie se ukládá do `.history` složky vedle editovaného souboru
+
+### Panel HISTORIE
+
+Panel **HISTORIE** se zobrazuje v sidebaru FA Bridge a obsahuje seznam všech verzí aktuálně otevřeného souboru:
+
+- **Automatické zobrazení:** Panel se automaticky aktualizuje při změně aktivního editoru
+- **Seznam verzí:** Zobrazuje všechny historické verze seřazené od nejnovější po nejstarší
+- **Kliknutí na verzi:** Automaticky otevře diff editor s porovnáním vybrané verze s aktuálním souborem
+
+### Možnosti porovnání
+
+#### 1. Porovnání s aktuálním souborem
+- **Kliknutí na verzi:** Kliknutím na verzi v panelu HISTORIE se otevře diff editor
+- **Zobrazení:** Vlevo historická verze, vpravo aktuální soubor
+- **Navigace mezi rozdíly:** 
+  - **F7** - Přesun na další rozdíl
+  - **Shift+F7** - Přesun na předchozí rozdíl
+  - **Tip:** Klávesa **F7** také přepíná mezi zobrazením všech řádků a pouze rozdílů v diff editoru
+
+#### 2. Porovnání s předchozí verzí
+- **Pravý klik na verzi:** V context menu vyber "Porovnat s předchozí verzí"
+- **Zobrazení:** Porovnání dvou historických verzí mezi sebou (starší vlevo, novější vpravo)
+- **Užitečné pro:** Zjištění, co se změnilo mezi dvěma konkrétními verzemi
+
+#### 3. Vrácení souboru do předchozího stavu
+- **Pravý klik na verzi:** V context menu vyber "Vrátit stav souboru do tohoto bodu"
+- **Funkce:** Vrátí aktuální soubor do stavu vybrané historické verze
+- **Záloha:** Před vrácením se automaticky vytvoří záloha aktuálního souboru
+
+### Nastavení historie
+
+- **Zapnutí/vypnutí:** Nastavení → `local-history.enabled` → `true`/`false`
+- **Maximální počet souborů:** `faHistory.maxFiles` (výchozí: 50)
+- **Zobrazení datumů:** `faHistory.showDates` (výchozí: `true`)
+
+### Klávesové zkratky v diff editoru
+
+Při zobrazení diff editoru (porovnání verzí) můžete použít:
+
+- **F7** - Přesun na další rozdíl / Přepnutí zobrazení pouze rozdílů
+- **Shift+F7** - Přesun na předchozí rozdíl
+- **Tip:** F7 přepíná mezi zobrazením všech řádků a pouze rozdílů - užitečné pro rychlé prohlížení změn
+
+## 🔍 Begin/End Matcher
+
+Extension automaticky zvýrazňuje odpovídající `begin` a `end` bloky při pohybu kurzoru:
+
+- **Zvýraznění:** Aktuální `begin`/`end` pár je zvýrazněn při najetí kurzoru na klíčové slovo
+- **Navigace:** Umožňuje snadnou identifikaci začátku a konce bloků kódu
+
 ## Jak to funguje
 
 1. **Uživatel stiskne zkratku** (např. Alt+Q pro uložení nebo Alt+X pro vložení názvu údaje)
@@ -271,6 +352,16 @@ Extension poskytuje panel **Msg Watch**, který zobrazuje zprávy z běžícího
 - Soubor `famsgstate.json` se automaticky maže při startu extension a při uložení souboru
 
 ## Release Notes
+
+### 0.5.76
+
+- ✨ **Historie souborů:** Automatické ukládání verzí souborů do `.history` složky
+- 🔍 **Porovnání verzí:** Nové příkazy pro porovnání aktuálního souboru s předchozími verzemi
+- 📚 **Help panel:** Nová sekce v sidebaru zobrazující obsah z `_source/fa-bridge-help.txt`
+- 🔍 **Begin/End Matcher:** Automatické zvýrazňování odpovídajících `begin`/`end` bloků
+- ⚙️ **Nastavení:** Přidána nastavení pro historii souborů a FA kompatibilní hotkeys
+- 🧠 **IntelliSense:** Vylepšená podpora pro Pascal soubory s dokumentací z `FsUtils.pas`
+- 📊 **Msg Watch:** Panel se automaticky zobrazuje/skrývá podle stavu běžícího skriptu
 
 ### 0.5.26
 
@@ -387,4 +478,4 @@ Extension poskytuje panel **Msg Watch**, který zobrazuje zprávy z běžícího
 
 ---
 
-**Vytvořeno:** Říjen 2025 | **Status:** Funkční ✓ | **Verze:** 0.5.26
+**Vytvořeno:** Říjen 2025 | **Status:** Funkční ✓ | **Verze:** 0.5.83

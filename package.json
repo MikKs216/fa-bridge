@@ -3,7 +3,7 @@
   "displayName": "FA Bridge",
   "publisher": "fa-dev",
   "description": "Propojení Cursor/VS Code s editorem FormStudio (FA)",
-  "version": "0.5.76",
+  "version": "0.5.83",
   "engines": {
     "vscode": "^1.70.2"
   },
@@ -35,6 +35,26 @@
           "type": "boolean",
           "default": false,
           "description": "Horké klávesy kompatibilní s FA (Shift+Ctrl+C/L/F místo Shift+Alt+C/L/F)"
+        },
+        "faBridge.enableFileHistory": {
+          "type": "boolean",
+          "default": true,
+          "description": "Ukládat historii změn editovaných souborů do složky .history"
+        },
+        "local-history.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Zapnout/vypnout historii souborů. Když je vypnutá, panel HISTORIE se skryje."
+        },
+        "faHistory.maxFiles": {
+          "type": "number",
+          "default": 50,
+          "description": "Maximální počet souborů zobrazených v panelu historie"
+        },
+        "faHistory.showDates": {
+          "type": "boolean",
+          "default": true,
+          "description": "Zobrazovat datumy u verzí v panelu historie"
         }
       }
     },
@@ -74,6 +94,34 @@
       {
         "command": "faBridge.showIntelliSenseStats",
         "title": "FA Bridge: Zobrazit statistiky IntelliSense"
+      },
+      {
+        "command": "faBridge.compareWithPrevious",
+        "title": "FA Bridge: Porovnat s předchozí verzí"
+      },
+      {
+        "command": "faBridge.showHistoryVersions",
+        "title": "FA Bridge: Zobrazit historii verzí"
+      },
+      {
+        "command": "faHistory.showDiff",
+        "title": "Zobrazit rozdíly",
+        "icon": "$(diff)"
+      },
+      {
+        "command": "faHistory.restoreFile",
+        "title": "Vrátit stav souboru do tohoto bodu",
+        "icon": "$(history)"
+      },
+      {
+        "command": "faHistory.compareWithPrevious",
+        "title": "Porovnat s předchozí verzí",
+        "icon": "$(diff)"
+      },
+      {
+        "command": "faHistory.refresh",
+        "title": "Obnovit historii",
+        "icon": "$(refresh)"
       }
     ],
     "languages": [
@@ -137,8 +185,35 @@
           "when": "true"
         },
         {
+          "id": "faHistoryPanel",
+          "name": "HISTORIE",
+          "when": "config.local-history.enabled != false",
+          "description": "Historie aktuálně otevřeného souboru"
+        },
+        {
           "id": "faBridgeHelp",
           "name": "NÁPOVĚDA"
+        }
+      ]
+    },
+    "menus": {
+      "view/item/context": [
+        {
+          "command": "faHistory.compareWithPrevious",
+          "when": "view == faHistoryPanel && viewItem == historyPatch",
+          "group": "navigation"
+        },
+        {
+          "command": "faHistory.restoreFile",
+          "when": "view == faHistoryPanel && viewItem == historyPatch",
+          "group": "actions"
+        }
+      ],
+      "view/title": [
+        {
+          "command": "faHistory.refresh",
+          "when": "view == faHistoryPanel",
+          "group": "navigation"
         }
       ]
     },

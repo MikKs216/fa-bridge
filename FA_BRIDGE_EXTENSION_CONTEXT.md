@@ -4,6 +4,7 @@
 - **Jméno:** fa-bridge (Cursor Extension)
 - **Účel:** Propojení Cursor/VS Code s editorem FormStudio (FA)
 - **Technologie:** TypeScript, VS Code Extension API
+- **Aktuální verze:** 0.5.83
 
 ## Funkčnost (co má dělat)
 
@@ -14,20 +15,34 @@ FA Bridge komunikuje s FormStudio přes soubor `.fsbridge/facmd.txt`:
 3. FA přečte příkaz a provede akci
 
 ### Příkazy:
-- `Aktivovat_formular` - ~~Aktivuje formulář~~ **Již není používáno** (Alt+Q nyní volá Save)
-- `Zkompilovat_script` - ~~Zkompiluje script~~ **Odstraněno ve v0.1.7**
-- `Vlozit_nazev_udaje` - Vloží název aktuálních údajů (Shift+Alt+V)
+- `Aktivovat_formular` - Aktivuje formulář po uložení souboru
+- `Vlozit_nazev_udaje` - Vloží název aktuálních údajů (Alt+X, Ctrl+Shift+V)
 - `Najit_udaj` - Najde údaj ve formuláři (Shift+Alt+L)
 - **Sidebar Panel:** Ikona v levém panelu s tlačítky pro všechny příkazy (Shift+Alt+F)
+- **Panel obsahuje 4 sekce:** Příkazy, Msg Watch, HISTORIE, NÁPOVĚDA
 
 ## Požadavky na Extension
 
 ### Příkazy (Commands):
-1. `faBridge.aktivovatFormular` - Send "Aktivovat_formular" to FA
-2. ~~`faBridge.zkompilovatScript`~~ - **Odstraněno ve v0.1.7**
-3. `faBridge.vlozitNazevUdaje` - Read fafield.txt and insert at cursor
-4. `faBridge.kopirovatNazevUdaje` - Read fafield.txt and copy to clipboard
-5. `faBridge.najitUdaj` - Write word under cursor to fafield.txt and send "Najit_udaj" to FA
+1. `faBridge.ulozitSoubor` - Save file and activate FA (Ctrl+S, Alt+Q)
+2. `faBridge.vlozitNazevUdaje` - Read fafield.txt and insert at cursor (Alt+X, Ctrl+Shift+V)
+3. `faBridge.kopirovatNazevUdaje` - Read fafield.txt and copy to clipboard (Shift+Alt+C)
+4. `faBridge.najitUdaj` - Write word under cursor to fafield.txt and send "Najit_udaj" to FA (Shift+Alt+L)
+5. `faBridge.hledatPodleAktUdaje` - Open Find dialog with current field name (Shift+Alt+F)
+6. `faBridge.hledatOdZacatku` - Open Find dialog, move cursor to start, reopen Find (Alt+L)
+7. `faBridge.toggleMsgv` - Insert/delete msgv('') debug statement (Alt+F9)
+8. `faBridge.toggleField` - Toggle field format: 'slovo' → [:slovo:] → [.slovo.] → 'slovo' (Alt+A)
+9. `faBridge.vlozitUdajSBody` - Insert field in format [.udaj.] (Shift+Ctrl+[)
+10. `faBridge.vlozitUdajSDvojteckami` - Insert field in format [:udaj:] (Shift+Ctrl+])
+11. `faBridge.compareWithPrevious` - Compare current file with previous version from history
+12. `faBridge.showHistoryVersions` - Show list of all file versions in history
+13. `faHistory.showDiff` - Show diff between historical version and current file
+14. `faHistory.restoreFile` - Restore file to selected historical version
+15. `faHistory.compareWithPrevious` - Compare two historical versions with each other
+16. `faHistory.refresh` - Refresh history panel
+17. `faBridge.setLightTheme` - Switch to FA Pascal Light theme
+18. `faBridge.setDarkTheme` - Switch to FA Pascal Dark theme
+19. `faBridge.showIntelliSenseStats` - Show IntelliSense parsing statistics
 
 ### UI:
 - **Sidebar Panel:** Vlastní panel v Activity Bar s ikonou "file-code"
@@ -35,11 +50,16 @@ FA Bridge komunikuje s FormStudio přes soubor `.fsbridge/facmd.txt`:
 - Kliknutí na položku v panelu spustí příslušný příkaz
 
 ### Keybindings:
-- `Shift+Alt+F` → Otevřít FA Bridge sidebar
-- `Alt+Q` → Uložit soubor (Save = Ctrl+S)
-- `Shift+Alt+V` → Vložit název
-- `Shift+Alt+C` → Kopírovat název do schránky
+- `Shift+Alt+F` → Otevřít FA Bridge sidebar / Hledat podle akt. údaje (podle kontextu)
+- `Ctrl+S`, `Alt+Q` → Uložit soubor
+- `Alt+X`, `Ctrl+Shift+V` → Vložit název údaje
+- `Shift+Alt+C` / `Shift+Ctrl+C` → Kopírovat název do schránky (podle nastavení)
 - `Shift+Alt+L` → Najít údaj ve formuláři
+- `Alt+L` → Hledat od začátku
+- `Alt+F9` → Toggle msgv
+- `Alt+A` → Toggle field format
+- `Shift+Ctrl+[` → Vložit [.udaj.]
+- `Shift+Ctrl+]` → Vložit [:udaj:]
 
 ### Formát komunikace:
 - **Soubor:** `.fsbridge/facmd.txt` (relativně k workspace root)
@@ -50,20 +70,29 @@ FA Bridge komunikuje s FormStudio přes soubor `.fsbridge/facmd.txt`:
 ## Struktura Projektu
 fa-bridge/
 ├── src/
-│ ├── extension.ts # Hlavní soubor (aktivace)
+│ ├── extension.ts              # Hlavní soubor (aktivace, registrace příkazů)
 │ ├── commands/
-│ │ └── sendCommand.ts # Všechny příkazy
+│ │   └── sendCommand.ts        # Implementace všech příkazů
 │ ├── utils/
-│ │ └── fsBridge.ts # Komunikace s FA
-│ └── views/
-│   └── FABridgePanel.ts # Sidebar TreeView
+│ │   ├── fsBridge.ts           # Komunikace s FA (zápis do .fsbridge/facmd.txt)
+│ │   ├── fileHistory.ts        # Historie souborů a porovnání verzí
+│ │   └── commandWatcher.ts     # Sledování příkazů z FA
+│ ├── views/
+│ │   ├── FABridgePanel.ts      # Sidebar TreeView panel (Příkazy)
+│ │   └── HelpPanel.ts          # Help panel (NÁPOVĚDA)
+│ ├── providers/
+│ │   ├── PascalIntelliSenseProvider.ts  # IntelliSense (Completion + Hover)
+│ │   ├── SnippetProvider.ts             # Pascal snippety
+│ │   └── BeginEndMatcher.ts             # Zvýrazňování begin/end bloků
+│ └── debugger/
+│     └── msgWatch.ts           # Msg Watch panel
 ├── snippets/
-│ └── pascal-snippets.json # Pascal code snippety
+│   └── pascal-snippets.json    # Pascal code snippety
 ├── syntaxes/
-│ └── pascal.tmLanguage # Pascal grammar (TextMate)
+│   └── pascal.tmLanguage       # Pascal grammar (TextMate)
 ├── themes/
-│ ├── fa-pascal-light.json # Světlý color theme
-│ └── fa-pascal-dark.json # Tmavý color theme
+│   ├── fa-pascal-light.json   # Světlý color theme
+│   └── fa-pascal-dark.json    # Tmavý color theme
 ├── language-configuration.json # Pascal language config
 ├── package.json
 ├── tsconfig.json
@@ -75,25 +104,78 @@ fa-bridge/
 
 ### extension.ts
 - Export `activate()` a `deactivate()`
+- Kontrola existence `.fsbridge` složky v workspace (extension se aktivuje pouze pokud existuje)
 - Registrace všech příkazů z `sendCommand.ts`
 - Registrace sidebar panelu z `FABridgePanel.ts`
+- Registrace Help panelu z `HelpPanel.ts`
+- Registrace IntelliSense provideru
+- Registrace Begin/End matcheru
+- Registrace Command Watcheru pro zpracování příkazů z FA
+- Registrace Msg Watch panelu
+- Automatické otevírání panelu při startu (pokud je povoleno v nastavení)
+- Automatické mazání `famsgstate.json` při startu a při uložení souboru
 
 ### sendCommand.ts
-- 4 příkazy pro komunikaci s FA
-- Volání `writeFACommand(commandString)`
+- 10+ příkazů pro komunikaci s FA
+- `ulozitSoubor()` - Save file, save history, activate FA
+- `vlozitNazevUdaje()` - Read fafield.txt and insert/replace at cursor
+- `kopirovatNazevUdaje()` - Read fafield.txt and copy to clipboard
+- `najitUdaj()` - Write word under cursor to fafield.txt and send command
+- `hledatPodleAktUdaje()` - Open Find dialog with current field name
+- `hledatOdZacatku()` - Open Find dialog, move to start, reopen Find
+- `toggleMsgv()` - Insert/delete msgv('') debug statement
+- `toggleField()` - Toggle field format: 'slovo' → [:slovo:] → [.slovo.] → 'slovo'
+- `vlozitUdajSBody()` - Insert field in format [.udaj.]
+- `vlozitUdajSDvojteckami()` - Insert field in format [:udaj:]
+- Volání `writeFACommand(commandString)` pro komunikaci s FA
+- Podpora více instancí FA (používá instance-specific cesty)
 - Info message po úspěšném odeslání
 
 ### FABridgePanel.ts
-- TreeView provider pro sidebar panel
+- TreeView provider pro sidebar panel (sekce "Příkazy")
 - Zobrazení příkazů s ikonami a klávesovými zkratkami
 - Kliknutelné položky volají příslušné příkazy
+- Podpora FA kompatibilních hotkeys (dynamické zobrazení zkratek podle nastavení)
+
+### HelpPanel.ts
+- TreeView provider pro Help panel (sekce "NÁPOVĚDA")
+- Načítá obsah z `_source/fa-bridge-help.txt` ve workspace
+- Zobrazuje obsah jako seznam řádků v TreeView
+- Automatické načítání při změně workspace
+
+### fileHistory.ts
+- `saveFileHistory()` - Ukládá kopii souboru do `.history` složky při uložení
+- `getFileHistoryVersions()` - Vrací seznam verzí souboru v historii
+- `compareWithPreviousVersion()` - Porovná aktuální soubor s předchozí verzí
+- `showHistoryVersions()` - Zobrazí seznam verzí a umožní výběr k porovnání
+- Podporuje pouze FA script soubory (`script_*.pas` a `u_*.pas`)
+- Formát názvu: `script_test-20250115-143022.pas` (název-timestamp.pas)
+
+### historyProvider.ts
+- `HistoryProvider` - TreeDataProvider pro panel HISTORIE v sidebaru
+- `getCommitsForCurrentFile()` - Získá seznam verzí pro aktuálně otevřený soubor
+- `getHistoryVersions()` - Načte všechny verze souboru ze složky `.history`
+- Automaticky aktualizuje panel při změně aktivního editoru
+- Zobrazuje verze seřazené od nejnovější po nejstarší
+
+### historyPanel.ts
+- `HistoryPanel.showDiffStatic()` - Otevře VS Code diff editor pro porovnání historické verze s aktuálním souborem
+- `HistoryPanel.restoreFileStatic()` - Vrátí soubor do stavu vybrané historické verze (s automatickou zálohou)
+- `HistoryPanel.compareWithPreviousStatic()` - Porovná dvě historické verze mezi sebou
+- Používá vestavěný VS Code diff editor s synchronizovaným scrollováním
+- **Navigace v diff editoru:** F7 (další rozdíl), Shift+F7 (předchozí rozdíl)
+- **Tip:** Klávesa F7 také přepíná mezi zobrazením všech řádků a pouze rozdílů
 
 ### fsBridge.ts
-- `writeFACommand(command: string)` - Hlavní funkce
+- `writeFACommand(command: string)` - Hlavní funkce pro komunikaci s FA
   - Vytvořit `.fsbridge` složku (pokud neexistuje)
-  - Atomický zápis do `.fsbridge/facmd.txt`
+  - Atomický zápis do `.fsbridge/facmd.txt` (podporuje více instancí FA)
   - Použít UTF-8 s BOM
   - Bez trailing newline
+- `getFsBridgeWorkspaceRoot()` - Najde workspace obsahující `.fsbridge` složku
+- `getValidInstanceId()` - Získá validní instance ID pro více-instanční podporu
+- `getFafieldPath()` - Vrací cestu k `fafield.txt` pro aktuální instanci FA
+- Podpora více instancí FA pomocí instance-specific složek (`.fsbridge/{instanceId}/`)
 
 ## Pascal Podpora (v0.2.0 a výš)
 
@@ -132,10 +214,46 @@ fa-bridge/
 - `faBridge.setDarkTheme` - Přepne na FA Pascal Dark
 - **Použití:** Ctrl+Shift+P → "FA Bridge: Přepnout na světlý/tmavý motiv"
 
+## Nové Funkce (v0.5.83)
+
+### Historie souborů
+- Automatické ukládání verzí souborů do `.history` složky při každém uložení
+- Panel **HISTORIE** v sidebaru zobrazuje všechny verze aktuálně otevřeného souboru
+- Porovnání s aktuálním souborem: kliknutí na verzi v panelu
+- Porovnání s předchozí verzí: pravý klik → "Porovnat s předchozí verzí"
+- Vrácení souboru do předchozího stavu: pravý klik → "Vrátit stav souboru do tohoto bodu"
+- Používá vestavěný VS Code diff editor s navigací pomocí F7/Shift+F7
+- **Tip:** Klávesa F7 přepíná mezi zobrazením všech řádků a pouze rozdílů
+- Podporuje pouze FA script soubory (`script_*.pas` a `u_*.pas`)
+
+### Help Panel
+- Nová sekce v sidebaru zobrazující obsah z `_source/fa-bridge-help.txt`
+- Automatické načítání při změně workspace
+
+### Begin/End Matcher
+- Automatické zvýrazňování odpovídajících `begin`/`end` bloků
+- Umožňuje snadnou identifikaci začátku a konce bloků kódu
+
+### IntelliSense Provider
+- Completion a Hover podpora pro Pascal soubory
+- Parsování dokumentace z `FsUtils.pas` (XML dokumentace)
+- Asynchronní parsování v pozadí
+
+### Command Watcher
+- Sledování příkazů z FA (např. `check_unsaved_and_close`)
+- Zpracování příkazů z `facmd_from_fa.txt`
+
+### Nastavení
+- `faBridge.autoOpenPanel` - Automatické otevírání panelu při startu
+- `faBridge.enableSnippets` - Zapnutí/vypnutí snippetů
+- `faBridge.faCompatibleHotkeys` - FA kompatibilní hotkeys
+- `local-history.enabled` - Historie souborů (zapnutí/vypnutí panelu HISTORIE)
+- `faHistory.maxFiles` - Maximální počet souborů zobrazených v panelu historie (výchozí: 50)
+- `faHistory.showDates` - Zobrazovat datumy u verzí v panelu historie (výchozí: true)
+
 ## Budoucí Rozšíření
 
 Tyto funkce přidáme později:
-- Čtení dat z souborů a vložení na kurzor
 - Dialogy pro výběr souborů
 - Preview obsahu
 - Transformace textu
@@ -256,9 +374,35 @@ Když AI začne pracovat na extension:
 
 **Vytvořeno:** Říjen 2025  
 **Status:** ✅ Implementováno a funkční  
-**Verze:** 0.3.1
+**Verze:** 0.5.83
 
 ## Changelog
+
+### v0.5.83 (aktuální)
+- ✨ **Porovnání historických verzí:** Nová možnost porovnat dvě historické verze mezi sebou (pravý klik → "Porovnat s předchozí verzí")
+- 🔍 **Vylepšený diff editor:** Přidána poznámka o klávese F7 pro navigaci mezi rozdíly a přepnutí zobrazení pouze rozdílů
+
+### v0.5.82
+- 🎨 **Panel HISTORIE:** Odstraněn první řádek s názvem souboru z panelu historie (historie je vždy pro aktuální soubor)
+
+### v0.5.81
+- ✨ **Context menu:** Opravena volba "Vrátit stav souboru do tohoto bodu" v context menu panelu historie
+- 🔧 **Zobrazení historie:** Odstraněna volba "Zobrazit historii" z context menu (kliknutí na verzi automaticky zobrazí diff)
+
+### v0.5.80
+- ✨ **Panel HISTORIE:** Nový panel v sidebaru FA Bridge zobrazující historii verzí aktuálně otevřeného souboru
+- 🔍 **Diff editor:** Použití vestavěného VS Code diff editoru s synchronizovaným scrollováním a inline diff view
+- 📋 **Context menu:** Možnost vrátit soubor do předchozího stavu přímo z panelu historie
+
+### v0.5.76
+- ✨ **Historie souborů:** Automatické ukládání verzí souborů do `.history` složky
+- 🔍 **Porovnání verzí:** Nové příkazy pro porovnání aktuálního souboru s předchozími verzemi
+- 📚 **Help panel:** Nová sekce v sidebaru zobrazující obsah z `_source/fa-bridge-help.txt`
+- 🔍 **Begin/End Matcher:** Automatické zvýrazňování odpovídajících `begin`/`end` bloků
+- ⚙️ **Nastavení:** Přidána nastavení pro historii souborů a FA kompatibilní hotkeys
+- 🧠 **IntelliSense:** Vylepšená podpora pro Pascal soubory s dokumentací z `FsUtils.pas`
+- 📊 **Msg Watch:** Panel se automaticky zobrazuje/skrývá podle stavu běžícího skriptu
+- 🔧 **Podpora více instancí FA:** Instance-specific cesty pro komunikaci s více instancemi FA současně
 
 ### v0.3.1 (28.10.2025)
 - ⚡ **Pascal Snippety:** 11 užitečných snippetů pro rychlejší psaní kódu

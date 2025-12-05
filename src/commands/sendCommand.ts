@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 import { writeFACommand, getFafieldPath, getFsBridgeWorkspaceRoot } from '../utils/fsBridge';
+import { saveFileHistory } from '../utils/fileHistory';
 
 /**
  * Smaže famsgstate.json pokud existuje
@@ -58,6 +59,8 @@ export async function ulozitSoubor(): Promise<void> {
 			// Použij VS Code WorkspaceEdit API pro uložení - vyvolá standardní save flow včetně onDidSaveTextDocument eventu
 			// Local History extension reaguje na tento event
 			await document.save();
+			// Ulož historii PO úspěšném uložení
+			await saveFileHistory(document.fileName);
 			// Aktivuj FA po uložení
 			await writeFACommand('Aktivovat_formular');
 		} else {
