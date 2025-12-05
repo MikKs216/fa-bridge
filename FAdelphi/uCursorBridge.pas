@@ -15,7 +15,6 @@ Features:
 - Soubor facmd.txt se přejmenuje na facmd-x-timestamp.txt po přečtení (pro debug)
 - Čtení dat z .fsbridge/fafield.txt pomocí ReadFieldText() (obsah fieldu z Cursor extension)
 - Zápis dat do .fsbridge/fafield.txt pomocí WriteFieldText() (atomicky s UTF-8 BOM)
-- Podpora příkazů: Polling pro čtení příkazů z .fsbridge/fadebug.txt a callback OnDebuggerCommand
 
 Novinky:
 - Workspace se vždy nastavuje na složku ExportFolder (relativní k EXE je podporováno)
@@ -28,7 +27,6 @@ Integrace v aplikaci:
   Bridge.ExportFolder := 'DataPrg\FormsProject'; // relativně k adresáři EXE
   Bridge.CursorCmdOrPath := 'code';              // 'cursor' / 'code' / plná cesta
   Bridge.OnCommand := ProcessFACommand;          // callback pro příkazy
-  Bridge.OnDebuggerCommand := ProcessDebugCommand; // callback pro příkazy z fadebug.txt
   Bridge.StartEditing(FormId, Code, JumpLine, JumpCol);
   Bridge.PollTick; // z Timeru (kontroluje změny souboru + příkazy + debugger příkazy)
   
@@ -59,8 +57,6 @@ type
   // Předá příkaz z Cursor extension
   TCommandEvent = procedure(const Command: string) of object;
   
-  // Předá debugger příkaz z Cursor extension
-  TDebuggerCommandEvent = procedure(const Command: string) of object;
   
   // Výsledek kontroly a zavření souboru v Cursoru
   TCursorCloseResult = (ccrClosed, ccrUnsaved, ccrNotOpen, ccrError);
@@ -79,7 +75,6 @@ type
 
     FOnExternalSave: TExternalSaveEvent;
     FOnCommand: TCommandEvent;
-    FOnDebuggerCommand: TDebuggerCommandEvent;
 
     function SettingsFilePath: string;
     function LoadEditorFromSettings: string; // '' = nenačteno / nenalezeno
@@ -102,9 +97,6 @@ type
     function GetCommandFilePath: string;
     procedure ProcessCommandFile;
     
-    // Podpora příkazů
-    function GetDebugFilePath: string;
-    procedure ProcessDebugFile;
     
     // Čtení field.txt ze Cursor extension
     function GetFieldFilePath: string;
@@ -158,7 +150,6 @@ type
     // Události
     property OnExternalSave: TExternalSaveEvent read FOnExternalSave write FOnExternalSave;
     property OnCommand: TCommandEvent read FOnCommand write FOnCommand;
-    property OnDebuggerCommand: TDebuggerCommandEvent read FOnDebuggerCommand write FOnDebuggerCommand;
 
     // Hlavní API
     function StartEditing(const FormId: string; const Code: AnsiString; JumpLine, JumpCol: Integer): Boolean;
@@ -168,6 +159,7 @@ type
     // Čtení a zápis dat z/do Cursor extension
     function ReadFieldText: string; // Přečte obsah fafield.txt
     procedure WriteFieldText(const FieldName: string); // Zapíše název fieldu do fafield.txt
+    function ReadScriptFileContent: AnsiString; // Načte obsah aktuálního scriptu z disku
     
     // Debugger podpora
     procedure WriteMsgState(const StateJson: string); // Zapíše stav z Msg do famsgstate.json (UTF-8 s BOM)
@@ -918,11 +910,6 @@ begin
   Result := GetInstanceDir + 'fafield.txt';
 end;
 
-function TCursorBridge.GetDebugFilePath: string;
-begin
-  // Debugger příkazy z Cursor extension: <workspace>/.fsbridge/{FA_PID}/fadebug.txt
-  Result := GetInstanceDir + 'fadebug.txt';
-end;
 
 procedure TCursorBridge.AtomicWriteAllText(const FileName: string; const Text: AnsiString);
 var
@@ -976,6 +963,25 @@ begin
     end;
   finally
     FS.Free;
+  end;
+end;
+
+function TCursorBridge.ReadScriptFileContent: AnsiString;
+begin
+  Result := '';
+  // DEBUG: Zobraz informaci o stavu
+  if FCurrentFile = '' then
+  begin
+    // Použijeme ShowMessage protože MsgBoxInfo není dostupná v uCursorBridge
+    // Výpis přes raise exception nebo jiný mechanismus
+    Exit; // FCurrentFile je prázdný
+  end;
+  
+  try
+    Result := ReadAllText(FCurrentFile);
+  except
+    // best-effort (soubor může být krátce zamčený)
+    Result := '';
   end;
 end;
 
@@ -1162,83 +1168,6 @@ begin
   end;
 end;
 
-procedure TCursorBridge.ProcessDebugFile;
-var
-  DebugFilePath: string;
-  Commands: TStringList;
-  Command: string;
-  BOM: array[0..2] of Byte;
-  FS: TFileStream;
-  HasBOM: Boolean;
-begin
-  DebugFilePath := GetDebugFilePath;
-  
-  // Pokud soubor neexistuje, nic nedělej
-  if not FileExists(DebugFilePath) then
-    Exit;
-    
-  Commands := TStringList.Create;
-  try
-    try
-      // Krátký sleep pro případ že právě probíhá zápis
-      Sleep(10);
-      
-      // Načti příkaz(y) - kontrola BOM
-      FS := TFileStream.Create(DebugFilePath, fmOpenRead or fmShareDenyNone);
-      try
-        HasBOM := False;
-        if FS.Size >= 3 then
-        begin
-          FS.Read(BOM, 3);
-          HasBOM := (BOM[0] = $EF) and (BOM[1] = $BB) and (BOM[2] = $BF);
-          
-          // Pokud nemá BOM, vrať se na začátek
-          if not HasBOM then
-            FS.Position := 0;
-        end;
-        
-        Commands.LoadFromStream(FS);
-      finally
-        FS.Free;
-      end;
-      
-      if Commands.Count > 0 then
-      begin
-        Command := Trim(Commands[0]); // První řádek = příkaz
-        
-        // Pokud je příkaz prázdný, jen smaž soubor
-        if Command = '' then
-        begin
-          DeleteFile(DebugFilePath);
-          Exit;
-        end;
-        
-        // NEJDŘÍV smaž soubor (před voláním callbacku!)
-        DeleteFile(DebugFilePath);
-        
-        // PAK teprve zavolej callback pro zpracování příkazu
-        if Assigned(FOnDebuggerCommand) then
-          FOnDebuggerCommand(Command);
-      end
-      else
-      begin
-        // Pokud není žádný příkaz, smaž prázdný soubor
-        DeleteFile(DebugFilePath);
-      end;
-      
-    except
-      // Při chybě zkus soubor smazat, aby se neblokoval
-      try
-        DeleteFile(DebugFilePath);
-      except
-        // Tiše ignoruj chybu při mazání
-      end;
-    end;
-    
-  finally
-    Commands.Free;
-  end;
-end;
 
 function TCursorBridge.SettingsFilePath: string;
 begin
@@ -1740,7 +1669,7 @@ begin
     Exit;
   
   // 1) Kontrola změn v editovaném souboru (Ctrl+S v editoru)
-  if (FCurrentFile <> '') then
+ { if (FCurrentFile <> '') then
   begin
     T := GetFileWriteTime(FCurrentFile);
     if (T > 0) and (T > FLastWrite) then
@@ -1763,13 +1692,10 @@ begin
         end;
       end;
     end;
-  end;
-  
+  end;}
+
   // 2) Kontrola příkazů z Cursor extension
   ProcessCommandFile;
-  
-  // 3) Kontrola debugger příkazů z Cursor extension
-  ProcessDebugFile;
 end;
 
 function TCursorBridge.ReadFieldText: string;

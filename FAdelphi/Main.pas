@@ -2239,7 +2239,6 @@ type
     procedure TimerPollTimer(Sender: TObject);
     procedure ActionCtrlQExecute;
     procedure ProcessFACommand(const Command: string);
-    procedure ProcessDebugCommand(const Command: string); // zpracování příkazů z Cursor (facmd.txt + fadebug.txt)
     function BuildVariablesJson: string; // sestavení JSON s proměnnými ze skriptu
     function BuildMtValuesCurrentRowJson: string; // sestavení JSON s aktuálním záznamem mtValues
     procedure FAToFront;
@@ -19179,7 +19178,16 @@ begin
       if FNewScripter then begin
         ScripterT.SourceCode.Clear;
         ScripterT.SourceCode.Text := AcceptScriptDirectives(FScript);
-        ScripterT.Compile;
+        try
+          ScripterT.Compile;
+        except
+          on e: Exception do begin
+            {$IFDEF UCURSOR}
+            MsgBoxErr('FA-cursor','Chyba: ' + E.Message);
+            {$ENDIF UCURSOR}
+            raise; // Přehodí výjimku dál
+          end;
+        end;
       end
       else begin
         Scripter.Script.Clear;
@@ -26928,7 +26936,6 @@ begin
   FBridge.CursorCmdOrPath := 'cursor'; // nebo code nebo cesta 'C:\Users\...\Cursor.exe'
   FBridge.OnExternalSave := BridgeExternalSave;
   FBridge.OnCommand := ProcessFACommand;
-  FBridge.OnDebuggerCommand := ProcessDebugCommand; // callback pro debugger příkazy z Cursor
 
   TimerPoll := TTimer.Create(Self);
   TimerPoll.Interval := 250; // 250 ms (sníženo z 500ms pro rychlejší odezvu při přepínání)
@@ -26967,26 +26974,9 @@ end;
 procedure TfaMain.BridgeExternalSave(const Text: AnsiString);
 var
   isChangingScript, btSaveEnabled: boolean;
-  CurrentCode: AnsiString;
 begin
-  // WriteBridgeDebug('BridgeExternalSave: FCurrentFormId=' + FCurrentFormId + 
-  //   ', TextLength=' + IntToStr(Length(Text)) + ', FStateFormWasChanged=' + BoolToStr(FStateFormWasChanged)); // ZAKOMENTOVÁNO
-  
   if FCurrentFormId <> '' then
   begin
-    // Porovnej obsah souboru s aktuálním obsahem v FA
-    // Pokud se nezměnil, nic nedělej (aby se předešlo falešné detekci změny)
-    CurrentCode := LoadCodeFromDB;
-    
-    // WriteBridgeDebug('BridgeExternalSave: CurrentCodeLength=' + IntToStr(Length(CurrentCode)) + 
-    //   ', SameText=' + BoolToStr(SameText(CurrentCode, Text))); // ZAKOMENTOVÁNO
-    
-    if SameText(CurrentCode, Text) then
-    begin
-      // WriteBridgeDebug('BridgeExternalSave: EXIT - obsah stejný'); // ZAKOMENTOVÁNO
-      Exit; // Obsah se nezměnil, nic nedělej
-    end;
-    
     FAToFront;
     btSaveEnabled:=dxBarButtonSave.Enabled;
     isChangingScript:=FIsChangingScript;
@@ -26999,11 +26989,11 @@ begin
       SaveCodeToDB(Text);
 
       SaveFormScript;
+      
+      CheckAndLoadScript;
+      
       ReloadListBoxes;
       BringToFront;
-      
-      // WriteBridgeDebug('BridgeExternalSave: PO SaveFormScript, FStateFormWasChanged=' + BoolToStr(FStateFormWasChanged) + 
-      //   ', FScriptChangedByCursor=' + BoolToStr(FScriptChangedByCursor)); // ZAKOMENTOVÁNO
     finally
       dxBarButtonSave.Enabled := btSaveEnabled;
       FIsChangingScript:=isChangingScript;
@@ -27072,11 +27062,7 @@ end;
 
 procedure TfaMain.ProcessFACommand(const Command: string);
 var 
-  s: string;
-  // Debug logování zakomentováno
-  // DebugFile: string;
-  // DebugFS: TFileStream;
-  // DebugMsg: AnsiString;
+  s: AnsiString;
 begin
   // Debug: zapiš začátek zpracování příkazu - ZAKOMENTOVÁNO
   {try
@@ -27103,55 +27089,27 @@ begin
   
   if Command = 'Aktivovat_formular' then
   begin
-    // Debug: před FAToFront - ZAKOMENTOVÁNO
-    {try
-      if Assigned(FBridge) then
-      begin
-        DebugFile := IncludeTrailingPathDelimiter(FBridge.GetEffectiveExportFolder) + '.fsbridge\' + IntToStr(GetCurrentProcessId) + '\facmd-debug.txt';
-        DebugMsg := FormatDateTime('hh:nn:ss.zzz', Now) + ' [ProcessFACommand] Před FAToFront' + #13#10;
-        try
-          DebugFS := TFileStream.Create(DebugFile, fmOpenWrite or fmShareDenyNone);
-          try
-            DebugFS.Seek(0, soEnd);
-            DebugFS.WriteBuffer(DebugMsg[1], Length(DebugMsg));
-          finally
-            DebugFS.Free;
-          end;
-        except
-          // Ignoruj chyby
-        end;
-      end;
-    except
-      // Ignoruj chyby
-    end;}
+    // Načti aktuální stav souboru z disku a synchronizuj s FA
+    if Assigned(FBridge) and Assigned(FBridge.OnExternalSave) and (FCurrentFormId <> '') then
+    begin
+      s := FBridge.ReadScriptFileContent;
+      if s <> '' then
+        FBridge.OnExternalSave(s);
+    end;
     
     FAToFront;
-    
-    // Debug: po FAToFront - ZAKOMENTOVÁNO
-    {try
-      if Assigned(FBridge) then
-      begin
-        DebugFile := IncludeTrailingPathDelimiter(FBridge.GetEffectiveExportFolder) + '.fsbridge\' + IntToStr(GetCurrentProcessId) + '\facmd-debug.txt';
-        DebugMsg := FormatDateTime('hh:nn:ss.zzz', Now) + ' [ProcessFACommand] Po FAToFront' + #13#10;
-        try
-          DebugFS := TFileStream.Create(DebugFile, fmOpenWrite or fmShareDenyNone);
-          try
-            DebugFS.Seek(0, soEnd);
-            DebugFS.WriteBuffer(DebugMsg[1], Length(DebugMsg));
-          finally
-            DebugFS.Free;
-          end;
-        except
-          // Ignoruj chyby
-        end;
-      end;
-    except
-      // Ignoruj chyby
-    end;}
   end
   else if Command = 'Zkompilovat_script' then
   begin
-
+    // Načti aktuální stav souboru z disku a synchronizuj s FA
+    if Assigned(FBridge) and Assigned(FBridge.OnExternalSave) and (FCurrentFormId <> '') then
+    begin
+      s := FBridge.ReadScriptFileContent;
+      if s <> '' then
+        FBridge.OnExternalSave(s);
+    end;
+    
+    FAToFront; // Aktivuj FA i po kompilaci
   end
   else if Command = 'Najit_udaj' then
   begin
@@ -27208,23 +27166,6 @@ begin
 end;
 
 // Zpracování příkazů z Cursor extension
-procedure TfaMain.ProcessDebugCommand(const Command: string);
-var
-  CommandName: string;
-  ColonPos: Integer;
-begin
-  // Parsování příkazu - formát může být "COMMAND" nebo "COMMAND:parameter"
-  ColonPos := Pos(':', Command);
-  if ColonPos > 0 then
-  begin
-    CommandName := Trim(Copy(Command, 1, ColonPos - 1));
-  end
-  else
-  begin
-    CommandName := Trim(Command);
-  end;
-
-end;
 
 // Zpracování volání funkce Msg z skriptu
 procedure TfaMain.OnMsgCalled(const AMessage: string);

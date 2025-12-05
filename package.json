@@ -3,9 +3,9 @@
   "displayName": "FA Bridge",
   "publisher": "fa-dev",
   "description": "Propojení Cursor/VS Code s editorem FormStudio (FA)",
-  "version": "0.5.73",
+  "version": "0.5.74",
   "engines": {
-    "vscode": "^1.85.0"
+    "vscode": "^1.70.2"
   },
   "categories": [
     "Programming Languages",
@@ -156,12 +156,6 @@
         "when": "faBridge.isActive"
       },
       {
-        "command": "faBridge.ulozitSoubor",
-        "key": "ctrl+s",
-        "mac": "cmd+s",
-        "when": "faBridge.isActive"
-      },
-      {
         "command": "faBridge.vlozitNazevUdaje",
         "key": "alt+x",
         "mac": "alt+x",
@@ -244,7 +238,7 @@
     "test": "vscode-test"
   },
   "devDependencies": {
-    "@types/vscode": "^1.85.0",
+    "@types/vscode": "^1.70.0",
     "@types/mocha": "^10.0.10",
     "@types/node": "22.x",
     "@typescript-eslint/eslint-plugin": "^8.45.0",
