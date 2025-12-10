@@ -2,6 +2,16 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
 
+// Callback pro refresh panelu historie po uložení
+let refreshHistoryPanelCallback: (() => void) | null = null;
+
+/**
+ * Nastaví callback pro refresh panelu historie
+ */
+export function setHistoryRefreshCallback(callback: () => void): void {
+	refreshHistoryPanelCallback = callback;
+}
+
 /**
  * Formát timestampu pro názvy souborů: YYYYMMDD-HHMMSS
  */
@@ -67,6 +77,12 @@ export async function saveFileHistory(filePath: string): Promise<string | null> 
 		fs.copyFileSync(filePath, historyFilePath);
 
 		console.log(`[FA Bridge] Historie uložena: ${historyFilePath}`);
+		
+		// Refresh panelu historie pokud je callback nastaven
+		if (refreshHistoryPanelCallback) {
+			refreshHistoryPanelCallback();
+		}
+		
 		return historyFilePath;
 	} catch (error) {
 		const msg = error instanceof Error ? error.message : String(error);

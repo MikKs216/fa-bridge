@@ -5,6 +5,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import {
 	ulozitSoubor,
+	faDoPopredi,
 	vlozitNazevUdaje,
 	kopirovatNazevUdaje,
 	najitUdaj,
@@ -23,7 +24,7 @@ import { registerHelpPanel } from './views/HelpPanel';
 import { registerIntelliSenseProvider, getIntelliSenseProvider } from './providers/PascalIntelliSenseProvider';
 import { CommandWatcher } from './utils/commandWatcher';
 import { registerBeginEndMatcher } from './providers/BeginEndMatcher';
-import { compareWithPreviousVersion, showHistoryVersions } from './utils/fileHistory';
+import { compareWithPreviousVersion, showHistoryVersions, setHistoryRefreshCallback } from './utils/fileHistory';
 import { HistoryPanel } from './historyPanel';
 import { HistoryProvider, HistoryItem } from './historyProvider';
 
@@ -95,9 +96,13 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 	};
 
+	// Globální reference na HistoryProvider pro refresh po uložení historie
+	let historyProviderInstance: HistoryProvider | null = null;
+
 	if (historyEnabled) {
 		// Vytvoř provider pro historii
-		const historyProvider = new HistoryProvider(context);
+		historyProviderInstance = new HistoryProvider(context);
+		const historyProvider = historyProviderInstance;
 
 		// Registruj příkazy
 		const showDiffCommand = vscode.commands.registerCommand('faHistory.showDiff', 
@@ -178,6 +183,11 @@ export function activate(context: vscode.ExtensionContext) {
 				historyProvider.refresh();
 			}
 		);
+
+		// Nastav callback pro automatický refresh po uložení historie
+		setHistoryRefreshCallback(() => {
+			historyProvider.refresh();
+		});
 
 		// Vytvoř TreeView pro historii
 		const historyTreeView = vscode.window.createTreeView('faHistoryPanel', {
@@ -299,6 +309,7 @@ export function activate(context: vscode.ExtensionContext) {
 	// Registruj všechny příkazy
 	const commands = [
 		vscode.commands.registerCommand('faBridge.ulozitSoubor', ulozitSoubor),
+		vscode.commands.registerCommand('faBridge.faDoPopredi', faDoPopredi),
 		vscode.commands.registerCommand('faBridge.vlozitNazevUdaje', vlozitNazevUdaje),
 		vscode.commands.registerCommand('faBridge.kopirovatNazevUdaje', kopirovatNazevUdaje),
 		vscode.commands.registerCommand('faBridge.najitUdaj', najitUdaj),

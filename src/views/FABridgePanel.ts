@@ -72,7 +72,7 @@ export class FABridgeTreeProvider implements vscode.TreeDataProvider<CategoryTre
 		// Root level - vrať kategorie
 		const faCommands: CommandTreeItem[] = [
 			new CommandTreeItem(
-				'Uložit soubor (Ctrl+S, Alt+Q)',
+				'Uložit soubor (F2, Alt+Q)',
 				{
 					command: 'faBridge.ulozitSoubor',
 					title: 'Uložit soubor',

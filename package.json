@@ -3,7 +3,7 @@
   "displayName": "FA Bridge",
   "publisher": "fa-dev",
   "description": "Propojení Cursor/VS Code s editorem FormStudio (FA)",
-  "version": "0.5.83",
+  "version": "0.5.90",
   "engines": {
     "vscode": "^1.70.2"
   },
@@ -69,7 +69,15 @@
       },
       {
         "command": "faBridge.ulozitSoubor",
-        "title": "FA Bridge: Uložit soubor"
+        "title": "FA Bridge: Uložit soubor",
+        "category": "FA Bridge",
+        "description": "Uloží aktuální soubor do historie a aktivuje FA aplikaci (F2, Alt+Q)"
+      },
+      {
+        "command": "faBridge.faDoPopredi",
+        "title": "FA Bridge: FA do popředí",
+        "category": "FA Bridge",
+        "description": "Aktivuje FA aplikaci do popředí bez ukládání souboru (F1)"
       },
       {
         "command": "faBridge.toggleMsgv",
@@ -228,6 +236,18 @@
         "command": "faBridge.ulozitSoubor",
         "key": "alt+q",
         "mac": "alt+q",
+        "when": "faBridge.isActive"
+      },
+      {
+        "command": "faBridge.ulozitSoubor",
+        "key": "f2",
+        "mac": "alt+f2",
+        "when": "faBridge.isActive"
+      },
+      {
+        "command": "faBridge.faDoPopredi",
+        "key": "f1",
+        "mac": "f1",
         "when": "faBridge.isActive"
       },
       {

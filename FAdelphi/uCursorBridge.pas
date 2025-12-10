@@ -176,6 +176,9 @@ type
     // Pouze zavření souboru v Cursoru (bez kontroly neuložených změn)
     function CloseCursorFile: TCursorCloseResult;
     
+    // Kontrola, jestli je script otevřený v Cursoru
+    function IsScriptOpenInCursor: Boolean;
+    
     // Vyprázdní FCurrentFile a FCurrentFormId (např. při zavření definice)
     procedure ClearCurrentFile;
     
@@ -1411,6 +1414,10 @@ begin
   else
   begin
     // Žádné okno Cursoru s fa_scripts neexistuje - otevři nové okno
+    // DŮLEŽITÉ: Zapiš fa_instance.txt PŘED spuštěním Cursoru!
+    // Cursor extension potřebuje tento soubor hned při startu, aby věděl o FA instanci.
+    WriteInstanceId;
+    
     Params := Format('--new-window %s%s', [FolderArg, FileArg]);
     FCursorPID := 0;
   end;
@@ -1452,6 +1459,7 @@ begin
   if (Ext = '.cmd') or (Ext = '.bat') then
   begin
     // Pro .cmd/.bat použij ShellExecute (nezískáme PID, ale je to fallback)
+    // fa_instance.txt už je vytvořený výše před spuštěním (když UseReuse = false)
     Result := ShellExecNoConsole(Cmd, Params, WS, SW_HIDE);
     // Uvolni seznam existujících PIDů (není potřeba pro .cmd/.bat)
     if Assigned(ExistingPIDs) then
@@ -2159,6 +2167,94 @@ procedure TCursorBridge.ClearCurrentFile;
 begin
   FCurrentFile := '';
   FCurrentFormId := '';
+end;
+
+function TCursorBridge.IsScriptOpenInCursor: Boolean;
+var
+  ResponseFile: string;
+  Response: string;
+  SL: TStringList;
+  MaxWait: Integer;
+  I: Integer;
+  CommandFile: string;
+  RetryCount: Integer;
+begin
+  Result := False;
+  
+  // Pokud Cursor neběží, script není otevřený
+  if not IsCursorProcessAlive then
+  begin
+    Exit;
+  end;
+  
+  // Cesta k souboru pro odpověď z Cursor extension
+  ResponseFile := GetResponseFilePath;
+  CommandFile := GetFACommandFilePath; // facmd_from_fa.txt
+  
+  // Smaž starou odpověď (pokud existuje)
+  if FileExists(ResponseFile) then
+  begin
+    try
+      DeleteFile(ResponseFile);
+    except
+      // Ignoruj chybu
+    end;
+  end;
+  
+  // Pošli příkaz do Cursor extension přes facmd_from_fa.txt
+  WriteFACommandToFile('check_if_open');
+  
+  // Počkej na odpověď (max 2 sekundy, každých 100ms kontrola)
+  MaxWait := 20; // 20 × 100ms = 2 sekundy
+  for I := 1 to MaxWait do
+  begin
+    Sleep(100);
+    if FileExists(ResponseFile) then
+    begin
+      // Načti odpověď - s retry mechanismem
+      SL := TStringList.Create;
+      try
+        RetryCount := 1;
+        while RetryCount <= 3 do
+        begin
+          try
+            SL.LoadFromFile(ResponseFile);
+            Break; // Úspěšně načteno
+          except
+            if RetryCount < 3 then
+              Sleep(50);
+            Inc(RetryCount);
+          end;
+        end;
+        
+        if SL.Count > 0 then
+        begin
+          Response := Trim(SL[0]);
+          // Odstraň BOM pokud existuje
+          if (Length(Response) > 0) and (Ord(Response[1]) = $FEFF) then
+            Delete(Response, 1, 1);
+          Response := Trim(Response);
+          
+          // Odpověď 'OPEN' znamená, že script je otevřený
+          Result := (Response = 'OPEN');
+        end;
+      finally
+        SL.Free;
+      end;
+      
+      // Smaž odpověď po přečtení
+      try
+        DeleteFile(ResponseFile);
+      except
+        // Ignoruj chybu
+      end;
+      
+      Exit; // Odpověď byla přečtena
+    end;
+  end;
+  
+  // Timeout - script pravděpodobně není otevřený
+  Result := False;
 end;
 
 // ============================================================================

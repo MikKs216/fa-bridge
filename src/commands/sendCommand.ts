@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
-import { writeFACommand, getFafieldPath, getFsBridgeWorkspaceRoot } from '../utils/fsBridge';
+import { writeFACommand, getFafieldPath, getFsBridgeWorkspaceRoot, getFAInstanceNotFoundMessage } from '../utils/fsBridge';
 import { saveFileHistory } from '../utils/fileHistory';
 
 /**
@@ -26,6 +26,18 @@ function deleteFamsgState(): void {
 		// Tichá chyba - nechceme rušit uživatele při ukládání
 		const msg = error instanceof Error ? error.message : String(error);
 		console.log(`[FA Bridge] Chyba při mazání famsgstate.json: ${msg}`);
+	}
+}
+
+/**
+ * Aktivuje FA do popředí bez ukládání souboru nebo buildování
+ */
+export async function faDoPopredi(): Promise<void> {
+	try {
+		await writeFACommand('FA_do_popredi');
+	} catch (error) {
+		const msg = error instanceof Error ? error.message : String(error);
+		vscode.window.showErrorMessage(`✗ Chyba: ${msg}`);
 	}
 }
 
@@ -93,7 +105,7 @@ export async function vlozitNazevUdaje(): Promise<void> {
 
 		const faFieldPath = getFafieldPath(workspaceRoot);
 		if (!faFieldPath) {
-			vscode.window.showErrorMessage('✗ Nenalezena FA instance složka. Ujisti se, že máš otevřený FA script a že FA aplikace běží.');
+			vscode.window.showErrorMessage(getFAInstanceNotFoundMessage(workspaceRoot));
 			return;
 		}
 
@@ -154,7 +166,7 @@ export async function kopirovatNazevUdaje(): Promise<void> {
 
 		const faFieldPath = getFafieldPath(workspaceRoot);
 		if (!faFieldPath) {
-			vscode.window.showErrorMessage('✗ Nenalezena FA instance složka. Ujisti se, že máš otevřený FA script a že FA aplikace běží.');
+			vscode.window.showErrorMessage(getFAInstanceNotFoundMessage(workspaceRoot));
 			return;
 		}
 
@@ -209,7 +221,7 @@ export async function hledatPodleAktUdaje(): Promise<void> {
 
 		const faFieldPath = getFafieldPath(workspaceRoot);
 		if (!faFieldPath) {
-			vscode.window.showErrorMessage('✗ Nenalezena FA instance složka. Ujisti se, že máš otevřený FA script a že FA aplikace běží.');
+			vscode.window.showErrorMessage(getFAInstanceNotFoundMessage(workspaceRoot));
 			return;
 		}
 
@@ -316,7 +328,7 @@ export async function najitUdaj(): Promise<void> {
 		// Použij instance-specific cestu
 		const faFieldPath = getFafieldPath(workspaceRoot);
 		if (!faFieldPath) {
-			vscode.window.showErrorMessage('✗ Nenalezena FA instance složka. Ujisti se, že máš otevřený FA script a že FA aplikace běží.');
+			vscode.window.showErrorMessage(getFAInstanceNotFoundMessage(workspaceRoot));
 			return;
 		}
 
@@ -484,7 +496,7 @@ export async function vlozitUdajSBody(): Promise<void> {
 
 		const faFieldPath = getFafieldPath(workspaceRoot);
 		if (!faFieldPath) {
-			vscode.window.showErrorMessage('✗ Nenalezena FA instance složka. Ujisti se, že máš otevřený FA script a že FA aplikace běží.');
+			vscode.window.showErrorMessage(getFAInstanceNotFoundMessage(workspaceRoot));
 			return;
 		}
 
@@ -567,7 +579,7 @@ export async function vlozitUdajSDvojteckami(): Promise<void> {
 
 		const faFieldPath = getFafieldPath(workspaceRoot);
 		if (!faFieldPath) {
-			vscode.window.showErrorMessage('✗ Nenalezena FA instance složka. Ujisti se, že máš otevřený FA script a že FA aplikace běží.');
+			vscode.window.showErrorMessage(getFAInstanceNotFoundMessage(workspaceRoot));
 			return;
 		}
 

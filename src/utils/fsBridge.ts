@@ -169,6 +169,66 @@ export function getFAInstanceDir(workspaceRoot: string): string | null {
 }
 
 /**
+ * Vytvoří detailní chybovou zprávu o nenalezené FA instance složce
+ */
+export function getFAInstanceNotFoundMessage(workspaceRoot: string | null): string {
+	if (!workspaceRoot) {
+		return '✗ Nenalezena FA instance složka. Workspace root není k dispozici.';
+	}
+	
+	const fsbridgeDir = path.join(workspaceRoot, '.fsbridge');
+	if (!fs.existsSync(fsbridgeDir)) {
+		return `✗ Nenalezena FA instance složka. Složka .fsbridge neexistuje: ${fsbridgeDir}\nUjisti se, že máš otevřený FA script a že FA aplikace běží.`;
+	}
+	
+	// Prohledej všechny instance složky a zjisti jejich stav
+	const instanceInfo: string[] = [];
+	try {
+		const entries = fs.readdirSync(fsbridgeDir, { withFileTypes: true });
+		const dirs = entries.filter(d => d.isDirectory() && /^\d+$/.test(d.name));
+		
+		if (dirs.length === 0) {
+			return `✗ Nenalezena FA instance složka v: ${fsbridgeDir}\nSložka .fsbridge existuje, ale neobsahuje žádné instance složky.\nUjisti se, že máš otevřený FA script a že FA aplikace běží.`;
+		}
+		
+		for (const dir of dirs) {
+			const instanceDir = path.join(fsbridgeDir, dir.name);
+			const faInstanceFile = path.join(instanceDir, 'fa_instance.txt');
+			let status = '';
+			
+			if (fs.existsSync(faInstanceFile)) {
+				try {
+					let content = fs.readFileSync(faInstanceFile, 'utf-8');
+					// Odstraň BOM pokud existuje
+					if (content.charCodeAt(0) === 0xFEFF) {
+						content = content.slice(1);
+					}
+					const faPID = parseInt(content.trim(), 10);
+					if (!isNaN(faPID)) {
+						const isAlive = isProcessAlive(faPID);
+						status = isAlive ? ' (běžící)' : ' (proces neběží)';
+					} else {
+						status = ' (neplatný PID)';
+					}
+				} catch {
+					status = ' (chyba při čtení)';
+				}
+			} else {
+				status = ' (chybí fa_instance.txt)';
+			}
+			
+			instanceInfo.push(`  - ${dir.name}${status}`);
+		}
+	} catch (error) {
+		const msg = error instanceof Error ? error.message : String(error);
+		return `✗ Nenalezena FA instance složka v: ${fsbridgeDir}\nChyba při prohledávání: ${msg}\nUjisti se, že máš otevřený FA script a že FA aplikace běží.`;
+	}
+	
+	const instanceList = instanceInfo.length > 0 ? `\nNalezené instance složky:\n${instanceInfo.join('\n')}` : '';
+	return `✗ Nenalezena aktivní FA instance složka v: ${fsbridgeDir}${instanceList}\nUjisti se, že máš otevřený FA script a že FA aplikace běží.`;
+}
+
+/**
  * Načte FA instance ID ze složky instance
  */
 export function getFAInstanceId(workspaceRoot: string): string | null {
@@ -242,7 +302,7 @@ export async function writeFACommand(command: string): Promise<void> {
 
 		const facmdPath = getFacmdPath(workspaceRoot);
 		if (!facmdPath) {
-			throw new Error('Nenalezena FA instance složka. Ujisti se, že máš otevřený FA script a že FA aplikace běží.');
+			throw new Error(getFAInstanceNotFoundMessage(workspaceRoot));
 		}
 		
 		// DŮLEŽITÉ: Ověř, že cesta obsahuje PID složku (formát: .fsbridge/{PID}/facmd.txt)

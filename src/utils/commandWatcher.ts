@@ -188,6 +188,10 @@ export class CommandWatcher implements vscode.Disposable {
 			await this.handleCloseFile(facmdPath);
 			return true; // Příkaz byl zpracován
 		}
+		if (command === 'check_if_open') {
+			await this.handleCheckIfOpen(facmdPath);
+			return true; // Příkaz byl zpracován
+		}
 		// Zde můžeme přidat další příkazy v budoucnu
 		return false; // Příkaz není pro Cursor - necháme ho pro FA
 	}
@@ -364,6 +368,75 @@ export class CommandWatcher implements vscode.Disposable {
 				vscode.commands.executeCommand('workbench.action.quit');
 			}, 100);
 		}
+	}
+
+	private async handleCheckIfOpen(facmdPath: string): Promise<void> {
+		const workspaceRoot = getFsBridgeWorkspaceRoot();
+		if (!workspaceRoot) {
+			return;
+		}
+
+		const instanceDir = getFAInstanceDir(workspaceRoot);
+		if (!instanceDir) {
+			return;
+		}
+
+		const responsePath = path.join(instanceDir, 'facmd_response.txt');
+		const editor = vscode.window.activeTextEditor;
+
+		if (!editor) {
+			// Žádný editor otevřený
+			fs.writeFileSync(responsePath, 'NO_EDITOR', 'utf-8');
+			this.log('[CommandWatcher] Žádný editor otevřený');
+			return;
+		}
+
+		const document = editor.document;
+		const fileName = path.basename(document.fileName);
+
+		// Zkontroluj, jestli je to FA script soubor
+		if (!fileName.match(/^(script_|u_)[a-zA-Z0-9_]+\.pas$/)) {
+			// Není to FA script
+			fs.writeFileSync(responsePath, 'NOT_FA_SCRIPT', 'utf-8');
+			this.log('[CommandWatcher] Aktivní soubor není FA script');
+			return;
+		}
+
+		// Extrahuj FormId z názvu souboru
+		const formId = extractFormIdFromFileName(fileName);
+		if (!formId) {
+			fs.writeFileSync(responsePath, 'NOT_FA_SCRIPT', 'utf-8');
+			this.log('[CommandWatcher] Nelze extrahovat FormId z názvu souboru');
+			return;
+		}
+
+		// Zkontroluj, jestli je tento script otevřený v aktivní záložce
+		// Porovnejme FormId z názvu souboru s FormId z current_form.txt
+		const currentFormFile = path.join(instanceDir, 'current_form.txt');
+		if (fs.existsSync(currentFormFile)) {
+			let currentFormId = '';
+			try {
+				let content = fs.readFileSync(currentFormFile, 'utf-8');
+				// Odstraň BOM pokud existuje
+				if (content.charCodeAt(0) === 0xFEFF) {
+					content = content.slice(1);
+				}
+				currentFormId = content.trim();
+			} catch (error) {
+				this.log(`[CommandWatcher] Chyba při čtení current_form.txt: ${error}`);
+			}
+
+			// Pokud FormId odpovídá, script je otevřený
+			if (currentFormId === formId) {
+				fs.writeFileSync(responsePath, 'OPEN', 'utf-8');
+				this.log(`[CommandWatcher] Script je otevřený: ${formId}`);
+				return;
+			}
+		}
+
+		// Script není otevřený (nebo je otevřený jiný script)
+		fs.writeFileSync(responsePath, 'NOT_OPEN', 'utf-8');
+		this.log(`[CommandWatcher] Script není otevřený: ${formId}`);
 	}
 
 	public dispose(): void {

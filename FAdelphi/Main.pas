@@ -5030,7 +5030,7 @@ begin
       begin
         // Soubor má neuložené změny - upozorni uživatele a zastav zavírání
         MsgBoxWarn(Caption, 
-          'Script v Cursoru má neuložené změny. Nejdříve uložte změny v Cursoru (Ctrl+S) a pak znovu zavřete FORM asistenta.', 
+          'Script v Cursoru má neuložené změny. Nejdříve uložte změny v Cursoru do FORM asistenta a pak jej znovu zavřete.', 
           MB_OK);
         FBridge.ActivateCursorWindow; // Přepni na Cursor okno
         CanClose := False;
@@ -5338,7 +5338,7 @@ begin
   SetButtonVisible(dxBarButtonEditScript, dxBarButtonDesignMode.Down);
 
   {$IFDEF UCURSOR}
-  SetButtonVisible(dxBarButtonEditInCursor, dxBarButtonDesignMode.Down);
+  SetButtonVisible(dxBarButtonEditInCursor, true);
   {$ELSE UCURSOR}
   SetButtonVisible(dxBarButtonEditInCursor, false);
   {$ENDIF UCURSOR}
@@ -27071,6 +27071,7 @@ procedure TfaMain.OpenScriptInCursor;
 var
   Code: AnsiString;
   JumpLine, JumpCol: Integer;
+  IsOpen: Boolean;
 begin
   JumpLine := 0;
   JumpCol := 0;
@@ -27084,17 +27085,24 @@ begin
   //GetEditorCaret(0,JumpLine, JumpCol); // vaše logika; když neřešíte, nastavte obě na 0
  //GetEditorCaret(0, 0); // vaše logika; když neřešíte, nastavte obě na 0
 
-  if (FBridge.CurrentFile = '') or (FBridge.CurrentFormId <> FCurrentFormId) then
+  // Zkontroluj, jestli je script už otevřený v Cursoru
+  IsOpen := False;
+  if (FBridge.CurrentFile <> '') and (FBridge.CurrentFormId = FCurrentFormId) then
   begin
-    // první otevření pro daný FormId
+    // Script byl už dříve otevřený - zkontroluj, jestli je stále otevřený
+    IsOpen := FBridge.IsScriptOpenInCursor;
+  end;
+
+  if not IsOpen then
+  begin
+    // Script není otevřený - předat script a otevřít
     if not FBridge.StartEditing(FCurrentFormId, Code, JumpLine, JumpCol) then
       ShowMessage('Nepodařilo se spustit Cursor / VS code. Patrně není otevřený formulář nebo je špatně cesta.');
   end
   else
   begin
-    // opakované Ctrl+Q – přepíše soubor aktuálním stavem z FA a přepne do Cursoru
-    if not FBridge.BringToCursor(Code, JumpLine, JumpCol) then
-      ShowMessage('Nepodařilo se přepnout do Cursoru / VS code.');
+    // Script je otevřený - jen aktivovat Cursor do popředí
+    FBridge.ActivateCursorWindow;
   end;
 end;
 
@@ -27148,6 +27156,11 @@ begin
     end;
     
     FAToFront; // Aktivuj FA i po kompilaci
+  end
+  else if Command = 'FA_do_popredi' then
+  begin
+    // Pouze aktivuj FA do popředí bez jakékoli synchronizace souboru
+    FAToFront;
   end
   else if Command = 'Najit_udaj' then
   begin
