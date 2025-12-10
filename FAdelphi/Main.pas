@@ -5014,6 +5014,7 @@ var
   {$IFDEF UCURSOR}
   CloseResult: TCursorCloseResult;
   ScriptContent: AnsiString;
+  ScriptFromDB: AnsiString;
   {$ENDIF UCURSOR}
 begin
 
@@ -5063,6 +5064,22 @@ begin
         ScriptContent := FBridge.ReadScriptFileContent;
         if ScriptContent <> '' then
         begin
+          // KONTROLA: Porovnej obsah na disku s obsahem v databázi FA
+          // (s obsahem, který byl předán do Cursoru při otevření)
+          ScriptFromDB := LoadCodeFromDB;
+          if ScriptContent <> ScriptFromDB then
+          begin
+            // Obsah na disku se liší od obsahu v databázi - nahlásit a nezavřít FA
+            MsgBoxWarn(Caption, 
+              'Script na disku se liší od scriptu v databázi FORM asistenta. ' +
+              'Obsah na disku byl změněn mimo FORM asistenta. Nejdříve uložte změny v Cursoru do FORM asistenta a pak jej znovu zavřete.', 
+              MB_OK);
+            FBridge.ActivateCursorWindow; // Přepni na Cursor okno
+            CanClose := False;
+            Exit;
+          end;
+          
+          // Obsah na disku odpovídá obsahu v databázi - můžeme pokračovat
           // Zavolej BridgeExternalSave, která načte změny a zkompiluje script
           // (stejná logika jako při Alt+Q z Cursoru)
           // Pokud je v scriptu chyba, vyvolá se výjimka (zachycena v BridgeExternalSave)
