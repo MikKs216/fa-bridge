@@ -1,4 +1,5 @@
-﻿{ 28.10.2025 15:12:29 (GMT+1:00) > [mik on WIN-48QDB6JAV23] checked in Propojeni na Cursor / VS code 1 }
+﻿{ 11.12.2025 12:41:52 (GMT+1:00) > [mik on WIN-48QDB6JAV23] checked in Zmeny pro editor cursor - horke klavesy  }
+{ 28.10.2025 15:12:29 (GMT+1:00) > [mik on WIN-48QDB6JAV23] checked in Propojeni na Cursor / VS code 1 }
 { 13.10.2025 20:40:33 (GMT+2:00) > [mik on WIN-48QDB6JAV23] checked in Rok 2026  }
 { 13.10.2025 11:11:27 (GMT+2:00) > [mik on WIN-48QDB6JAV23] checked in Doplneni LogStatN pro standalone.  }
 { 12.10.2025 13:53:01 (GMT+2:00) > [mik on WIN-48QDB6JAV23] checked in Uprava LogStat  }
@@ -1561,6 +1562,7 @@ type
     dxBarButtonEditInCursor: TdxBarButton;
     dxBarButtonExportFdex: TdxBarButton;
     faOpenCursor: TAction;
+    dxBarButtonUseCursorEditor: TdxBarButton;
     {$IFDEF UCURSOR}
     TimerPoll: TTimer;
     {$ENDIF UCURSOR}
@@ -1799,6 +1801,7 @@ type
     procedure dxBarButtonEditInCursorClick(Sender: TObject);
     procedure dxBarButtonExportFdexClick(Sender: TObject);
     procedure faOpenCursorExecute(Sender: TObject);
+    procedure dxBarButtonUseCursorEditorClick(Sender: TObject);
   private
     FFirstActivate: boolean;
     FDataFileName: string;
@@ -5355,7 +5358,7 @@ begin
   SetButtonVisible(dxBarButtonEditScript, dxBarButtonDesignMode.Down);
 
   {$IFDEF UCURSOR}
-  SetButtonVisible(dxBarButtonEditInCursor, true);
+  SetButtonVisible(dxBarButtonEditInCursor, dxBarButtonUseCursorEditor.Down);
   {$ELSE UCURSOR}
   SetButtonVisible(dxBarButtonEditInCursor, false);
   {$ENDIF UCURSOR}
@@ -10807,6 +10810,10 @@ begin
       iniFile.WriteBool(Name, 'PaCheckVisible', paCheck.Visible);
       iniFile.WriteBool(Name, 'PaCheckAutoHeight', GrCheckGetStyle);
 
+      {$IFDEF UCURSOR}
+      iniFile.WriteBool(Name, 'UseCursorEditor', dxBarButtonUseCursorEditor.Down);
+      {$ENDIF UCURSOR}
+
       SavePaInfoWidth(iniFile);
 
       SaveMemIni(iniFile);
@@ -10889,6 +10896,13 @@ begin
     PositionFrmCheck(l, t);
     Left := l;
     Top := t;
+
+    {$IFNDEF FINALBUILD}
+    {$IFDEF UCURSOR}
+    dxBarButtonUseCursorEditor.Down := iniFile.ReadBool(Name, 'UseCursorEditor', false);
+    {$ENDIF UCURSOR}
+    {$ENDIF FINALBUILD}
+
 {$ELSE STANDALONE}
     {presunuto do OnShow
     l := iniFile.ReadInteger(Name, 'Left', 62);
@@ -22480,7 +22494,14 @@ end;
 procedure TfaMain.faOpenScriptExecute(Sender: TObject);
 begin
   {$IFNDEF FINALBUILD}
+  {$IFDEF UCURSOR}
+  if dxBarButtonUseCursorEditor.Down then
+    EditFormScriptCursor
+  else
+    EditFormScriptUnModal;
+  {$ELSE UCURSOR}
   EditFormScriptUnModal;
+  {$ENDIF UCURSOR}
   {$ENDIF FINALBUILD}
 end;
 
@@ -23019,6 +23040,11 @@ end; {ShowNotesPopup}
 procedure TfaMain.dxBarButtonTextEditorFunctionClick(Sender: TObject);
 begin
   ShowNotesPopup(Left + paLeft.Width + 5, Top + 80);
+end;
+
+procedure TfaMain.dxBarButtonUseCursorEditorClick(Sender: TObject);
+begin
+  SetDesignButtons;
 end;
 
 procedure TfaMain.mtStoredStringsBeforePost(DataSet: TDataSet);

@@ -65,6 +65,7 @@ export class FABridgeTreeProvider implements vscode.TreeDataProvider<CategoryTre
 		const faCompatibleHotkeys = config.get<boolean>('faCompatibleHotkeys', false);
 
 		// Urči správné zkratky podle nastavení
+		const activateFAShortcut = faCompatibleHotkeys ? 'Ctrl+Q' : 'Alt+Q';
 		const copyShortcut = faCompatibleHotkeys ? 'Shift+Ctrl+C' : 'Shift+Alt+C';
 		const findShortcut = 'Shift+Alt+L'; // Vždy Shift+Alt+L (bez ohledu na nastavení)
 		const searchShortcut = faCompatibleHotkeys ? 'Shift+Ctrl+F' : 'Shift+Alt+F';
@@ -72,13 +73,22 @@ export class FABridgeTreeProvider implements vscode.TreeDataProvider<CategoryTre
 		// Root level - vrať kategorie
 		const faCommands: CommandTreeItem[] = [
 			new CommandTreeItem(
-				'Uložit soubor (F2, Alt+Q)',
+				'Uložit soubor (F2)',
 				{
 					command: 'faBridge.ulozitSoubor',
 					title: 'Uložit soubor',
 				},
 				new vscode.ThemeIcon('save'),
 				'Uloží aktuální soubor (triggeruje Local History)'
+			),
+			new CommandTreeItem(
+				`Přepnout do FA (F1, ${activateFAShortcut})`,
+				{
+					command: 'faBridge.faDoPopredi',
+					title: 'Přepnout do FA',
+				},
+				new vscode.ThemeIcon('window'),
+				'Aktivuje okno FORM asistenta'
 			),
 		new CommandTreeItem(
 				'Vložit název údaje (Alt+X, Ctrl+Shift+V)',
@@ -182,6 +192,9 @@ export function registerFABridgePanel(context: vscode.ExtensionContext): void {
 		treeDataProvider: treeProvider,
 		showCollapseAll: false,
 	});
+
+	// Aktualizuj panel při prvním načtení (pro zajištění správného zobrazení hotkeys)
+	treeProvider.refresh();
 
 	// Sleduj změny konfigurace a aktualizuj panel
 	const configDisposable = vscode.workspace.onDidChangeConfiguration((e) => {

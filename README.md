@@ -137,8 +137,9 @@ Extension poskytuje několik konfigurovatelných nastavení:
 ### FA kompatibilní hotkeys
 
 - **Nastavení:** `faBridge.faCompatibleHotkeys` (výchozí: `false`)
-- **Popis:** Použije hotkeys kompatibilní s FA (Shift+Ctrl+C/L/F místo Shift+Alt+C/L/F)
+- **Popis:** Použije hotkeys kompatibilní s FA (Ctrl+Q místo Alt+Q, Shift+Ctrl+C místo Shift+Alt+C, Shift+Ctrl+F místo Shift+Alt+F)
 - **Poznámka:** Pokud je zapnuto, některé zkratky se změní:
+  - Přepnout do FA: `Alt+Q` → `Ctrl+Q`
   - Kopírovat název údaje: `Shift+Alt+C` → `Shift+Ctrl+C`
   - Hledat podle akt. údaje: `Shift+Alt+F` → `Shift+Ctrl+F`
 

@@ -1,4 +1,5 @@
-﻿{ 28.10.2025 15:12:45 (GMT+1:00) > [mik on WIN-48QDB6JAV23] checked in Propojeni na Cursor / VS code  }
+﻿{ 11.12.2025 12:42:10 (GMT+1:00) > [mik on WIN-48QDB6JAV23] checked in Zmeny - horke klavesy  }
+{ 28.10.2025 15:12:45 (GMT+1:00) > [mik on WIN-48QDB6JAV23] checked in Propojeni na Cursor / VS code  }
 unit uCursorBridge;
 (*
   Delphi 2007 helper for "FA ⇄ Cursor/VS Code" (file-based + polling + reuse-window)

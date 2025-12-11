@@ -3,7 +3,7 @@
   "displayName": "FA Bridge",
   "publisher": "fa-dev",
   "description": "Propojení Cursor/VS Code s editorem FormStudio (FA)",
-  "version": "0.5.90",
+  "version": "0.5.92",
   "engines": {
     "vscode": "^1.70.2"
   },
@@ -34,7 +34,7 @@
         "faBridge.faCompatibleHotkeys": {
           "type": "boolean",
           "default": false,
-          "description": "Horké klávesy kompatibilní s FA (Shift+Ctrl+C/L/F místo Shift+Alt+C/L/F)"
+          "description": "Horké klávesy kompatibilní s FA (Ctrl+Q místo Alt+Q pro přepnutí do FA, Shift+Ctrl+C místo Shift+Alt+C, Shift+Ctrl+F místo Shift+Alt+F)"
         },
         "faBridge.enableFileHistory": {
           "type": "boolean",
@@ -234,12 +234,6 @@
       },
       {
         "command": "faBridge.ulozitSoubor",
-        "key": "alt+q",
-        "mac": "alt+q",
-        "when": "faBridge.isActive"
-      },
-      {
-        "command": "faBridge.ulozitSoubor",
         "key": "f2",
         "mac": "alt+f2",
         "when": "faBridge.isActive"
@@ -249,6 +243,18 @@
         "key": "f1",
         "mac": "f1",
         "when": "faBridge.isActive"
+      },
+      {
+        "command": "faBridge.faDoPopredi",
+        "key": "alt+q",
+        "mac": "alt+q",
+        "when": "faBridge.isActive && !config.faBridge.faCompatibleHotkeys"
+      },
+      {
+        "command": "faBridge.faDoPopredi",
+        "key": "ctrl+q",
+        "mac": "cmd+q",
+        "when": "faBridge.isActive && config.faBridge.faCompatibleHotkeys"
       },
       {
         "command": "faBridge.vlozitNazevUdaje",
