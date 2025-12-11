@@ -1,6 +1,0 @@
-//TODO
-
-- Otví­rat help ze skriptu (na konkretní funkci)
-- Upravit hotkeys na­ [..] a [::]
-
-- Sjednotit barvy ve skriptu

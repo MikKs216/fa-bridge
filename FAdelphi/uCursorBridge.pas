@@ -44,12 +44,6 @@ uses
 
 const
   DEFAULT_FILE_PREFIX = 'script_';
-  
-  // Verzování uCursorBridge - musí být kompatibilní s FA Bridge extension
-  // Formát: 'X.Y.Z-FA' kde X.Y.Z je verze extension (z package.json)
-  // Při každé změně v tomto souboru musí být verze aktualizována!
-  CURSOR_BRIDGE_VERSION = '0.4.3-FA';
-  CURSOR_BRIDGE_VERSION_DATE = '2025-10-30';
 
 type
   // Předá aktuální text při zjištění externího uložení

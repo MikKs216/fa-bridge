@@ -26963,13 +26963,6 @@ begin
 end;
 
 {$IFDEF UCURSOR}
-const
-  // Verzování FA Bridge integrace v Main.pas - musí být kompatibilní s FA Bridge extension
-  // Formát: 'X.Y.Z-FA' kde X.Y.Z je verze extension (z package.json)
-  // Při každé změně v UCURSOR bloku musí být verze aktualizována!
-  FA_BRIDGE_INTEGRATION_VERSION = '0.4.9-FA';
-  FA_BRIDGE_INTEGRATION_VERSION_DATE = '2025-10-31';
-
 // Pomocná funkce pro debug zápis - bezpečně zapíše do debug souboru
 procedure TfaMain.WriteBridgeDebug(const AMessage: string);
 //var
