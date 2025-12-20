@@ -1,8 +1,10 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
+import * as child_process from 'child_process';
 import { writeFACommand, getFafieldPath, getFsBridgeWorkspaceRoot, getFAInstanceNotFoundMessage } from '../utils/fsBridge';
 import { saveFileHistory } from '../utils/fileHistory';
+import { getIntelliSenseProvider } from '../providers/PascalIntelliSenseProvider';
 
 /**
  * Smaže famsgstate.json pokud existuje
@@ -753,5 +755,234 @@ export async function hledatOdZacatku(): Promise<void> {
 		const msg = error instanceof Error ? error.message : String(error);
 		vscode.window.showErrorMessage(`✗ Chyba: ${msg}`);
 	}
+}
+
+// Globální reference na help WebView panel pro reuse
+let helpPanel: vscode.WebviewPanel | undefined = undefined;
+
+/**
+ * Otevře HTML help soubor s tématem podle slova pod kurzorem (Ctrl+F1)
+ * Používá HTML help ze složky _source/fahlp místo FA.chm
+ */
+export async function openHelp(): Promise<void> {
+	try {
+		const editor = vscode.window.activeTextEditor;
+		if (!editor) {
+			vscode.window.showErrorMessage('✗ Žádný editor otevřen');
+			return;
+		}
+
+		// Získej slovo pod kurzorem
+		const position = editor.selection.active;
+		const wordRange = editor.document.getWordRangeAtPosition(position);
+		
+		let searchWord = ''; // Slovo pro vyhledávání v indexu
+		
+		if (wordRange) {
+			searchWord = editor.document.getText(wordRange).toLowerCase();
+		}
+
+		// Najdi workspace root
+		const workspaceRoot = getFsBridgeWorkspaceRoot();
+		if (!workspaceRoot) {
+			throw new Error('Žádný workspace otevřen nebo .fsbridge složka nenalezena');
+		}
+
+		// Cesta k indexu a HTML help složce
+		const helpIndexPath = path.join(workspaceRoot, '_source', 'fahlp', 'fa_help_index.json');
+		const helpFolderPath = path.join(workspaceRoot, '_source', 'fahlp');
+
+		if (!fs.existsSync(helpIndexPath)) {
+			vscode.window.showErrorMessage(`✗ Help index nebyl nalezen: ${helpIndexPath}`);
+			return;
+		}
+
+		// Načti index JSON
+		let helpIndex: { [key: string]: string } = {};
+		try {
+			const indexContent = fs.readFileSync(helpIndexPath, 'utf-8');
+			helpIndex = JSON.parse(indexContent);
+		} catch (error) {
+			const msg = error instanceof Error ? error.message : String(error);
+			vscode.window.showErrorMessage(`✗ Chyba při načítání help indexu: ${msg}`);
+			return;
+		}
+
+		// Vyhledej HTML soubor v indexu (case-insensitive)
+		let htmlFile = 'hlavni_funkce.htm'; // Výchozí téma
+		
+		if (searchWord) {
+			// Zkus najít přesnou shodu (case-insensitive)
+			const lowerIndex: { [key: string]: string } = {};
+			for (const [key, value] of Object.entries(helpIndex)) {
+				lowerIndex[key.toLowerCase()] = value;
+			}
+			
+			if (lowerIndex[searchWord]) {
+				htmlFile = lowerIndex[searchWord];
+			} else {
+				// Pokud není přesná shoda, použij výchozí
+				console.log(`[Help] Slovo "${searchWord}" nebylo nalezeno v indexu, použiji výchozí téma`);
+			}
+		}
+
+		// Cesta k HTML souboru
+		const htmlFilePath = path.join(helpFolderPath, htmlFile);
+
+		if (!fs.existsSync(htmlFilePath)) {
+			vscode.window.showErrorMessage(`✗ Help soubor nebyl nalezen: ${htmlFilePath}`);
+			return;
+		}
+
+		// Načti obsah HTML souboru
+		let htmlContent = '';
+		try {
+			htmlContent = fs.readFileSync(htmlFilePath, 'utf-8');
+		} catch (error) {
+			const msg = error instanceof Error ? error.message : String(error);
+			vscode.window.showErrorMessage(`✗ Chyba při načítání HTML souboru: ${msg}`);
+			return;
+		}
+
+		// Pokud už existuje panel, aktualizuj ho
+		if (helpPanel) {
+			helpPanel.title = `FA Help: ${path.basename(htmlFile, '.htm')}`;
+			helpPanel.webview.html = getWebviewContent(htmlContent, helpFolderPath, htmlFile);
+			helpPanel.reveal(); // Zobraz panel
+		} else {
+			// Vytvoř nový panel
+			helpPanel = vscode.window.createWebviewPanel(
+				'faHelp',
+				`FA Help: ${path.basename(htmlFile, '.htm')}`,
+				vscode.ViewColumn.Beside,
+				{
+					enableScripts: true,
+					localResourceRoots: [vscode.Uri.file(helpFolderPath)]
+				}
+			);
+
+			helpPanel.webview.html = getWebviewContent(htmlContent, helpFolderPath, htmlFile);
+
+			// Zpracování kliknutí na odkazy v HTML helpu
+			helpPanel.webview.onDidReceiveMessage(async (message) => {
+				if (message.command === 'openHelp') {
+					const targetFile = message.file;
+					const targetPath = path.join(helpFolderPath, targetFile);
+					
+					if (fs.existsSync(targetPath)) {
+						try {
+							const newHtmlContent = fs.readFileSync(targetPath, 'utf-8');
+							if (helpPanel) {
+								helpPanel.title = `FA Help: ${path.basename(targetFile, '.htm')}`;
+								helpPanel.webview.html = getWebviewContent(newHtmlContent, helpFolderPath, targetFile);
+							}
+						} catch (error) {
+							const msg = error instanceof Error ? error.message : String(error);
+							vscode.window.showErrorMessage(`✗ Chyba při načítání help souboru: ${msg}`);
+						}
+					}
+				}
+			});
+
+			// Při zavření panelu smaž referenci
+			helpPanel.onDidDispose(() => {
+				helpPanel = undefined;
+			}, null);
+		}
+
+		console.log(`[Help] Otevřen help: ${htmlFile}${searchWord ? ` (pro slovo: ${searchWord})` : ''}`);
+	} catch (error) {
+		const msg = error instanceof Error ? error.message : String(error);
+		vscode.window.showErrorMessage(`✗ Chyba: ${msg}`);
+	}
+}
+
+/**
+ * Vytvoří HTML obsah pro WebView s podporou relativních cest
+ */
+function getWebviewContent(htmlContent: string, helpFolderPath: string, htmlFile: string): string {
+	if (!helpPanel) {
+		return htmlContent;
+	}
+
+	// Funkce pro konverzi relativní cesty na webview URI
+	const resourceUri = (relativePath: string): string => {
+		const fullPath = path.resolve(helpFolderPath, relativePath);
+		const uri = vscode.Uri.file(fullPath);
+		return helpPanel!.webview.asWebviewUri(uri).toString();
+	};
+
+	// Uprav relativní cesty k obrázkům, CSS a JS souborům
+	// Pro obrázky: src="file.png" -> src="vscode-webview-resource://..."
+	htmlContent = htmlContent.replace(/src="([^"]+)"/gi, (match, srcPath) => {
+		if (srcPath.startsWith('http') || srcPath.startsWith('data:') || srcPath.startsWith('vscode-webview-resource:')) {
+			return match; // Nech externí URL, data URI a už konvertované URI
+		}
+		// Zkus najít soubor relativně k helpFolderPath
+		const fullPath = path.resolve(helpFolderPath, srcPath);
+		if (fs.existsSync(fullPath)) {
+			return `src="${resourceUri(srcPath)}"`;
+		}
+		return match;
+	});
+
+	// Pro CSS: href="file.css" -> href="vscode-webview-resource://..."
+	htmlContent = htmlContent.replace(/href="([^"]+\.css)"/gi, (match, hrefPath) => {
+		if (hrefPath.startsWith('http') || hrefPath.startsWith('vscode-webview-resource:')) {
+			return match; // Nech externí URL a už konvertované URI
+		}
+		const fullPath = path.resolve(helpFolderPath, hrefPath);
+		if (fs.existsSync(fullPath)) {
+			return `href="${resourceUri(hrefPath)}"`;
+		}
+		return match;
+	});
+
+	// Pro JS: src="file.js" -> src="vscode-webview-resource://..."
+	htmlContent = htmlContent.replace(/<script([^>]*)src="([^"]+\.js)"([^>]*)>/gi, (match, before, srcPath, after) => {
+		if (srcPath.startsWith('http') || srcPath.startsWith('vscode-webview-resource:')) {
+			return match; // Nech externí URL a už konvertované URI
+		}
+		const fullPath = path.resolve(helpFolderPath, srcPath);
+		if (fs.existsSync(fullPath)) {
+			return `<script${before}src="${resourceUri(srcPath)}"${after}>`;
+		}
+		return match;
+	});
+
+	// Uprav odkazy na další HTML stránky - přidej onclick handler pro navigaci
+	// Pro odkazy: href="file.htm" -> přidej onclick handler
+	htmlContent = htmlContent.replace(/href="([^"]+\.htm)"/gi, (match, hrefPath) => {
+		if (hrefPath.startsWith('http') || hrefPath.startsWith('vscode-webview-resource:')) {
+			return match; // Nech externí URL a už konvertované URI
+		}
+		// Přidej onclick handler pro navigaci v rámci webview
+		return `href="#" onclick="openHelpFile('${hrefPath}'); return false;"`;
+	});
+
+	// Přidej JavaScript pro zpracování kliknutí na odkazy
+	if (!htmlContent.includes('function openHelpFile')) {
+		const scriptTag = `
+<script>
+	function openHelpFile(file) {
+		const vscode = acquireVsCodeApi();
+		vscode.postMessage({
+			command: 'openHelp',
+			file: file
+		});
+	}
+</script>
+`;
+		// Vlož script před </body> nebo před </html>
+		if (htmlContent.includes('</body>')) {
+			htmlContent = htmlContent.replace('</body>', `${scriptTag}</body>`);
+		} else if (htmlContent.includes('</html>')) {
+			htmlContent = htmlContent.replace('</html>', `${scriptTag}</html>`);
+		} else {
+			htmlContent += scriptTag;
+		}
+	}
+
+	return htmlContent;
 }
 

@@ -1,0 +1,153 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+   <title>Ostatní funkce &gt; Cond5</title>
+   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />   
+   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+   <meta name="generator" content="Help &amp; Manual" />
+   <meta name="keywords" content="Cond5" />
+   <meta name="description" content="Funkce, která v omezené podobě nahrazuje příkaz IF." />
+   <link type="text/css" href="default.css" rel="stylesheet" />
+   <link type="text/css" href="custom.css" rel="stylesheet">
+
+   <style TYPE="text/css" media="screen"> 
+      html, body { margin:0; 
+             padding:0; 
+             overflow: hidden;
+             background: #ffffff; 
+       } 
+
+      div#printheader { display: none; }
+      #idheader { width:100%; 
+                  height:auto; 
+                  padding: 0; 
+                  margin: 0; 
+       } 
+      #callout-table, #overview-table {display:block; position:relative; top:0; left:0;}
+      #callout-icon {display:block; position:absolute; top:-11px; left:-11px;}
+      #callout-icon-flag {display:block; position:absolute; top:-11px; left:-8px;}
+      #callout-table a {text-decoration: none; color: blue;}
+      #callout-table a:visited {text-decoration: none; color: blue;}
+      #overview-table a {text-decoration: none; color: black;}
+      #overview-table a:visited {text-decoration: none; color: black;}
+      #callout-table a:hover, #overview-table a:hover {text-decoration: underline;}       
+      p.help-url { margin: 20px 0 5px 0; text-align: center; font-size: 80%; text-decoration: none }      
+      #switchtoggles { text-align: right; padding: 0 2px 0 0; font-size: 90%; } 
+      .sync-toc { color: #ffffff; font-size: 8pt; font-weight: bold; display: none; }
+      .sync-toc a { color: #ffffff; text-decoration: none; font-weight: bold;}
+      .sync-toc a:visited { color: #ffffff; }
+      .sync-toc a:hover { text-decoration: underline; }
+  </style>
+   <noscript>
+   <style type="text/css">
+   html, body { overflow: auto; }
+   </style> 
+   </noscript>
+   <style type="text/css" media="print">
+      span.f_Heading1 { color: black; }
+      #idheader, #printheader img { display:none; }
+      #printheader { display: block; margin-top: 20px; }
+      #idcontent { margin-top: 10px; }
+   </style>   
+
+   <script type="text/javascript" src="jquery.js"></script>
+   <script type="text/javascript" src="helpman_settings.js"></script>
+   <script type="text/javascript" src="helpman_topicinit.js"></script>
+   <script type="text/javascript" src="nsh.js"></script>
+
+   <script type="text/javascript">
+     HMSyncTOC("index.html", "cond5.htm");
+   </script>
+</head>
+<body>
+
+
+<div id="printheader"><h1 class="p_Heading1"><span class="f_Heading1">Cond5</span></h1>
+</div>
+<div id="idheader">
+<div id="idheaderbg">
+<table style="width:100%;border:none;margin:0px;background:url(topic_header_background.jpg)" cellspacing="0" cellpadding="0"> 
+  <tr valign="bottom">
+    <td align="left" valign="bottom" class="topichead">
+   <p class="sync-toc">&lt;&lt; <a rel="nofollow" href="index.html?cond5.htm" target="_top">Click to Display Table of Contents</a> &gt;&gt;</p>
+   <p class="crumbs" id="idnav"><b>Navigation:</b>&nbsp;
+   
+   <a href="other_function.htm">Ostatní funkce</a>&nbsp;&gt;</p>
+   <h1 class="p_Heading1"><span class="f_Heading1">Cond5</span></h1>
+
+    </td>
+  </tr>  
+</table>
+<!-- The following code displays Expand All/Collapse All links  below the header in topics containing toggles -->
+  
+</div>
+</div>  
+
+<div id="idcontent"><div id="innerdiv">
+<!-- Ask Internet Explorer 6.users to update their obsolete and dangerous browser --> 
+<!--[if lt IE 7]><div style=' clear: both; height: 59px; padding:0 0 0 15px; position: relative;'><a href="http://windows.microsoft.com/en-US/internet-explorer/products/ie/home?ocid=ie6_countdown_bannercode"><img src="http://storage.ie6countdown.com/assets/100/images/banners/warning_bar_0000_us.jpg" border="0" height="42" width="820" alt="You are using an outdated browser. For a faster, safer browsing experience, upgrade for free today." /></a></div><![endif]-->
+
+<!--ZOOMRESTART-->
+<p>Funkce, která v omezené podobě nahrazuje příkaz IF.</p>
+<p>&nbsp;</p>
+<p class="p_Nadpisodstavce"><span class="f_Nadpisodstavce">Syntaxe:</span></p>
+<p class="p_Nazevfunkce"><span class="f_Parametryfunkce">function </span><span class="f_Nazevfunkce">Cond5(ACond1: </span><span class="f_Parametryfunkce">boolean</span><span class="f_Nazevfunkce">; AValue1: </span><span class="f_Parametryfunkce">Variant</span><span class="f_Nazevfunkce">; ACond2: </span><span class="f_Parametryfunkce">boolean</span><span class="f_Nazevfunkce">; AValue2: </span><span class="f_Parametryfunkce">Variant</span><span class="f_Nazevfunkce">; ACond3: </span><span class="f_Parametryfunkce">boolean</span><span class="f_Nazevfunkce">; AValue3: </span><span class="f_Parametryfunkce">Variant</span><span class="f_Nazevfunkce">; ACond4: </span><span class="f_Parametryfunkce">boolean</span><span class="f_Nazevfunkce">; AValue4: </span><span class="f_Parametryfunkce">Variant</span><span class="f_Nazevfunkce">; ACond5: </span><span class="f_Parametryfunkce">boolean</span><span class="f_Nazevfunkce">; AValue5: </span><span class="f_Parametryfunkce">Variant</span><span class="f_Nazevfunkce">; AValueElse: </span><span class="f_Parametryfunkce">Variant</span><span class="f_Nazevfunkce">): </span><span class="f_Parametryfunkce">Variant</span><span class="f_Nazevfunkce">;</span></p>
+<p class="p_Nazevfunkce"><span class="f_Nazevfunkce">&nbsp;</span></p>
+<p class="p_Nadpisodstavce"><span class="f_Nadpisodstavce">Parametry:</span></p>
+<p>ACond1 - první podmínka</p>
+<p>AValue1 - parametr, který je návratovou hodnotou, pokud je první podmínka rovna TRUE</p>
+<p>ACond2 - druhá podmínka, která se testuje, pokud je první podmínka rovna FALSE</p>
+<p>AValue2 - parametr, který je návratovou hodnotou, pokud je druhá podmínka rovna TRUE</p>
+<p>ACond3 - třetí podmínka, která se testuje, pokud je druhá podmínka rovna FALSE</p>
+<p>AValue3 - parametr, který je návratovou hodnotou, pokud je třetí podmínka rovna TRUE</p>
+<p>ACond4 - čtvrtá podmínka, která se testuje, pokud je třetí podmínka rovna FALSE</p>
+<p>AValue4 - parametr, který je návratovou hodnotou, pokud je čtvrtá podmínka rovna TRUE</p>
+<p>ACond5 - pátá podmínka, která se testuje, pokud je čtvrtá podmínka rovna FALSE</p>
+<p>AValue5 - parametr, který je návratovou hodnotou, pokud je pátá podmínka rovna TRUE</p>
+<p>AValueElse - parametr, který je návratovou hodnotou, pokud je pátá podmínka, resp. všechny podmínky, rovny FALSE</p>
+<p>&nbsp;</p>
+<p class="p_Nadpisodstavce"><span class="f_Nadpisodstavce">Result:</span></p>
+<p>Pokud je první podmínka ACond1 rovna True, je výsledkem funkce parametr AValue1, pokud je False, testuje se druhá podmínka ACond2.</p>
+<p>Pokud je druhá podmínka ACond2 rovna True, je výsledkem funkce parametr AValue2, pokud je False, testuje se třetí podmínka ACond3.</p>
+<p>Pokud je třetí podmínka ACond3 rovna True, je výsledkem funkce parametr AValue3, pokud je False, testuje se čtvrtá podmínka ACond4.</p>
+<p>Pokud je čtvrtá podmínka ACond4 rovna True, je výsledkem funkce parametr AValue4, pokud je False, testuje se pátá podmínka ACond5.</p>
+<p>Pokud je pátá podmínka ACond5 rovna True, je výsledkem funkce parametr AValue5, pokud je False, je výsledkem parametr AValueElse.</p>
+<p>&nbsp;</p>
+<p class="p_Nadpisodstavce"><span class="f_Nadpisodstavce">Příklad:</span></p>
+<p>Zápis:</p>
+<p>&nbsp;</p>
+<p class="p_Nazevfunkce"><span class="f_Nazevfunkce">Result := Cond5(a &gt; b, 1, a &gt; c, 2, a &gt; d, 3, a &gt; e, 4, a &gt; f, 5, 0);</span></p>
+<p>&nbsp;</p>
+<p>je stejný jako:</p>
+<p>&nbsp;</p>
+<p class="p_Nazevfunkce"><span class="f_Nazevfunkce">if a &gt; b then</span></p>
+<p class="p_Nazevfunkce"><span class="f_Nazevfunkce"> &nbsp;Result := 1</span></p>
+<p class="p_Nazevfunkce"><span class="f_Nazevfunkce">else if a &gt; c then</span></p>
+<p class="p_Nazevfunkce"><span class="f_Nazevfunkce"> &nbsp;Result := 2</span></p>
+<p class="p_Nazevfunkce"><span class="f_Nazevfunkce">else if a &gt; d then</span></p>
+<p class="p_Nazevfunkce"><span class="f_Nazevfunkce"> &nbsp;Result := 3</span></p>
+<p class="p_Nazevfunkce"><span class="f_Nazevfunkce">else if a &gt; e then</span></p>
+<p class="p_Nazevfunkce"><span class="f_Nazevfunkce"> &nbsp;Result := 4</span></p>
+<p class="p_Nazevfunkce"><span class="f_Nazevfunkce">else if a &gt; f then</span></p>
+<p class="p_Nazevfunkce"><span class="f_Nazevfunkce"> &nbsp;Result := 5</span></p>
+<p class="p_Nazevfunkce"><span class="f_Nazevfunkce">else</span></p>
+<p class="p_Nazevfunkce"><span class="f_Nazevfunkce"> &nbsp;Result := 0;</span></p>
+<p>&nbsp;</p>
+<p class="p_Nadpisodstavce"><span class="f_Nadpisodstavce">Unit</span></p>
+<p>FCommonUtils</p>
+<p><span style="color: #000000;">&nbsp;</span></p><!--ZOOMSTOP-->
+</div></div>
+<script type="text/javascript">
+
+var lastSlashPos = document.URL.lastIndexOf("/") > document.URL.lastIndexOf("\\") ? document.URL.lastIndexOf("/") : document.URL.lastIndexOf("\\");
+if( document.URL.substring(lastSlashPos + 1, lastSlashPos + 4).toLowerCase() != "~hh" )
+{
+ if (document.all) setTimeout(function() {nsrInit();},20); 
+    else nsrInit();
+ } 
+
+if ((!parent.hmNavigationFrame) && (parent.location) && (parent.location.href)) { $('.sync-toc').show();$('p.crumbs').hide();}
+
+</script>
+</body>
+</html>

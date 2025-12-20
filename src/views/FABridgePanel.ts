@@ -171,6 +171,15 @@ export class FABridgeTreeProvider implements vscode.TreeDataProvider<CategoryTre
 				new vscode.ThemeIcon('symbol-array'),
 				'Vloží údaj z FA ve formátu [:názevÚdaje:]'
 			),
+			new CommandTreeItem(
+				'Help (Ctrl+F1)',
+				{
+					command: 'faBridge.openHelp',
+					title: 'Help',
+				},
+				new vscode.ThemeIcon('book'),
+				'Otevře FA.chm help soubor s tématem podle slova pod kurzorem'
+			),
 		];
 
 		// Vytvoř kategorie

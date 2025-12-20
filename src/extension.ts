@@ -15,6 +15,7 @@ import {
 	vlozitUdajSBody,
 	vlozitUdajSDvojteckami,
 	hledatOdZacatku,
+	openHelp,
 } from './commands/sendCommand';
 import { getValidInstanceId, getFsBridgeWorkspaceRoot } from './utils/fsBridge';
 import { registerFABridgePanel } from './views/FABridgePanel';
@@ -319,6 +320,7 @@ export function activate(context: vscode.ExtensionContext) {
 		vscode.commands.registerCommand('faBridge.vlozitUdajSBody', vlozitUdajSBody),
 		vscode.commands.registerCommand('faBridge.vlozitUdajSDvojteckami', vlozitUdajSDvojteckami),
 		vscode.commands.registerCommand('faBridge.hledatOdZacatku', hledatOdZacatku),
+		vscode.commands.registerCommand('faBridge.openHelp', openHelp),
 		
 		// Commands pro historii souborů
 		vscode.commands.registerCommand('faBridge.compareWithPrevious', async () => {
@@ -430,6 +432,25 @@ export function activate(context: vscode.ExtensionContext) {
 	});
 	context.subscriptions.push(saveListener);
 
+	// Sleduj otevření souborů a zajisti focus v editoru při prvním otevření FA scriptu
+	const openDocumentListener = vscode.workspace.onDidOpenTextDocument(async (document) => {
+		// Zkontroluj, jestli je to FA script soubor
+		const fileName = path.basename(document.fileName);
+		if (!fileName.match(/^(script_|u_)[a-zA-Z0-9_]+\.pas$/)) {
+			return; // Není to FA script
+		}
+
+		// Počkej chvíli, aby se dokument stihl otevřít
+		await new Promise(resolve => setTimeout(resolve, 100));
+
+		// Zajisti, aby byl editor aktivní a měl focus
+		await vscode.window.showTextDocument(document, {
+			preview: false,
+			preserveFocus: false // Toto zajistí, že editor dostane focus
+		});
+	});
+	context.subscriptions.push(openDocumentListener);
+
 
 
 	// Automaticky otevři FA Bridge panel při každém startu (pokud je to povoleno v nastavení)
@@ -441,6 +462,23 @@ export function activate(context: vscode.ExtensionContext) {
 				await vscode.commands.executeCommand('workbench.view.extension.faBridgeContainer');
 				if (outputChannel) {
 					outputChannel.appendLine('[FA Bridge] FA Bridge panel automaticky otevřen');
+				}
+				
+				// Po otevření panelu počkej a pokud je otevřený FA script, nastavíme focus zpět na editor
+				await new Promise(resolve => setTimeout(resolve, 200));
+				const editor = vscode.window.activeTextEditor;
+				if (editor) {
+					const fileName = path.basename(editor.document.fileName);
+					if (fileName.match(/^(script_|u_)[a-zA-Z0-9_]+\.pas$/)) {
+						// Je otevřený FA script - nastav focus na editor
+						await vscode.window.showTextDocument(editor.document, {
+							preview: false,
+							preserveFocus: false
+						});
+						if (outputChannel) {
+							outputChannel.appendLine('[FA Bridge] Focus nastaven na FA script editor');
+						}
+					}
 				}
 			} catch (error) {
 				// Tichá chyba - pokud se nepodaří otevřít, není to kritické

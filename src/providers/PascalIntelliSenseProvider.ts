@@ -375,6 +375,13 @@ export class PascalIntelliSenseProvider implements vscode.CompletionItemProvider
 	}
 
 	/**
+	 * Zkontroluje, jestli funkce s daným názvem existuje v seznamu funkcí
+	 */
+	public hasFunction(name: string): boolean {
+		return this.functions.has(name.toLowerCase());
+	}
+
+	/**
 	 * Veřejná metoda pro Go To Definition (volaná z commandu F12)
 	 * Hledá pouze v aktuálním souboru, ne v library souborech
 	 */
