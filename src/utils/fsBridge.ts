@@ -4,8 +4,19 @@ import * as vscode from 'vscode';
 import { execSync } from 'child_process';
 
 /**
+ * Zkontroluje, jestli je cesta worktree složka (Cursor nebo Git)
+ */
+function isWorktreePath(folderPath: string): boolean {
+	return folderPath.includes('.cursor\\worktrees') || 
+	       folderPath.includes('.cursor/worktrees') ||
+	       folderPath.includes('.git\\worktrees') ||
+	       folderPath.includes('.git/worktrees');
+}
+
+/**
  * Najde workspace folder, který obsahuje .fsbridge složku
  * V multi-root workspace může být .fsbridge v sekundárním workspace
+ * DŮLEŽITÉ: Ignoruje worktrees a jiné složky mimo workspace
  */
 export function getFsBridgeWorkspaceRoot(): string | null {
 	const workspaceFolders = vscode.workspace.workspaceFolders;
@@ -15,9 +26,17 @@ export function getFsBridgeWorkspaceRoot(): string | null {
 
 	// Prohledej všechny workspace folders a najdi ten, který obsahuje .fsbridge
 	for (const folder of workspaceFolders) {
-		const fsbridgePath = path.join(folder.uri.fsPath, '.fsbridge');
+		const folderPath = folder.uri.fsPath;
+		
+		// DŮLEŽITÉ: Ignoruj worktrees a jiné složky mimo workspace
+		if (isWorktreePath(folderPath)) {
+			console.log(`[FA Bridge] Ignoruji worktree složku: ${folderPath}`);
+			continue;
+		}
+		
+		const fsbridgePath = path.join(folderPath, '.fsbridge');
 		if (fs.existsSync(fsbridgePath)) {
-			return folder.uri.fsPath;
+			return folderPath;
 		}
 	}
 
@@ -25,18 +44,34 @@ export function getFsBridgeWorkspaceRoot(): string | null {
 	// V multi-root workspace je sekundární workspace ten s názvem "Common Files"
 	// nebo druhý workspace folder (pokud máme více než jeden)
 	if (workspaceFolders.length > 1) {
-		// Najdi workspace folder s názvem "Common Files"
+		// Najdi workspace folder s názvem "Common Files" (ale ne worktree)
 		for (const folder of workspaceFolders) {
+			const folderPath = folder.uri.fsPath;
+			if (isWorktreePath(folderPath)) {
+				continue;
+			}
 			if (folder.name === 'Common Files') {
-				return folder.uri.fsPath;
+				return folderPath;
 			}
 		}
-		// Pokud není "Common Files", použij druhý workspace folder (sekundární)
-		return workspaceFolders[1].uri.fsPath;
+		// Pokud není "Common Files", použij druhý workspace folder (sekundární), ale ne worktree
+		for (let i = 1; i < workspaceFolders.length; i++) {
+			const folderPath = workspaceFolders[i].uri.fsPath;
+			if (!isWorktreePath(folderPath)) {
+				return folderPath;
+			}
+		}
 	}
 
-	// Fallback: použij první workspace folder (pro zpětnou kompatibilitu)
-	return workspaceFolders[0]?.uri.fsPath || null;
+	// Fallback: použij první workspace folder (pro zpětnou kompatibilitu), ale ne worktree
+	for (const folder of workspaceFolders) {
+		const folderPath = folder.uri.fsPath;
+		if (!isWorktreePath(folderPath)) {
+			return folderPath;
+		}
+	}
+
+	return null;
 }
 
 /**
@@ -341,3 +376,4 @@ export async function writeFACommand(command: string): Promise<void> {
 		throw error;
 	}
 }
+

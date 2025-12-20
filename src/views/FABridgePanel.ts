@@ -91,7 +91,7 @@ export class FABridgeTreeProvider implements vscode.TreeDataProvider<CategoryTre
 				'Aktivuje okno FORM asistenta'
 			),
 		new CommandTreeItem(
-				'Vložit název údaje (Alt+X, Ctrl+Shift+V)',
+				'Vložit název údaje (Alt+X, Shift+Ctrl+V)',
 				{
 					command: 'faBridge.vlozitNazevUdaje',
 					title: 'Vložit název údaje',
@@ -178,7 +178,16 @@ export class FABridgeTreeProvider implements vscode.TreeDataProvider<CategoryTre
 					title: 'Help',
 				},
 				new vscode.ThemeIcon('book'),
-				'Otevře FA.chm help soubor s tématem podle slova pod kurzorem'
+				'Otevře HTML help s tématem podle slova pod kurzorem'
+			),
+			new CommandTreeItem(
+				'Hledat v TextSearch (Shift+Ctrl+F1)',
+				{
+					command: 'faBridge.openTextSearch',
+					title: 'Hledat v TextSearch',
+				},
+				new vscode.ThemeIcon('search'),
+				'Otevře TextSearch.exe se slovem pod kurzorem'
 			),
 		];
 

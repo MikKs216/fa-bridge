@@ -761,6 +761,67 @@ export async function hledatOdZacatku(): Promise<void> {
 let helpPanel: vscode.WebviewPanel | undefined = undefined;
 
 /**
+ * Otevře TextSearch.exe se slovem pod kurzorem (Ctrl+Shift+F1)
+ */
+export async function openTextSearch(): Promise<void> {
+	try {
+		const editor = vscode.window.activeTextEditor;
+		if (!editor) {
+			vscode.window.showErrorMessage('✗ Žádný editor otevřen');
+			return;
+		}
+
+		// Získej slovo pod kurzorem
+		const position = editor.selection.active;
+		const wordRange = editor.document.getWordRangeAtPosition(position);
+		
+		let searchWord = '';
+		
+		if (wordRange) {
+			searchWord = editor.document.getText(wordRange);
+		}
+
+		if (!searchWord) {
+			vscode.window.showErrorMessage('✗ Kurzor není na žádném slově');
+			return;
+		}
+
+		// Najdi workspace root
+		const workspaceRoot = getFsBridgeWorkspaceRoot();
+		if (!workspaceRoot) {
+			throw new Error('Žádný workspace otevřen nebo .fsbridge složka nenalezena');
+		}
+
+		// Cesta k TextSearch.exe v _source složce
+		const textSearchPath = path.join(workspaceRoot, '_source', 'TextSearch.exe');
+
+		if (!fs.existsSync(textSearchPath)) {
+			vscode.window.showErrorMessage(`✗ TextSearch.exe nebyl nalezen: ${textSearchPath}`);
+			return;
+		}
+
+		// Spusť TextSearch.exe s parametrem hledaného slova
+		// Parametr musí být v uvozovkách pro správné zpracování
+		const command = `"${textSearchPath}" "${searchWord}"`;
+		
+		child_process.exec(command, (error, stdout, stderr) => {
+			if (error) {
+				console.error(`[TextSearch] Chyba při spuštění: ${error.message}`);
+				if (stderr) {
+					console.error(`[TextSearch] Stderr: ${stderr}`);
+				}
+				vscode.window.showErrorMessage(`✗ Chyba při spuštění TextSearch: ${error.message}`);
+			} else {
+				console.log(`[TextSearch] Spuštěno: ${command}`);
+			}
+		});
+	} catch (error) {
+		const msg = error instanceof Error ? error.message : String(error);
+		vscode.window.showErrorMessage(`✗ Chyba: ${msg}`);
+	}
+}
+
+/**
  * Otevře HTML help soubor s tématem podle slova pod kurzorem (Ctrl+F1)
  * Používá HTML help ze složky _source/fahlp místo FA.chm
  */

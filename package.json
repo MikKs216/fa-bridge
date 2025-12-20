@@ -3,7 +3,7 @@
   "displayName": "FA Bridge",
   "publisher": "fa-dev",
   "description": "Propojení Cursor/VS Code s editorem FormStudio (FA)",
-  "version": "0.8.6",
+  "version": "0.8.9",
   "repository": {
     "type": "git",
     "url": "https://github.com/fa-dev/fa-bridge"
@@ -107,7 +107,13 @@
         "command": "faBridge.openHelp",
         "title": "FA Bridge: Help (Ctrl+F1)",
         "category": "FA Bridge",
-        "description": "Otevře FA.chm help soubor s tématem podle slova pod kurzorem"
+        "description": "Otevře HTML help s tématem podle slova pod kurzorem"
+      },
+      {
+        "command": "faBridge.openTextSearch",
+        "title": "FA Bridge: Hledat v TextSearch (Shift+Ctrl+F1)",
+        "category": "FA Bridge",
+        "description": "Otevře TextSearch.exe se slovem pod kurzorem"
       },
       {
         "command": "faBridge.showIntelliSenseStats",
@@ -360,6 +366,12 @@
         "command": "faBridge.openHelp",
         "key": "ctrl+f1",
         "mac": "cmd+f1",
+        "when": "editorTextFocus && editorLangId == 'pascal'"
+      },
+      {
+        "command": "faBridge.openTextSearch",
+        "key": "ctrl+shift+f1",
+        "mac": "cmd+shift+f1",
         "when": "editorTextFocus && editorLangId == 'pascal'"
       }
     ]

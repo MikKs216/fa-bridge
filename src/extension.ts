@@ -16,6 +16,7 @@ import {
 	vlozitUdajSDvojteckami,
 	hledatOdZacatku,
 	openHelp,
+	openTextSearch,
 } from './commands/sendCommand';
 import { getValidInstanceId, getFsBridgeWorkspaceRoot } from './utils/fsBridge';
 import { registerFABridgePanel } from './views/FABridgePanel';
@@ -30,6 +31,16 @@ import { HistoryPanel } from './historyPanel';
 import { HistoryProvider, HistoryItem } from './historyProvider';
 
 let outputChannel: vscode.OutputChannel | null = null;
+
+/**
+ * Zkontroluje, jestli je cesta worktree složka (Cursor nebo Git)
+ */
+function isWorktreePath(folderPath: string): boolean {
+	return folderPath.includes('.cursor\\worktrees') || 
+	       folderPath.includes('.cursor/worktrees') ||
+	       folderPath.includes('.git\\worktrees') ||
+	       folderPath.includes('.git/worktrees');
+}
 
 /**
  * Smaže famsgstate.json pokud existuje
@@ -61,6 +72,7 @@ function deleteFamsgState(outputChannel: vscode.OutputChannel | null): void {
 
 /**
  * Zkontroluje, jestli workspace obsahuje .fsbridge složku nebo soubor
+ * DŮLEŽITÉ: Ignoruje worktrees složky
  */
 function hasFsBridgeInWorkspace(): boolean {
 	const workspaceFolders = vscode.workspace.workspaceFolders;
@@ -68,9 +80,16 @@ function hasFsBridgeInWorkspace(): boolean {
 		return false;
 	}
 
-	// Zkontroluj každý workspace folder
+	// Zkontroluj každý workspace folder (ale ignoruj worktrees)
 	for (const folder of workspaceFolders) {
-		const fsbridgePath = path.join(folder.uri.fsPath, '.fsbridge');
+		const folderPath = folder.uri.fsPath;
+		
+		// Ignoruj worktrees složky
+		if (isWorktreePath(folderPath)) {
+			continue;
+		}
+		
+		const fsbridgePath = path.join(folderPath, '.fsbridge');
 		// Zkontroluj jestli existuje jako soubor nebo složka
 		if (fs.existsSync(fsbridgePath)) {
 			return true;
@@ -233,12 +252,25 @@ export function activate(context: vscode.ExtensionContext) {
 	}
 
 	// Zkontroluj, jestli workspace obsahuje .fsbridge
+	// DŮLEŽITÉ: Ignoruj worktrees složky
 	if (!hasFsBridgeInWorkspace()) {
 		// Workspace neobsahuje .fsbridge - doplněk se neaktivuje
 		// Nastav kontextovou proměnnou na false, aby keybindings nefungovaly
 		vscode.commands.executeCommand('setContext', 'faBridge.isActive', false);
 		console.log('[FA Bridge] Extension neaktivována - workspace neobsahuje .fsbridge');
 		return;
+	}
+
+	// DODATEČNÁ KONTROLA: Zkontroluj, jestli není aktivní worktree složka
+	const workspaceFolders = vscode.workspace.workspaceFolders;
+	if (workspaceFolders && workspaceFolders.length > 0) {
+		const activeFolder = workspaceFolders[0];
+		const activePath = activeFolder.uri.fsPath;
+		if (isWorktreePath(activePath)) {
+			vscode.commands.executeCommand('setContext', 'faBridge.isActive', false);
+			console.log('[FA Bridge] Extension neaktivována - aktivní workspace je worktree složka');
+			return;
+		}
 	}
 
 	// Nastav kontextovou proměnnou pro keybindings (aby fungovaly jen když je doplněk aktivní)
@@ -321,6 +353,7 @@ export function activate(context: vscode.ExtensionContext) {
 		vscode.commands.registerCommand('faBridge.vlozitUdajSDvojteckami', vlozitUdajSDvojteckami),
 		vscode.commands.registerCommand('faBridge.hledatOdZacatku', hledatOdZacatku),
 		vscode.commands.registerCommand('faBridge.openHelp', openHelp),
+		vscode.commands.registerCommand('faBridge.openTextSearch', openTextSearch),
 		
 		// Commands pro historii souborů
 		vscode.commands.registerCommand('faBridge.compareWithPrevious', async () => {

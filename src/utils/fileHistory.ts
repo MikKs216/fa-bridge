@@ -55,6 +55,29 @@ export async function saveFileHistory(filePath: string): Promise<string | null> 
 			return null; // Není FA script, neukládat historii
 		}
 
+		// DŮLEŽITÉ: Zkontroluj, jestli je soubor ve workspace
+		// Pokud je soubor mimo workspace (např. v worktrees), neukládat historii
+		const workspaceFolders = vscode.workspace.workspaceFolders;
+		if (!workspaceFolders || workspaceFolders.length === 0) {
+			return null;
+		}
+
+		// Zkontroluj, jestli je soubor v některém z workspace folders
+		const normalizedFilePath = path.normalize(filePath);
+		let isInWorkspace = false;
+		for (const folder of workspaceFolders) {
+			const folderPath = path.normalize(folder.uri.fsPath);
+			if (normalizedFilePath.startsWith(folderPath + path.sep) || normalizedFilePath === folderPath) {
+				isInWorkspace = true;
+				break;
+			}
+		}
+
+		if (!isInWorkspace) {
+			console.log(`[FA Bridge] Soubor není ve workspace, historie se neukládá: ${filePath}`);
+			return null;
+		}
+
 		// Zkontroluj, jestli soubor existuje
 		if (!fs.existsSync(filePath)) {
 			return null;
@@ -96,6 +119,27 @@ export async function saveFileHistory(filePath: string): Promise<string | null> 
  */
 export function getFileHistoryVersions(filePath: string): string[] {
 	try {
+		// DŮLEŽITÉ: Zkontroluj, jestli je soubor ve workspace
+		const workspaceFolders = vscode.workspace.workspaceFolders;
+		if (!workspaceFolders || workspaceFolders.length === 0) {
+			return [];
+		}
+
+		// Zkontroluj, jestli je soubor v některém z workspace folders
+		const normalizedFilePath = path.normalize(filePath);
+		let isInWorkspace = false;
+		for (const folder of workspaceFolders) {
+			const folderPath = path.normalize(folder.uri.fsPath);
+			if (normalizedFilePath.startsWith(folderPath + path.sep) || normalizedFilePath === folderPath) {
+				isInWorkspace = true;
+				break;
+			}
+		}
+
+		if (!isInWorkspace) {
+			return [];
+		}
+
 		const fileDir = path.dirname(filePath);
 		const historyDir = path.join(fileDir, '.history');
 		
