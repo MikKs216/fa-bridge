@@ -10,13 +10,13 @@ export class BeginEndMatcher {
 	private disposables: vscode.Disposable[] = [];
 
 	constructor() {
-		// Vytvoř decoration type pro zvýraznění
+		// Vytvoř decoration type pro zvýraznění begin/end páru (zelená barva)
 		this.decorationType = vscode.window.createTextEditorDecorationType({
-			backgroundColor: new vscode.ThemeColor('editor.findMatchBackground'),
-			borderColor: new vscode.ThemeColor('editor.findMatchBorder'),
+			backgroundColor: new vscode.ThemeColor('editorBracketMatch.background'),
+			borderColor: new vscode.ThemeColor('editorBracketMatch.border'),
 			borderWidth: '1px',
 			borderStyle: 'solid',
-			overviewRulerColor: new vscode.ThemeColor('editor.findMatchHighlight'),
+			overviewRulerColor: new vscode.ThemeColor('editorBracketMatch.border'),
 			overviewRulerLane: vscode.OverviewRulerLane.Center
 		});
 

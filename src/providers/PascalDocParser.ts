@@ -11,6 +11,10 @@ export interface FunctionDoc {
 	}>;
 	returns?: string;                 // <returns> obsah (pouze pro funkce)
 	isFunction: boolean;              // true = function, false = procedure
+	lineNumber: number;              // Číslo řádku, kde začíná definice (0-based) - pro hover/dokumentaci
+	filePath: string;                // Cesta k souboru s dokumentací (LibFADoc)
+	implFilePath?: string;           // Cesta k implementačnímu souboru (FAdelphi) - pro Go To Definition
+	implLineNumber?: number;         // Číslo řádku implementace (0-based) - pro Go To Definition
 }
 
 /**
@@ -18,7 +22,7 @@ export interface FunctionDoc {
  */
 export class PascalDocParser {
 	/**
-	 * Asynchronně parsuje FsUtils.pas a extrahuje dokumentované funkce/procedury
+	 * Asynchronně parsuje soubor a extrahuje dokumentované funkce/procedury
 	 */
 	async parseAsync(filePath: string): Promise<FunctionDoc[]> {
 		return new Promise<FunctionDoc[]>((resolve, reject) => {
@@ -29,7 +33,7 @@ export class PascalDocParser {
 				}
 
 				const content = fs.readFileSync(filePath, 'utf-8');
-				const functions = this.parseContent(content);
+				const functions = this.parseContent(content, filePath);
 				resolve(functions);
 			} catch (error) {
 				reject(error);
@@ -40,11 +44,13 @@ export class PascalDocParser {
 	/**
 	 * Parsuje obsah souboru a extrahuje dokumentované funkce/procedury
 	 */
-	private parseContent(content: string): FunctionDoc[] {
+	private parseContent(content: string, filePath: string): FunctionDoc[] {
 		const functions: FunctionDoc[] = [];
 		const lines = content.split(/\r?\n/);
+		const parsedLines = new Set<number>(); // Sleduj, které řádky už byly zpracovány
 
 		let i = 0;
+		// První průchod: hledej funkce s /// dokumentací
 		while (i < lines.length) {
 			// Hledej /// komentáře
 			if (lines[i].trim().startsWith('///')) {
@@ -89,8 +95,11 @@ export class PascalDocParser {
 								summary: doc.summary,
 								parameters: doc.parameters,
 								returns: doc.returns,
-								isFunction: funcType === 'function'
+								isFunction: funcType === 'function',
+								lineNumber: i, // Číslo řádku, kde začíná definice (0-based)
+								filePath: filePath // Cesta k souboru
 							});
+							parsedLines.add(i); // Označ tento řádek jako zpracovaný
 						}
 
 						// Přeskoč na konec deklarace (hledej středník nebo začátek další funkce)
@@ -105,6 +114,36 @@ export class PascalDocParser {
 				}
 			}
 			i++;
+		}
+
+		// Druhý průchod: najdi všechny funkce/procedury BEZ /// dokumentace
+		for (let j = 0; j < lines.length; j++) {
+			if (parsedLines.has(j)) {
+				continue; // Už zpracováno v prvním průchodu
+			}
+			
+			const line = lines[j].trim();
+			// Hledej řádky začínající na function nebo procedure
+			const funcMatch = line.match(/^(function|procedure)\s+(\w+)/i);
+			
+			if (funcMatch) {
+				const funcType = funcMatch[1].toLowerCase();
+				const funcName = funcMatch[2];
+				const signature = this.parseSignature(lines, j);
+				
+				// Přidej funkci bez dokumentace
+				functions.push({
+					name: funcName,
+					signature: signature,
+					summary: '', // Bez dokumentace
+					parameters: [],
+					returns: undefined,
+					isFunction: funcType === 'function',
+					lineNumber: j,
+					filePath: filePath
+				});
+				parsedLines.add(j);
+			}
 		}
 
 		return functions;

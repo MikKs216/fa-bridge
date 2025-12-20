@@ -174,6 +174,9 @@ type
     // Kontrola, jestli je script otevřený v Cursoru
     function IsScriptOpenInCursor: Boolean;
     
+    // Hledání podle aktuálního údaje - zapíše field name, otevře/aktivuje Cursor a pošle příkaz
+    function FindFieldInScript(const FormId: string; const Code: AnsiString; const FieldName: string): Boolean;
+    
     // Vyprázdní FCurrentFile a FCurrentFormId (např. při zavření definice)
     procedure ClearCurrentFile;
     
@@ -2250,6 +2253,53 @@ begin
   
   // Timeout - script pravděpodobně není otevřený
   Result := False;
+end;
+
+function TCursorBridge.FindFieldInScript(const FormId: string; const Code: AnsiString; const FieldName: string): Boolean;
+var
+  JumpLine, JumpCol: Integer;
+  IsOpen: Boolean;
+begin
+  Result := False;
+  
+  // Kontrola vstupních parametrů
+  if (FormId = '') or (FieldName = '') then
+    Exit;
+  
+  // Zapiš aktuální název fieldu do fafield.txt
+  WriteFieldText(FieldName);
+  
+  // Nastav aktuální FormId a soubor
+  FCurrentFormId := FormId;
+  FCurrentFile := GetScriptFileName(FormId);
+  
+  // Nastav pozici skoku (není potřeba, ale pro konzistenci)
+  JumpLine := 0;
+  JumpCol := 0;
+  
+  // Zkontroluj, jestli je script už otevřený v Cursoru
+  IsOpen := False;
+  if (FCurrentFile <> '') and (FCurrentFormId = FormId) then
+  begin
+    // Script byl už dříve otevřený - zkontroluj, jestli je stále otevřený
+    IsOpen := IsScriptOpenInCursor;
+  end;
+  
+  if not IsOpen then
+  begin
+    // Script není otevřený - předat script a otevřít
+    Result := StartEditing(FormId, Code, JumpLine, JumpCol);
+  end
+  else
+  begin
+    // Script je otevřený - jen aktivovat Cursor do popředí
+    ActivateCursorWindow;
+    Result := True;
+  end;
+  
+  // Pošli příkaz do Cursor extension (i když se nepodařilo otevřít, zkus poslat příkaz)
+  if Result or IsOpen then
+    WriteFACommandToFile('Hledat_podle_akt_udaje');
 end;
 
 // ============================================================================

@@ -2,6 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { getFsBridgeWorkspaceRoot, getFacmdPath, getFAInstanceDir, extractFormIdFromFileName } from './fsBridge';
+import { hledatPodleAktUdaje } from '../commands/sendCommand';
 
 /**
  * Sleduje facmd.txt a zpracovává příkazy z FA
@@ -190,6 +191,10 @@ export class CommandWatcher implements vscode.Disposable {
 		}
 		if (command === 'check_if_open') {
 			await this.handleCheckIfOpen(facmdPath);
+			return true; // Příkaz byl zpracován
+		}
+		if (command === 'Hledat_podle_akt_udaje') {
+			await hledatPodleAktUdaje();
 			return true; // Příkaz byl zpracován
 		}
 		// Zde můžeme přidat další příkazy v budoucnu

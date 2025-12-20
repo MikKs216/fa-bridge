@@ -5,52 +5,76 @@ import { PascalDocParser, FunctionDoc } from './PascalDocParser';
 
 /**
  * IntelliSense provider pro Pascal - poskytuje Completion a Hover
+ * Go To Definition je dostupné pouze přes F12 a pouze v rámci editovaného souboru
  */
 export class PascalIntelliSenseProvider implements vscode.CompletionItemProvider, vscode.HoverProvider {
 	private functions: Map<string, FunctionDoc> = new Map();
 	private isParsing: boolean = false;
 	private parsePromise: Promise<void> | null = null;
-	private fsUtilsPath: string | null = null;
+	private docFiles: Map<string, string> = new Map(); // Dokumentační soubory (LibFADoc) - název -> cesta
+	private implFiles: Map<string, string> = new Map(); // Implementační soubory (FAdelphi) - název -> cesta
 	private parser: PascalDocParser;
 	private outputChannel: vscode.OutputChannel;
 
 	constructor(private context: vscode.ExtensionContext, outputChannel: vscode.OutputChannel) {
 		this.parser = new PascalDocParser();
 		this.outputChannel = outputChannel;
-		this.findFsUtilsFile();
+		this.findLibraryFiles();
 		this.parseAsync();
 	}
 
 	/**
-	 * Vyhledá FsUtils.pas v workspace
+	 * Vyhledá dokumentační soubory (LibFADoc) a implementační soubory (_source) v workspace
 	 */
-	private findFsUtilsFile(): void {
+	private findLibraryFiles(): void {
 		const workspaceFolders = vscode.workspace.workspaceFolders;
 		if (!workspaceFolders || workspaceFolders.length === 0) {
 			return;
 		}
 
-		// Prohledej všechny workspace folders
-		for (const folder of workspaceFolders) {
-			const fsUtilsPath = this.findFileInDirectory(folder.uri.fsPath, 'FsUtils.pas');
-			if (fsUtilsPath) {
-				this.fsUtilsPath = fsUtilsPath;
-				this.outputChannel.appendLine(`[Pascal IntelliSense] Found FsUtils.pas at: ${fsUtilsPath}`);
-				console.log(`[Pascal IntelliSense] Found FsUtils.pas at: ${fsUtilsPath}`);
-				return;
+		// Soubory pro dokumentaci (LibFADoc v extension) a implementaci (_source v workspace)
+		const docFilesToFind = ['FsUtils.pas', 'FScriptUtils.pas', 'FCommonUtils.pas'];
+		const implFilesToFind = ['FScriptUtils.pas', 'FCommonUtils.pas'];
+
+		// 1. Hledej dokumentační soubory v LibFADoc (v extension path)
+		const extensionPath = this.context.extensionPath;
+		const libFADocPath = path.join(extensionPath, 'LibFADoc');
+		
+		for (const filename of docFilesToFind) {
+			const docFilePath = path.join(libFADocPath, filename);
+			if (fs.existsSync(docFilePath)) {
+				this.docFiles.set(filename, docFilePath);
+				this.outputChannel.appendLine(`[Pascal IntelliSense] Found doc file: ${filename} at ${docFilePath}`);
+				console.log(`[Pascal IntelliSense] Found doc file: ${filename} at ${docFilePath}`);
 			}
 		}
 
-		// Pokud není nalezen, zkus relativně k extension path (pro testování)
-		const extensionPath = this.context.extensionPath;
-		const fallbackPath = path.join(extensionPath, 'LibFADoc', 'FsUtils.pas');
-		if (fs.existsSync(fallbackPath)) {
-			this.fsUtilsPath = fallbackPath;
-			this.outputChannel.appendLine(`[Pascal IntelliSense] Using fallback path: ${fallbackPath}`);
-			console.log(`[Pascal IntelliSense] Using fallback path: ${fallbackPath}`);
-		} else {
-			this.outputChannel.appendLine('[Pascal IntelliSense] WARNING: FsUtils.pas not found in workspace');
-			console.warn('[Pascal IntelliSense] FsUtils.pas not found in workspace');
+		// 2. Hledej implementační soubory ve _source (v workspace)
+		for (const folder of workspaceFolders) {
+			const sourcePath = path.join(folder.uri.fsPath, '_source');
+			if (fs.existsSync(sourcePath)) {
+				for (const filename of implFilesToFind) {
+					if (this.implFiles.has(filename)) {
+						continue; // Už nalezeno
+					}
+					const implFilePath = path.join(sourcePath, filename);
+					if (fs.existsSync(implFilePath)) {
+						this.implFiles.set(filename, implFilePath);
+						this.outputChannel.appendLine(`[Pascal IntelliSense] Found impl file: ${filename} at ${implFilePath}`);
+						console.log(`[Pascal IntelliSense] Found impl file: ${filename} at ${implFilePath}`);
+					}
+				}
+			}
+		}
+
+		if (this.docFiles.size === 0) {
+			this.outputChannel.appendLine('[Pascal IntelliSense] WARNING: No documentation files found in LibFADoc');
+			console.warn('[Pascal IntelliSense] WARNING: No documentation files found');
+		}
+
+		if (this.implFiles.size === 0) {
+			this.outputChannel.appendLine('[Pascal IntelliSense] WARNING: No implementation files found in _source');
+			console.warn('[Pascal IntelliSense] WARNING: No implementation files found');
 		}
 	}
 
@@ -82,10 +106,10 @@ export class PascalIntelliSenseProvider implements vscode.CompletionItemProvider
 	}
 
 	/**
-	 * Asynchronně parsuje FsUtils.pas (neblokuje)
+	 * Asynchronně parsuje dokumentační a implementační soubory (neblokuje)
 	 */
 	private parseAsync(): void {
-		if (!this.fsUtilsPath) {
+		if (this.docFiles.size === 0 && this.implFiles.size === 0) {
 			return;
 		}
 
@@ -95,15 +119,80 @@ export class PascalIntelliSenseProvider implements vscode.CompletionItemProvider
 
 		this.isParsing = true;
 		
-		this.outputChannel.appendLine(`[Pascal IntelliSense] Starting to parse: ${this.fsUtilsPath}`);
-		this.parsePromise = this.parser.parseAsync(this.fsUtilsPath)
-			.then((functions) => {
-				this.functions.clear();
-				for (const func of functions) {
-					this.functions.set(func.name.toLowerCase(), func);
+		// FÁZE 1: Parsuj dokumentační soubory (LibFADoc)
+		const docParsePromises: Promise<void>[] = [];
+		
+		for (const [filename, filePath] of this.docFiles.entries()) {
+			this.outputChannel.appendLine(`[Pascal IntelliSense] Parsing doc file: ${filePath}`);
+			const promise = this.parser.parseAsync(filePath)
+				.then((functions) => {
+					let addedCount = 0;
+					for (const func of functions) {
+						const key = func.name.toLowerCase();
+						this.functions.set(key, func);
+						addedCount++;
+						// Debug: zobraz prvních 5 funkcí
+						if (addedCount <= 5) {
+							this.outputChannel.appendLine(`[Pascal IntelliSense] Added doc: ${func.name} from ${filename} at line ${func.lineNumber + 1}`);
+						}
+					}
+					this.outputChannel.appendLine(`[Pascal IntelliSense] ✓ Parsed ${functions.length} functions from doc ${filename} (added ${addedCount})`);
+				})
+				.catch((error) => {
+					const errorMsg = error instanceof Error ? error.message : String(error);
+					this.outputChannel.appendLine(`[Pascal IntelliSense] ✗ Parse error for doc ${filename}: ${errorMsg}`);
+				});
+			docParsePromises.push(promise);
+		}
+
+		// FÁZE 2: Po dokončení parsování dokumentace, parsuj implementační soubory
+		this.parsePromise = Promise.all(docParsePromises)
+			.then(() => {
+				this.outputChannel.appendLine(`[Pascal IntelliSense] ✓ Documentation parsed, now parsing implementations...`);
+				
+				const implParsePromises: Promise<void>[] = [];
+				
+				for (const [filename, filePath] of this.implFiles.entries()) {
+					this.outputChannel.appendLine(`[Pascal IntelliSense] Parsing impl file: ${filePath}`);
+					const promise = this.parser.parseAsync(filePath)
+						.then((functions) => {
+							let matchedCount = 0;
+							for (const implFunc of functions) {
+								const key = implFunc.name.toLowerCase();
+								const existingFunc = this.functions.get(key);
+								
+								if (existingFunc) {
+									// Spáruj implementaci s dokumentací
+									existingFunc.implFilePath = implFunc.filePath;
+									existingFunc.implLineNumber = implFunc.lineNumber;
+									matchedCount++;
+									// Debug: zobraz prvních 5 spárování
+									if (matchedCount <= 5) {
+										this.outputChannel.appendLine(`[Pascal IntelliSense] Matched impl: ${implFunc.name} at ${filename}:${implFunc.lineNumber + 1}`);
+									}
+								} else {
+									// Funkce není v dokumentaci - přidej ji pouze s implementací
+									this.functions.set(key, {
+										...implFunc,
+										implFilePath: implFunc.filePath,
+										implLineNumber: implFunc.lineNumber
+									});
+								}
+							}
+							this.outputChannel.appendLine(`[Pascal IntelliSense] ✓ Parsed ${functions.length} functions from impl ${filename} (matched ${matchedCount})`);
+						})
+						.catch((error) => {
+							const errorMsg = error instanceof Error ? error.message : String(error);
+							this.outputChannel.appendLine(`[Pascal IntelliSense] ✗ Parse error for impl ${filename}: ${errorMsg}`);
+						});
+					implParsePromises.push(promise);
 				}
-				this.outputChannel.appendLine(`[Pascal IntelliSense] ✓ Parsed ${functions.length} documented functions`);
-				console.log(`[Pascal IntelliSense] Parsed ${functions.length} documented functions`);
+				
+				return Promise.all(implParsePromises);
+			})
+			.then(() => {
+				this.outputChannel.appendLine(`[Pascal IntelliSense] ✓ Total parsed ${this.functions.size} functions`);
+				console.log(`[Pascal IntelliSense] Total parsed ${this.functions.size} functions`);
 				this.isParsing = false;
 			})
 			.catch((error) => {
@@ -118,6 +207,7 @@ export class PascalIntelliSenseProvider implements vscode.CompletionItemProvider
 	 * Reload dokumentace při změně souboru
 	 */
 	public reload(): void {
+		this.functions.clear();
 		this.parseAsync();
 	}
 
@@ -196,12 +286,20 @@ export class PascalIntelliSenseProvider implements vscode.CompletionItemProvider
 		const markdown = new vscode.MarkdownString();
 		markdown.isTrusted = true;
 
-		// Záhlaví
+		// Záhlaví s názvem funkce
 		const typeStr = funcDoc.isFunction ? 'function' : 'procedure';
 		markdown.appendMarkdown(`**${typeStr}** \`${funcDoc.name}\`\n\n`);
 
-		// Summary
-		markdown.appendMarkdown(`${funcDoc.summary}\n\n`);
+		// Pokud má funkce dokumentaci, zobraz ji
+		if (funcDoc.summary) {
+			markdown.appendMarkdown(`${funcDoc.summary}\n\n`);
+		}
+
+		// Pokud nemá dokumentaci, ale má signaturu, zobraz signaturu
+		if (!funcDoc.summary && funcDoc.signature) {
+			markdown.appendCodeblock(funcDoc.signature, 'pascal');
+			markdown.appendMarkdown('\n');
+		}
 
 		// Parameters
 		if (funcDoc.parameters.length > 0) {
@@ -227,7 +325,16 @@ export class PascalIntelliSenseProvider implements vscode.CompletionItemProvider
 		const markdown = new vscode.MarkdownString();
 		markdown.isTrusted = true;
 
-		markdown.appendMarkdown(`${func.summary}\n\n`);
+		// Pokud má funkce dokumentaci, zobraz ji
+		if (func.summary) {
+			markdown.appendMarkdown(`${func.summary}\n\n`);
+		}
+
+		// Pokud nemá dokumentaci, ale má signaturu, zobraz signaturu
+		if (!func.summary && func.signature) {
+			markdown.appendCodeblock(func.signature, 'pascal');
+			markdown.appendMarkdown('\n');
+		}
 
 		if (func.parameters.length > 0) {
 			markdown.appendMarkdown('**Parameters:**\n');
@@ -245,13 +352,166 @@ export class PascalIntelliSenseProvider implements vscode.CompletionItemProvider
 	}
 
 	/**
-	 * Zkontroluje, jestli je soubor FsUtils.pas
+	 * Zkontroluje, jestli je soubor některý z dokumentačních nebo implementačních souborů
 	 */
-	public isFsUtilsFile(filePath: string): boolean {
-		if (!this.fsUtilsPath) {
-			return false;
+	public isLibraryFile(filePath: string): boolean {
+		const normalizedPath = path.normalize(filePath);
+		
+		// Zkontroluj dokumentační soubory
+		for (const docPath of this.docFiles.values()) {
+			if (normalizedPath === path.normalize(docPath)) {
+				return true;
+			}
 		}
-		return path.normalize(filePath) === path.normalize(this.fsUtilsPath);
+		
+		// Zkontroluj implementační soubory
+		for (const implPath of this.implFiles.values()) {
+			if (normalizedPath === path.normalize(implPath)) {
+				return true;
+			}
+		}
+		
+		return false;
+	}
+
+	/**
+	 * Veřejná metoda pro Go To Definition (volaná z commandu F12)
+	 * Hledá pouze v aktuálním souboru, ne v library souborech
+	 */
+	public async goToDefinition(): Promise<void> {
+		const editor = vscode.window.activeTextEditor;
+		if (!editor) {
+			vscode.window.showWarningMessage('Žádný aktivní editor');
+			return;
+		}
+
+		const document = editor.document;
+		if (document.languageId !== 'pascal') {
+			vscode.window.showWarningMessage('Go To Definition funguje pouze pro Pascal soubory');
+			return;
+		}
+
+		const position = editor.selection.active;
+		const wordRange = document.getWordRangeAtPosition(position);
+		if (!wordRange) {
+			this.outputChannel.appendLine(`[Pascal IntelliSense] Go To Definition: Žádné slovo pod kurzorem`);
+			vscode.window.showWarningMessage('Žádné slovo pod kurzorem');
+			return;
+		}
+
+		const word = document.getText(wordRange);
+		const wordLower = word.toLowerCase();
+
+		this.outputChannel.appendLine(`[Pascal IntelliSense] Go To Definition (F12): Hledám "${word}" (${wordLower}) v aktuálním souboru`);
+
+		// Hledej pouze v aktuálním souboru
+		const localDefinition = this.findDefinitionInDocument(document, word, wordLower);
+		if (localDefinition) {
+			this.outputChannel.appendLine(`[Pascal IntelliSense] Go To Definition: Nalezeno na řádku ${localDefinition.range.start.line + 1}`);
+			// Použij pouze revealRange bez změny selection - to by nemělo způsobit problémy s diff zobrazením
+			editor.revealRange(localDefinition.range, vscode.TextEditorRevealType.InCenter);
+			// Nastav kurzor na začátek definice (bez změny selection, jen pozice)
+			const newPosition = new vscode.Position(localDefinition.range.start.line, localDefinition.range.start.character);
+			editor.selection = new vscode.Selection(newPosition, newPosition);
+		} else {
+			vscode.window.showInformationMessage(`Definice pro "${word}" nebyla nalezena v aktuálním souboru`);
+		}
+	}
+
+	/**
+	 * Najde definici v aktuálním dokumentu (pouze funkce a procedury)
+	 */
+	private findDefinitionInDocument(
+		document: vscode.TextDocument,
+		word: string,
+		wordLower: string
+	): vscode.Location | undefined {
+		const text = document.getText();
+		const lines = text.split(/\r?\n/);
+		
+		this.outputChannel.appendLine(`[Pascal IntelliSense] findDefinitionInDocument: Hledám "${word}" v ${lines.length} řádcích`);
+
+		// Hledej pouze function/procedure deklarace
+		// Regex: function|procedure na začátku řádku (nebo po whitespace), pak název funkce
+		const functionRegex = /^\s*(function|procedure)\s+(\w+)/i;
+
+		for (let i = 0; i < lines.length; i++) {
+			const line = lines[i];
+			const lineLower = line.toLowerCase();
+
+			// Hledej funkce/procedury
+			const funcMatch = line.match(functionRegex);
+			if (funcMatch) {
+				const funcName = funcMatch[2];
+				if (funcName.toLowerCase() === wordLower) {
+					const funcNameIndex = lineLower.indexOf(funcName.toLowerCase());
+					if (funcNameIndex >= 0) {
+						const startPos = new vscode.Position(i, funcNameIndex);
+						const endPos = new vscode.Position(i, funcNameIndex + funcName.length);
+						const range = new vscode.Range(startPos, endPos);
+						return new vscode.Location(document.uri, range);
+					}
+				}
+			}
+		}
+
+		return undefined;
+	}
+
+	/**
+	 * Najde definici v implementačních souborech (FScriptUtils.pas nebo FCommonUtils.pas v FAdelphi)
+	 */
+	private findDefinitionInLibraryFiles(wordLower: string): vscode.Location | undefined {
+		this.outputChannel.appendLine(`[Pascal IntelliSense] Go To Definition: Hledám "${wordLower}" v ${this.functions.size} načtených funkcích`);
+		const funcDoc = this.functions.get(wordLower);
+		if (!funcDoc) {
+			this.outputChannel.appendLine(`[Pascal IntelliSense] Go To Definition: "${wordLower}" nenalezeno`);
+			// Debug: zobraz prvních 10 názvů funkcí v mapě
+			const sampleFunctions = Array.from(this.functions.keys()).slice(0, 10);
+			this.outputChannel.appendLine(`[Pascal IntelliSense] Ukázkové funkce v mapě: ${sampleFunctions.join(', ')}`);
+			return undefined;
+		}
+
+		// Preferuj implementační soubor pokud existuje, jinak použij dokumentační
+		const targetFilePath = funcDoc.implFilePath || funcDoc.filePath;
+		const targetLineNumber = funcDoc.implLineNumber !== undefined ? funcDoc.implLineNumber : funcDoc.lineNumber;
+
+		if (!targetFilePath) {
+			this.outputChannel.appendLine(`[Pascal IntelliSense] Go To Definition: "${wordLower}" nemá cestu k souboru`);
+			return undefined;
+		}
+
+		// Vytvoř URI pro soubor
+		const fileUri = vscode.Uri.file(targetFilePath);
+		
+		// Najdi přesnou pozici názvu funkce na řádku
+		try {
+			const content = fs.readFileSync(targetFilePath, 'utf-8');
+			const lines = content.split(/\r?\n/);
+			if (targetLineNumber < lines.length) {
+				const line = lines[targetLineNumber];
+				const funcNameIndex = line.toLowerCase().indexOf(funcDoc.name.toLowerCase());
+				if (funcNameIndex >= 0) {
+					const startPos = new vscode.Position(targetLineNumber, funcNameIndex);
+					const endPos = new vscode.Position(targetLineNumber, funcNameIndex + funcDoc.name.length);
+					const range = new vscode.Range(startPos, endPos);
+					
+					const fileName = path.basename(targetFilePath);
+					const fileType = funcDoc.implFilePath ? 'impl' : 'doc';
+					this.outputChannel.appendLine(`[Pascal IntelliSense] Go To Definition: Nalezeno v ${fileName} (${fileType}) na řádku ${targetLineNumber + 1}`);
+					return new vscode.Location(fileUri, range);
+				}
+			}
+		} catch (error) {
+			this.outputChannel.appendLine(`[Pascal IntelliSense] Go To Definition: Chyba při čtení ${targetFilePath}: ${error}`);
+		}
+
+		// Fallback: vrať alespoň pozici na začátku řádku
+		const position = new vscode.Position(targetLineNumber, 0);
+		const range = new vscode.Range(position, position);
+		const fileName = path.basename(targetFilePath);
+		this.outputChannel.appendLine(`[Pascal IntelliSense] Go To Definition: Nalezeno v ${fileName} na řádku ${targetLineNumber + 1} (fallback)`);
+		return new vscode.Location(fileUri, range);
 	}
 
 	/**
@@ -259,14 +519,16 @@ export class PascalIntelliSenseProvider implements vscode.CompletionItemProvider
 	 */
 	public getStats(): { 
 		loaded: number; 
-		filePath: string | null; 
+		docFilePaths: string[];
+		implFilePaths: string[];
 		isParsing: boolean;
 		sampleFunctions: string[];
 	} {
 		const sampleFunctions = Array.from(this.functions.keys()).slice(0, 5);
 		return {
 			loaded: this.functions.size,
-			filePath: this.fsUtilsPath,
+			docFilePaths: Array.from(this.docFiles.values()),
+			implFilePaths: Array.from(this.implFiles.values()),
 			isParsing: this.isParsing,
 			sampleFunctions: sampleFunctions
 		};
@@ -295,12 +557,14 @@ export function registerIntelliSenseProvider(context: vscode.ExtensionContext, o
 			{ language: 'pascal', scheme: 'file' },
 			provider
 		)
+		// Definition Provider není zaregistrován - Go To Definition je dostupné pouze přes F12 (vlastní command)
+		// a funguje pouze v rámci editovaného souboru
 	];
 
-	// Sleduj změny FsUtils.pas pro auto-reload
+	// Sleduj změny library souborů pro auto-reload
 	const saveDisposable = vscode.workspace.onDidSaveTextDocument((document) => {
-		if (provider.isFsUtilsFile(document.fileName)) {
-			console.log('[Pascal IntelliSense] FsUtils.pas was saved, reloading documentation...');
+		if (provider.isLibraryFile(document.fileName)) {
+			console.log('[Pascal IntelliSense] Library file was saved, reloading documentation...');
 			provider.reload();
 		}
 	});

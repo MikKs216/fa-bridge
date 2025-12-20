@@ -11,10 +11,12 @@
     "editor.lineHighlightBackground": "#F5F5F5",
     "editorCursor.foreground": "#000000",
     "editorWhitespace.foreground": "#BFBFBF",
-    "editor.findMatchBackground": "#90EE90",
-    "editor.findMatchHighlightBackground": "#90EE9066",
-    "editor.findMatchBorder": "#90EE90",
-    "editor.findMatchHighlightBorder": "#90EE9066"
+    "editor.findMatchBackground": "#FFA500",
+    "editor.findMatchHighlightBackground": "#FFD4A3",
+    "editor.findMatchBorder": "#FF6600",
+    "editor.findMatchHighlightBorder": "#FFB366",
+    "editorBracketMatch.background": "#90EE90",
+    "editorBracketMatch.border": "#00AA00"
   },
   "tokenColors": [
     {
@@ -108,7 +110,7 @@
         "constant.numeric.hex.pascal"
       ],
       "settings": {
-        "foreground": "#000080"
+        "foreground": "#ff74ff"
       }
     },
     {

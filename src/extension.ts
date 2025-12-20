@@ -356,6 +356,16 @@ export function activate(context: vscode.ExtensionContext) {
 			vscode.window.showInformationMessage('Přepnuto na FA Pascal Dark theme');
 		}),
 		
+		// Command pro Go To Definition (F12) - pouze klávesa, ne Ctrl+click, pouze v aktuálním souboru
+		vscode.commands.registerCommand('faBridge.goToDefinition', async () => {
+			const provider = getIntelliSenseProvider();
+			if (!provider) {
+				vscode.window.showErrorMessage('IntelliSense provider není dostupný');
+				return;
+			}
+			await provider.goToDefinition();
+		}),
+		
 		// Command pro zobrazení statistik IntelliSense
 		vscode.commands.registerCommand('faBridge.showIntelliSenseStats', () => {
 			const provider = getIntelliSenseProvider();
@@ -369,22 +379,40 @@ export function activate(context: vscode.ExtensionContext) {
 				return;
 			}
 			
-			const stats = provider.getStats();
-			const message = [
-				`📊 IntelliSense statistiky:`,
-				`Načteno funkcí: ${stats.loaded}`,
-				`Cesta k souboru: ${stats.filePath || '(nenalezeno)'}`,
+		const stats = provider.getStats();
+		const docFilesStr = stats.docFilePaths.length > 0 
+			? stats.docFilePaths.map(p => path.basename(p)).join(', ')
+			: '(nenalezeno)';
+		const implFilesStr = stats.implFilePaths.length > 0 
+			? stats.implFilePaths.map(p => path.basename(p)).join(', ')
+			: '(nenalezeno)';
+		const message = [
+			`📊 IntelliSense statistiky:`,
+			`Načteno funkcí: ${stats.loaded}`,
+			`Doc soubory: ${docFilesStr}`,
+			`Impl soubory: ${implFilesStr}`,
 				`Stav parsování: ${stats.isParsing ? 'probíhá...' : 'dokončeno'}`,
 				stats.sampleFunctions.length > 0 ? `Ukázkové funkce: ${stats.sampleFunctions.join(', ')}` : ''
 			].filter(Boolean).join('\n');
 			
 			vscode.window.showInformationMessage(message);
 			
-			// Zobraz také v Output panelu
-			outputChannel.appendLine('=== IntelliSense statistiky ===');
-			outputChannel.appendLine(`Načteno funkcí: ${stats.loaded}`);
-			outputChannel.appendLine(`Cesta k souboru: ${stats.filePath || '(nenalezeno)'}`);
-			outputChannel.appendLine(`Stav parsování: ${stats.isParsing ? 'probíhá...' : 'dokončeno'}`);
+		// Zobraz také v Output panelu
+		outputChannel.appendLine('=== IntelliSense statistiky ===');
+		outputChannel.appendLine(`Načteno funkcí: ${stats.loaded}`);
+		outputChannel.appendLine(`Doc soubory: ${docFilesStr}`);
+		if (stats.docFilePaths.length > 0) {
+			for (const filePath of stats.docFilePaths) {
+				outputChannel.appendLine(`  Doc: ${filePath}`);
+			}
+		}
+		outputChannel.appendLine(`Impl soubory: ${implFilesStr}`);
+		if (stats.implFilePaths.length > 0) {
+			for (const filePath of stats.implFilePaths) {
+				outputChannel.appendLine(`  Impl: ${filePath}`);
+			}
+		}
+		outputChannel.appendLine(`Stav parsování: ${stats.isParsing ? 'probíhá...' : 'dokončeno'}`);
 			if (stats.sampleFunctions.length > 0) {
 				outputChannel.appendLine(`Ukázkové funkce: ${stats.sampleFunctions.join(', ')}`);
 			}

@@ -20,7 +20,7 @@ Technická dokumentace pro vývojáře a AI asistenty.
 - **Jméno:** fa-bridge (Cursor Extension)
 - **Účel:** Propojení Cursor/VS Code s editorem FormStudio (FA)
 - **Technologie:** TypeScript, VS Code Extension API
-- **Aktuální verze:** 0.5.93
+- **Aktuální verze:** 0.6.0
 
 ### Funkčnost
 
@@ -309,9 +309,36 @@ for (const dir of instanceDirs) {
 
 ### IntelliSense Provider
 
-- Completion a Hover podpora pro Pascal soubory
-- Parsování dokumentace z `FsUtils.pas` (XML dokumentace)
+- **Completion** - Automatické doplňování funkcí a procedur
+- **Hover** - Zobrazení dokumentace při najetí myší
+- **Definition** - Go To Definition (F12, Ctrl+Click) pro přechod na definici funkce/procedury
+- Parsování dokumentace z `FScriptUtils.pas` a `FCommonUtils.pas` (XML dokumentace)
 - Asynchronní parsování v pozadí
+
+#### Implementace Go To Definition
+
+**Soubory:**
+- `src/providers/PascalIntelliSenseProvider.ts` - Implementuje `DefinitionProvider` interface
+- `src/providers/PascalDocParser.ts` - Parsuje soubory a ukládá čísla řádků a cesty k souborům
+
+**Funkčnost:**
+1. Hledání v aktuálním souboru - projde všechny `function`/`procedure` deklarace
+2. Hledání v library souborech - používá načtené funkce z `FScriptUtils.pas` a `FCommonUtils.pas`
+3. Každá funkce má uloženou `filePath` a `lineNumber` pro přesný skok na definici
+
+**Registrace:**
+```typescript
+vscode.languages.registerDefinitionProvider(
+  { language: 'pascal', scheme: 'file' },
+  provider
+)
+```
+
+**Klávesové zkratky:**
+- `F12` - Go To Definition (standardní VS Code zkratka)
+- `Ctrl + Click` - Go To Definition při kliknutí (nebo `Alt + Click` podle nastavení `editor.multiCursorModifier`)
+- `Alt + ←` nebo `Ctrl + -` - Go Back (navigace zpět)
+- `Alt + →` nebo `Ctrl + Shift + -` - Go Forward (navigace vpřed)
 
 ### Command Watcher
 
@@ -1069,7 +1096,7 @@ Tyto funkce přidáme později:
 
 **Vytvořeno:** Říjen 2025  
 **Status:** ✅ Implementováno a funkční  
-**Verze:** 0.5.93
+**Verze:** 0.6.0
 
 📖 **Další dokumentace:**
 - [USER_GUIDE.md](USER_GUIDE.md) - Uživatelská příručka

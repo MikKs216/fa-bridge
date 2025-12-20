@@ -203,7 +203,8 @@ export async function kopirovatNazevUdaje(): Promise<void> {
 
 /**
  * Hledá v editoru podle názvu aktuálního údaje z FA
- * Otevře Find dialog s předvyplněným textem (Shift+Alt+F)
+ * Přesune caret na začátek scriptu, otevře Find dialog s předvyplněným textem a nechá focus ve vyhledávacím boxu
+ * Stejná funkcionalita jako "Hledat od začátku", ale s předvyplněným názvem údaje
  */
 export async function hledatPodleAktUdaje(): Promise<void> {
 	try {
@@ -239,51 +240,41 @@ export async function hledatPodleAktUdaje(): Promise<void> {
 		}
 		
 		// Odstraň trailing whitespace
-		content = content.trim();
+		const searchText = content.trim();
 
-		if (!content) {
+		if (!searchText) {
 			vscode.window.showErrorMessage(`✗ Obsah ${path.basename(faFieldPath)} je prázdný`);
 			return;
 		}
 
-		// Vyhledej text v dokumentu
-		const document = editor.document;
-		const documentText = document.getText();
-		const searchText = content;
+		// 1. Přesunout kurzor na začátek dokumentu (Ctrl+Home)
+		await vscode.commands.executeCommand('cursorTop');
 		
-		// Escape speciální znaky pro regex (pokud bych použil regex search)
-		const escapedSearchText = searchText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+		// Malé zpoždění pro jistotu
+		await new Promise(resolve => setTimeout(resolve, 50));
 		
-		// Najdi první výskyt textu v dokumentu
-		const firstMatch = documentText.indexOf(searchText);
+		// 2. Vložit text do schránky
+		await vscode.env.clipboard.writeText(searchText);
 		
-		if (firstMatch !== -1) {
-			// Vypočítej pozici (řádek a sloupec)
-			const textBeforeMatch = documentText.substring(0, firstMatch);
-			const lines = textBeforeMatch.split('\n');
-			const line = lines.length - 1;
-			const column = lines[lines.length - 1].length;
-			
-			// Vyber nalezený text
-			const startPos = new vscode.Position(line, column);
-			const endPos = new vscode.Position(line, column + searchText.length);
-			editor.selection = new vscode.Selection(startPos, endPos);
-			editor.revealRange(new vscode.Range(startPos, endPos));
-		}
-
-		// Otevři Find dialog - VS Code automaticky použije vybraný text (pokud je něco vybráno)
-		// nebo slovo pod kurzorem
-		if (firstMatch !== -1) {
-			// Text byl nalezen a vybrán - otevři Find dialog
-			await vscode.commands.executeCommand('actions.find');
-			vscode.window.showInformationMessage(`✓ Text "${searchText}" vybrán. Find dialog je otevřen.`);
-		} else {
-			// Text nebyl nalezen - vlož do schránky a otevři Find dialog
-			// Uživatel pak může použít Ctrl+V v Find dialogu
-			await vscode.env.clipboard.writeText(searchText);
-			await vscode.commands.executeCommand('actions.find');
-			vscode.window.showInformationMessage(`ℹ Text "${searchText}" nebyl nalezen. Vloženo do schránky - použij Ctrl+V v Find dialogu.`);
-		}
+		// 3. Otevřít Find dialog (Ctrl+F)
+		await vscode.commands.executeCommand('actions.find');
+		
+		// Malé zpoždění pro jistotu, aby se Find dialog stihl otevřít
+		await new Promise(resolve => setTimeout(resolve, 100));
+		
+		// 4. Vložit text z schránky do Find dialogu (Ctrl+V)
+		// Focus je už ve Find dialogu, takže vložení proběhne tam
+		await vscode.commands.executeCommand('editor.action.clipboardPasteAction');
+		
+		// Malé zpoždění pro jistotu, aby se text stihl vložit
+		await new Promise(resolve => setTimeout(resolve, 50));
+		
+		// 5. Spustit hledání (jako by uživatel stiskl Enter)
+		// Najde první výskyt od začátku dokumentu
+		await vscode.commands.executeCommand('editor.action.nextMatchFindAction');
+		
+		// Focus zůstane ve Find dialogu
+		
 	} catch (error) {
 		const msg = error instanceof Error ? error.message : String(error);
 		vscode.window.showErrorMessage(`✗ Chyba: ${msg}`);

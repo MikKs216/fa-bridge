@@ -195,14 +195,37 @@ code --install-extension fa-bridge-0.5.93.vsix
 
 ## 🧠 IntelliSense pro Pascal
 
-Extension poskytuje **IntelliSense podporu** (Completion + Hover) pro Pascal soubory:
+Extension poskytuje **IntelliSense podporu** (Completion + Hover + Go To Definition) pro Pascal soubory:
 
 - **Completion** - Automatické doplňování funkcí a procedur (aktivuje se pomocí Ctrl+Space)
 - **Hover** - Zobrazení dokumentace při najetí myší na funkci/proceduru
+- **Go To Definition** - Přeskočení na definici funkce/procedury
 
 ### Dokumentace
 
-IntelliSense čerpá dokumentaci ze souboru `FsUtils.pas` v workspace. Funkce a procedury s XML dokumentací (`/// <summary>`, `<param>`, `<returns>`) jsou automaticky parsovány a zobrazeny v IntelliSense.
+IntelliSense čerpá dokumentaci ze souborů `FScriptUtils.pas` a `FCommonUtils.pas` v workspace. Funkce a procedury s XML dokumentací (`/// <summary>`, `<param>`, `<returns>`) jsou automaticky parsovány a zobrazeny v IntelliSense.
+
+### Go To Definition
+
+**Funkce:** Umožňuje rychle přejít na definici funkce nebo procedury.
+
+**Klávesové zkratky:**
+- **`F12`** - Přejít na definici
+- **`Ctrl + Click`** (nebo `Alt + Click` podle nastavení) - Přejít na definici při kliknutí
+
+**Jak to funguje:**
+1. Umísti kurzor na název funkce/procedury
+2. Stiskni `F12` nebo použij `Ctrl + Click` na název
+3. Extension automaticky:
+   - Nejdřív hledá definici v aktuálním souboru
+   - Pokud nenajde, hledá v `FScriptUtils.pas` nebo `FCommonUtils.pas`
+   - Otevře správný soubor a přesune kurzor na definici
+
+**Navigace zpět:**
+- **`Alt + ←`** (šipka vlevo) nebo **`Ctrl + -`** (minus) - Vrátit se zpět
+- **`Alt + →`** (šipka vpravo) nebo **`Ctrl + Shift + -`** - Jít vpřed v historii navigace
+
+**Tip:** Po použití Go To Definition se vytvoří historie navigace. Můžeš se pohybovat mezi všemi navštívenými místy pomocí šipek nebo `Ctrl + -` / `Ctrl + Shift + -`.
 
 ### Statistiky
 
@@ -288,6 +311,14 @@ Extension poskytuje panel **Msg Watch**, který zobrazuje zprávy z běžícího
 - Soubor `famsgstate.json` se automaticky maže při startu extension a při uložení souboru
 
 ## Release Notes
+
+### 0.6.0
+
+- ✨ **Go To Definition:** Nová funkce pro přechod na definici funkcí a procedur
+  - Podpora `F12` a `Ctrl+Click` pro přechod na definici
+  - Hledání v aktuálním souboru i v `FScriptUtils.pas` a `FCommonUtils.pas`
+  - Automatická navigace zpět pomocí `Alt+←` nebo `Ctrl+-`
+- 🔄 **IntelliSense vylepšení:** Parsování dokumentace z `FScriptUtils.pas` a `FCommonUtils.pas` místo pouze `FsUtils.pas`
 
 ### 0.5.93
 
@@ -417,7 +448,7 @@ Extension poskytuje panel **Msg Watch**, který zobrazuje zprávy z běžícího
 
 ---
 
-**Vytvořeno:** Říjen 2025 | **Status:** Funkční ✓ | **Verze:** 0.5.93
+**Vytvořeno:** Říjen 2025 | **Status:** Funkční ✓ | **Verze:** 0.6.0
 
 ---
 

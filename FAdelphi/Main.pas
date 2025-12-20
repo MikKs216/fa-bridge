@@ -1,4 +1,6 @@
-﻿{ 11.12.2025 12:41:52 (GMT+1:00) > [mik on WIN-48QDB6JAV23] checked in Zmeny pro editor cursor - horke klavesy  }
+﻿{ 17.12.2025 20:15:13 (GMT+1:00) > [mik on WIN-48QDB6JAV23] checked in Oprava  #7000  }
+{ 11.12.2025 12:57:34 (GMT+1:00) > [mik on WIN-48QDB6JAV23] checked in Cistka nepouzivanych veci pro cursor  }
+{ 11.12.2025 12:41:52 (GMT+1:00) > [mik on WIN-48QDB6JAV23] checked in Zmeny pro editor cursor - horke klavesy  }
 { 28.10.2025 15:12:29 (GMT+1:00) > [mik on WIN-48QDB6JAV23] checked in Propojeni na Cursor / VS code 1 }
 { 13.10.2025 20:40:33 (GMT+2:00) > [mik on WIN-48QDB6JAV23] checked in Rok 2026  }
 { 13.10.2025 11:11:27 (GMT+2:00) > [mik on WIN-48QDB6JAV23] checked in Doplneni LogStatN pro standalone.  }
@@ -4800,10 +4802,43 @@ begin
 end;
 
 procedure TfaMain.dxBarButtonShowDialogFindFieldInScriptClick(Sender: TObject);
+var
+  Code: AnsiString;
 begin
 {$IFNDEF FINALBUILD}
+  {$IFDEF UCURSOR}
+  if dxBarButtonUseCursorEditor.Down then begin
+    if Assigned(FBridge) and (FLastFieldName <> '') then
+    begin
+      // Identifikace aktuálního formuláře v FA
+      FCurrentFormId := mtDefID.Value;
+
+      // Načtení kódu z DB (aktuální stav v FA)
+      Code := LoadCodeFromDB;
+
+      // Zavolej metodu bridge třídy, která zpracuje celou logiku
+      if not FBridge.FindFieldInScript(FCurrentFormId, Code, FLastFieldName) then
+      begin
+        ShowMessage('Nepodařilo se spustit Cursor / VS code. Patrně není otevřený formulář nebo je špatně cesta.');
+      end;
+    end
+    else if not Assigned(FBridge) then
+    begin
+      ShowMessage('Cursor Bridge není inicializován.');
+    end
+    else if FLastFieldName = '' then
+    begin
+      ShowMessage('Není vybrán žádný údaj.');
+    end;
+  end
+  else begin
+    EditFormScriptUnModal;
+    fmScriptEditor.ShowDialogFind(True, FLastFieldName);
+  end;
+  {$ELSE UCURSOR}
   EditFormScriptUnModal;
   fmScriptEditor.ShowDialogFind(True, FLastFieldName);
+  {$ENDIF UCURSOR}
 {$ENDIF FINALBUILD}
 end;
 
@@ -5094,6 +5129,41 @@ begin
         FBridge.ActivateCursorWindow; // Přepni na Cursor okno, aby uživatel mohl opravit chybu
         CanClose := False;
         Exit;
+      end;
+    end;
+    
+    // KROK 2b: Kontrola rozdílu mezi diskem a databází i když Cursor neběží nebo soubor není otevřený
+    // (např. když uživatel zavřel Cursor před zavřením FA, ale script byl uložený na disk)
+    if (CloseResult in [ccrNotOpen, ccrError]) and (FCurrentFormId <> '') then
+    begin
+      // Zkontroluj, jestli existuje soubor na disku
+      if (FBridge.CurrentFile <> '') and FileExists(FBridge.CurrentFile) then
+      begin
+        try
+          // Načti aktuální stav souboru z disku
+          ScriptContent := FBridge.ReadScriptFileContent;
+          if ScriptContent <> '' then
+          begin
+            // KONTROLA: Porovnej obsah na disku s obsahem v databázi FA
+            ScriptFromDB := LoadCodeFromDB;
+            if ScriptContent <> ScriptFromDB then
+            begin
+              // Obsah na disku se liší od obsahu v databázi - nahlásit a nezavřít FA
+              MsgBoxWarn(Caption, 
+                'Script na disku se liší od scriptu v databázi FORM asistenta. ' +
+                'Obsah na disku byl změněn mimo FORM asistenta. Nejdříve uložte změny v Cursoru do FORM asistenta a pak jej znovu zavřete.', 
+                MB_OK);
+              // Zkus aktivovat Cursor okno (pokud běží), jinak jen zobraz hlášku
+              if FBridge.IsCursorProcessAlive then
+                FBridge.ActivateCursorWindow;
+              CanClose := False;
+              Exit;
+            end;
+          end;
+        except
+          // Pokud nastala chyba při čtení souboru, ignoruj (soubor může být zamčený)
+          // a pokračuj v zavírání FA
+        end;
       end;
     end;
     
@@ -13119,12 +13189,8 @@ begin
       HideEdit;}
     if FActuallyControl is TfaEdit then begin
       ShowEdit(TfaEdit(FActuallyControl));
-      if (CEdit <> nil) and CEdit.CanFocus then begin
+      if (CEdit <> nil) and CEdit.CanFocus then
         CEdit.SetFocus;
-        {$IFDEF UCURSOR}
-        FBridge.WriteFieldText(CEdit.Hint);
-        {$ENDIF UCURSOR}
-      end;
     end
     else begin
       //HideEdit;
@@ -19563,6 +19629,9 @@ begin
   if fldName<>'' then
     FLastFieldName:=fldName;
   ShowHintSb(FLastFieldName);
+  {$IFDEF UCURSOR}
+  FBridge.WriteFieldText(FLastFieldName);
+  {$ENDIF UCURSOR}
 {$ENDIF FINALBUILD}
 end; {ShowFieldState}
 
@@ -23044,7 +23113,13 @@ end;
 
 procedure TfaMain.dxBarButtonUseCursorEditorClick(Sender: TObject);
 begin
+{$IFNDEF FINALBUILD}
+  if fmScriptEditor <> nil then begin
+    if dxBarButtonUseCursorEditor.Down then
+      FreeAndNil(fmScriptEditor); // aby se pri dalsim otevreni nacetl script do editoru
+  end;
   SetDesignButtons;
+{$ENDIF FINALBUILD}
 end;
 
 procedure TfaMain.mtStoredStringsBeforePost(DataSet: TDataSet);

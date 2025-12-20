@@ -3,7 +3,11 @@
   "displayName": "FA Bridge",
   "publisher": "fa-dev",
   "description": "Propojení Cursor/VS Code s editorem FormStudio (FA)",
-  "version": "0.5.93",
+  "version": "0.7.7",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fa-dev/fa-bridge"
+  },
   "engines": {
     "vscode": "^1.70.2"
   },
@@ -102,6 +106,12 @@
       {
         "command": "faBridge.showIntelliSenseStats",
         "title": "FA Bridge: Zobrazit statistiky IntelliSense"
+      },
+      {
+        "command": "faBridge.goToDefinition",
+        "title": "FA Bridge: Go To Definition",
+        "category": "FA Bridge",
+        "description": "Přejít na definici funkce nebo procedury (pouze F12, pouze v aktuálním souboru)"
       },
       {
         "command": "faBridge.compareWithPrevious",
@@ -326,7 +336,19 @@
         "command": "faBridge.hledatOdZacatku",
         "key": "alt+l",
         "mac": "alt+l",
-        "when": "faBridge.isActive"
+        "when": "faBridge.isActive && !config.faBridge.faCompatibleHotkeys"
+      },
+      {
+        "command": "faBridge.hledatOdZacatku",
+        "key": "alt+f",
+        "mac": "alt+f",
+        "when": "faBridge.isActive && config.faBridge.faCompatibleHotkeys"
+      },
+      {
+        "command": "faBridge.goToDefinition",
+        "key": "f12",
+        "mac": "f12",
+        "when": "editorTextFocus && editorLangId == 'pascal'"
       }
     ]
   },

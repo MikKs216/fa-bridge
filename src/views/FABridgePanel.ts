@@ -127,7 +127,7 @@ export class FABridgeTreeProvider implements vscode.TreeDataProvider<CategoryTre
 				'Otevře Find dialog s názvem aktuálního údaje z FA'
 			),
 			new CommandTreeItem(
-				'Hledat od začátku (Alt+L)',
+				`Hledat od začátku (${faCompatibleHotkeys ? 'Alt+F' : 'Alt+L'})`,
 				{
 					command: 'faBridge.hledatOdZacatku',
 					title: 'Hledat od začátku',
