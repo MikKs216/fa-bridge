@@ -191,12 +191,8 @@ export class FABridgeTreeProvider implements vscode.TreeDataProvider<CategoryTre
 			),
 		];
 
-		// Vytvoř kategorie
-		const categories = [
-			new CategoryTreeItem('FA Příkazy', 'Příkazy pro práci s FA', faCommands),
-		];
-
-		return Promise.resolve(categories);
+		// Vrať příkazy přímo bez kategorie
+		return Promise.resolve(faCommands);
 	}
 }
 

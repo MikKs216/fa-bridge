@@ -47,6 +47,8 @@ FA Bridge komunikuje s FormStudio přes soubor `.fsbridge/facmd.txt`:
 fa-bridge/
 ├── src/
 │ ├── extension.ts              # Hlavní soubor (aktivace, registrace příkazů)
+│ ├── historyPanel.ts           # WebView panel pro zobrazení diff a restore historie
+│ ├── historyProvider.ts        # TreeDataProvider pro panel HISTORIE v sidebaru
 │ ├── commands/
 │ │   └── sendCommand.ts        # Implementace všech příkazů
 │ ├── utils/
@@ -58,10 +60,13 @@ fa-bridge/
 │ │   └── HelpPanel.ts          # Help panel (NÁPOVĚDA)
 │ ├── providers/
 │ │   ├── PascalIntelliSenseProvider.ts  # IntelliSense (Completion + Hover)
+│ │   ├── PascalDocParser.ts             # Parser Pascal dokumentace (XML docs)
 │ │   ├── SnippetProvider.ts             # Pascal snippety
 │ │   └── BeginEndMatcher.ts             # Zvýrazňování begin/end bloků
-│ └── debugger/
-│     └── msgWatch.ts           # Msg Watch panel
+│ ├── debugger/
+│ │   └── msgWatch.ts           # Msg Watch panel
+│ └── test/
+│     └── extension.test.ts     # Unit testy pro extension
 ├── snippets/
 │   └── pascal-snippets.json    # Pascal code snippety
 ├── syntaxes/
@@ -340,10 +345,50 @@ vscode.languages.registerDefinitionProvider(
 - `Alt + ←` nebo `Ctrl + -` - Go Back (navigace zpět)
 - `Alt + →` nebo `Ctrl + Shift + -` - Go Forward (navigace vpřed)
 
-### Command Watcher
+### commandWatcher.ts
 
-- Sledování příkazů z FA (např. `check_unsaved_and_close`)
-- Zpracování příkazů z `facmd_from_fa.txt`
+- `CommandWatcher` - Sleduje změny v `.fsbridge/facmd_from_fa.txt`
+- Zpracovává příkazy posílané z FA do Cursoru
+- Podporované příkazy: `check_unsaved_and_close` (kontrola neuložených změn před zavřením)
+- Používá `fs.watch()` pro monitorování změn souboru
+- Automaticky smaže soubor po zpracování příkazu
+
+### SnippetProvider.ts
+
+- Poskytuje Pascal code snippety pro rychlé psaní kódu
+- Podporuje 11 základních snippetů: function, procedure, if, for, try, trye, repeat, while, case, var, begin
+- Možnost zapnout/vypnout přes nastavení `faBridge.enableSnippets`
+- Snippety se aktivují pomocí Tab po napsání zkratky
+
+### BeginEndMatcher.ts
+
+- Zvýrazňuje odpovídající begin/end bloky v Pascal kódu
+- Automaticky najde párový begin nebo end při umístění kurzoru
+- Vizuální indikace pomocí `vscode.window.createTextEditorDecorationType`
+- Usnadňuje orientaci ve vnořených blocích kódu
+
+### PascalDocParser.ts
+
+- Parsuje XML dokumentaci z Pascal souborů (`FScriptUtils.pas`, `FCommonUtils.pas`)
+- Extrahuje informace o funkcích: název, parametry, návratový typ, popis
+- Ukládá čísla řádků a cesty k souborům pro Go To Definition
+- Podporuje XML tagy: `<summary>`, `<param>`, `<returns>`, `<example>`
+- Asynchronní parsování pro neblokující načítání
+
+### msgWatch.ts
+
+- Panel "Msg Watch" v sidebaru pro sledování FA message hodnot
+- Čte stav z `.fsbridge/famsgstate.json`
+- Zobrazuje seznam WatchedMessages s jejich hodnotami
+- Automatická aktualizace při změně souboru
+- Prázdný panel když není FA aktivní nebo nejsou sledované messages
+
+### extension.test.ts
+
+- Unit testy pro FA Bridge extension
+- Testuje základní funkčnost extension
+- Spouští se pomocí `npm run test`
+- Používá VS Code Test Runner API
 
 ### Nastavení
 
@@ -893,6 +938,8 @@ private updateState(): void {
 ```
 src/
 ├── extension.ts              # Hlavní soubor (aktivace, registrace příkazů)
+├── historyPanel.ts           # WebView panel pro zobrazení diff a restore historie
+├── historyProvider.ts        # TreeDataProvider pro panel HISTORIE v sidebaru
 ├── commands/
 │   └── sendCommand.ts       # Implementace všech příkazů
 ├── utils/
@@ -904,10 +951,13 @@ src/
 │   └── HelpPanel.ts         # Help panel (NÁPOVĚDA)
 ├── providers/
 │   ├── PascalIntelliSenseProvider.ts  # IntelliSense (Completion + Hover)
+│   ├── PascalDocParser.ts             # Parser Pascal dokumentace (XML docs)
 │   ├── SnippetProvider.ts             # Pascal snippety
-│   └── BeginEndMatcher.ts              # Zvýrazňování begin/end bloků
-└── debugger/
-    └── msgWatch.ts          # Msg Watch panel
+│   └── BeginEndMatcher.ts             # Zvýrazňování begin/end bloků
+├── debugger/
+│   └── msgWatch.ts          # Msg Watch panel
+└── test/
+    └── extension.test.ts     # Unit testy pro extension
 ```
 
 ### Kompilace

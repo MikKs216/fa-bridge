@@ -5134,6 +5134,7 @@ begin
     
     // KROK 2b: Kontrola rozdílu mezi diskem a databází i když Cursor neběží nebo soubor není otevřený
     // (např. když uživatel zavřel Cursor před zavřením FA, ale script byl uložený na disk)
+    // Tato kontrola probíhá PO kontrole neuložených změn v Cursoru, takže nemusíme kontrolovat, že Cursor neběží
     if (CloseResult in [ccrNotOpen, ccrError]) and (FCurrentFormId <> '') then
     begin
       // Zkontroluj, jestli existuje soubor na disku
@@ -5148,16 +5149,38 @@ begin
             ScriptFromDB := LoadCodeFromDB;
             if ScriptContent <> ScriptFromDB then
             begin
-              // Obsah na disku se liší od obsahu v databázi - nahlásit a nezavřít FA
-              MsgBoxWarn(Caption, 
+              // Obsah na disku se liší od obsahu v databázi
+              // Zeptej se uživatele, jestli chce otevřít Cursor pro kontrolu scriptu
+              res := MessageAsk(Caption, 
                 'Script na disku se liší od scriptu v databázi FORM asistenta. ' +
-                'Obsah na disku byl změněn mimo FORM asistenta. Nejdříve uložte změny v Cursoru do FORM asistenta a pak jej znovu zavřete.', 
-                MB_OK);
-              // Zkus aktivovat Cursor okno (pokud běží), jinak jen zobraz hlášku
-              if FBridge.IsCursorProcessAlive then
-                FBridge.ActivateCursorWindow;
-              CanClose := False;
-              Exit;
+                'Obsah na disku byl změněn mimo FORM asistenta.' + #13#10 + #13#10 +
+                'Chcete otevřít Cursor pro kontrolu scriptu?', 
+                [MBYES, MBNO]);
+              
+              if res = IDYES then
+              begin
+                // Otevři Cursor se scriptem z disku (aby uživatel nepřišel o stav na disku)
+                // Použijeme aktuální script z disku, ne z databáze
+                if FBridge.StartEditing(FCurrentFormId, ScriptContent, 0, 0) then
+                begin
+                  // Cursor byl otevřen - nezavírej FA, aby uživatel mohl zkontrolovat změny
+                  CanClose := False;
+                  Exit;
+                end
+                else
+                begin
+                  // Nepodařilo se otevřít Cursor - zobraz varování a pokračuj v zavírání
+                  MsgBoxWarn(Caption, 
+                    'Nepodařilo se otevřít Cursor. Script na disku se liší od scriptu v databázi.', 
+                    MB_OK);
+                  // Pokračuj v zavírání FA (uživatel může změny zkontrolovat později)
+                end;
+              end
+              else
+              begin
+                // Uživatel nechce otevřít Cursor - pokračuj v zavírání FA
+                // (změny na disku zůstanou, ale nebudou v databázi)
+              end;
             end;
           end;
         except
