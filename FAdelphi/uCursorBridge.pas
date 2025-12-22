@@ -1,6 +1,4 @@
-﻿{ 11.12.2025 12:42:10 (GMT+1:00) > [mik on WIN-48QDB6JAV23] checked in Zmeny - horke klavesy  }
-{ 28.10.2025 15:12:45 (GMT+1:00) > [mik on WIN-48QDB6JAV23] checked in Propojeni na Cursor / VS code  }
-unit uCursorBridge;
+﻿unit uCursorBridge;
 (*
   Delphi 2007 helper for "FA ⇄ Cursor/VS Code" (file-based + polling + reuse-window)
 
@@ -128,7 +126,7 @@ type
     // Mazání starých složek instance
     function IsFAProcessAlive(PID: DWORD): Boolean;
     function DeleteDirectory(const DirName: string; OnlyChildren: Boolean): Boolean;
-    procedure CleanupOldInstanceFolders;
+    procedure CleanupOldInstanceFolders(const FsBridgeDir: string);
   public
     constructor Create;
 
@@ -400,15 +398,30 @@ begin
 end;
 
 function TCursorBridge.GetInstanceDir: string;
+var
+  BaseScriptsFolder: string;
+  EffFolder: string;
 begin
-  // Složka pro tuto instanci FA: <workspace>/.fsbridge/{FA_PID}/
-  // FInstanceId musí být nastaveno před voláním
+  // Složka pro tuto instanci FA: DataPrg/Scripts/.fsbridge/{FA_PID}/
   if FInstanceId = '' then
     FInstanceId := IntToStr(GetCurrentProcessId);
-    
-  Result := IncludeTrailingPathDelimiter(EffectiveExportFolder)
-          + '.fsbridge' + PathDelim
-          + FInstanceId + PathDelim;
+  
+  // Zkontroluj, jestli EffectiveExportFolder už není v .fsbridge\{PID}\ (cizí definice)
+  EffFolder := UpperCase(EffectiveExportFolder);
+  
+  if Pos('\.FSBRIDGE\' + UpperCase(FInstanceId), EffFolder) > 0 then
+  begin
+    // EffectiveExportFolder už je v .fsbridge\{PID}\ - použij přímo
+    Result := IncludeTrailingPathDelimiter(EffectiveExportFolder);
+  end
+  else
+  begin
+    // Normální cesta - DataPrg\Scripts\.fsbridge\{PID}\
+    BaseScriptsFolder := IncludeTrailingPathDelimiter(ExtractFilePath(ParamStr(0))) + 'DataPrg\Scripts';
+    Result := IncludeTrailingPathDelimiter(BaseScriptsFolder)
+            + '.fsbridge' + PathDelim
+            + FInstanceId + PathDelim;
+  end;
 end;
 
 // Pomocná funkce pro přejmenování facmd.txt na facmd-x-timestamp.txt
@@ -840,10 +853,14 @@ begin
 end;
 
 function TCursorBridge.GetWorkspaceFilePath(const FormId: string): string;
+var
+  BaseScriptsFolder: string;
 begin
   // JEDEN společný workspace soubor pro VŠECHNY FA instance a scripty
   // Scripty se otevírají jako záložky v jednom okně Cursoru
-  Result := IncludeTrailingPathDelimiter(EffectiveExportFolder)
+  // Workspace soubor je VŽDY v DataPrg\Scripts\.fsbridge\, ne v .fsbridge\{PID}\.fsbridge\
+  BaseScriptsFolder := IncludeTrailingPathDelimiter(ExtractFilePath(ParamStr(0))) + 'DataPrg\Scripts';
+  Result := IncludeTrailingPathDelimiter(BaseScriptsFolder)
           + '.fsbridge' + PathDelim
           + 'fa_scripts.code-workspace';
 end;
@@ -864,15 +881,33 @@ begin
   // Cesta k workspace souboru
   WorkspaceFile := GetWorkspaceFilePath(FormId);
   
-  // Pokud workspace soubor už existuje, nemusíme ho znovu vytvářet
+  // Cesta ke složce Scripts (celá složka jako jeden workspace)
+  // Workspace root je VŽDY DataPrg\Scripts, ne .fsbridge\{PID}
+  ScriptsFolder := IncludeTrailingPathDelimiter(ExtractFilePath(ParamStr(0))) + 'DataPrg\Scripts';
+  
+  // KONTROLA: Pokud workspace soubor už existuje, zkontroluj, jestli má správnou cestu
+  // (oprava pro případ, kdy byl vytvořený se starou špatnou cestou)
   if FileExists(WorkspaceFile) then
   begin
-    Result := True;
-    Exit;
+    try
+      SL := TStringList.Create;
+      try
+        SL.LoadFromFile(WorkspaceFile);
+        // Zkontroluj, jestli obsahuje správnou cestu k DataPrg\Scripts
+        if Pos('"path": "' + StringReplace(ScriptsFolder, '\', '\\', [rfReplaceAll]) + '"', SL.Text) > 0 then
+        begin
+          // Workspace soubor má správnou cestu
+          Result := True;
+          Exit;
+        end;
+        // Workspace soubor má špatnou cestu - přetvoříme ho
+      finally
+        SL.Free;
+      end;
+    except
+      // Při chybě čtení přetvoříme workspace soubor
+    end;
   end;
-  
-  // Cesta ke složce Scripts (celá složka jako jeden workspace)
-  ScriptsFolder := EffectiveExportFolder;
   
   // Escape cesty pro JSON (obrácená lomítka -> dvojitá obrácená lomítka)
   ScriptsFolder := StringReplace(ScriptsFolder, '\', '\\', [rfReplaceAll]);
@@ -2344,35 +2379,56 @@ function TCursorBridge.DeleteDirectory(const DirName: string; OnlyChildren: Bool
 var
   FileOp: TSHFileOpStruct;
   Dir: string;
+  OpResult: Integer;
 begin
   Result := False;
-  Dir := DirName;
+  
+  if not DirectoryExists(DirName) then
+  begin
+    Result := True; // Složka neexistuje, považujeme za úspěch
+    Exit;
+  end;
+  
+  Dir := ExcludeTrailingPathDelimiter(DirName);
   
   // Přidej dvojité null terminator pro SHFileOperation
-  if Dir[Length(Dir)] <> #0 then
-    Dir := Dir + #0;
-  Dir := Dir + #0;
+  Dir := Dir + #0#0;
   
   ZeroMemory(@FileOp, SizeOf(FileOp));
   with FileOp do
   begin
     wFunc := FO_DELETE;
     pFrom := PChar(Dir);
-    fFlags := FOF_NOCONFIRMATION or FOF_SILENT or FOF_NOERRORUI;
+    pTo := nil;
+    fFlags := FOF_NOCONFIRMATION or FOF_SILENT or FOF_NOERRORUI or FOF_ALLOWUNDO;
+    fAnyOperationsAborted := False;
+    hNameMappings := nil;
+    lpszProgressTitle := nil;
   end;
   
-  Result := (SHFileOperation(FileOp) = 0) and (not FileOp.fAnyOperationsAborted);
+  OpResult := SHFileOperation(FileOp);
+  Result := (OpResult = 0) and (not FileOp.fAnyOperationsAborted);
+  
+  // Pokud SHFileOperation selhalo, zkus ještě RemoveDir jako fallback
+  if not Result then
+  begin
+    try
+      if DirectoryExists(DirName) then
+        Result := RemoveDir(DirName);
+    except
+      Result := False;
+    end;
+  end;
 end;
 
-procedure TCursorBridge.CleanupOldInstanceFolders;
+procedure TCursorBridge.CleanupOldInstanceFolders(const FsBridgeDir: string);
 var
-  FsBridgeDir: string;
   SearchRec: TSearchRec;
   PID: Integer;
   PIDStr: string;
   InstancePath: string;
+  IsOldStructure: Boolean;
 begin
-  FsBridgeDir := IncludeTrailingPathDelimiter(EffectiveExportFolder) + '.fsbridge';
   
   if not DirectoryExists(FsBridgeDir) then
     Exit;
@@ -2392,22 +2448,37 @@ begin
           Continue;
         
         PIDStr := SearchRec.Name;
-        if not TryStrToInt(PIDStr, PID) then
-          Continue;
+        InstancePath := IncludeTrailingPathDelimiter(FsBridgeDir) + PIDStr;
         
-        // Přeskoč vlastní složku této instance (ta se maže v destruktoru)
-        if PIDStr = FInstanceId then
-          Continue;
+        // Zkus převést na PID
+        IsOldStructure := not TryStrToInt(PIDStr, PID);
         
-        // Zkontroluj, jestli proces s tímto PID ještě běží
-        if not IsFAProcessAlive(PID) then
+        if IsOldStructure then
         begin
-          // Proces neběží - bezpečně smaž složku
-          InstancePath := IncludeTrailingPathDelimiter(FsBridgeDir) + PIDStr;
+          // Složka nemá PID v názvu - je to stará struktura, smaž ji
           try
             DeleteDirectory(InstancePath, False);
           except
             // Při chybě tiše pokračuj (složka může být zamčená)
+          end;
+        end
+        else
+        begin
+          // Složka má PID v názvu - zkontroluj, jestli proces ještě běží
+          
+          // Přeskoč vlastní složku této instance (ta se maže v destruktoru)
+          if PIDStr = FInstanceId then
+            Continue;
+          
+          // Zkontroluj, jestli proces s tímto PID ještě běží
+          if not IsFAProcessAlive(PID) then
+          begin
+            // Proces neběží - bezpečně smaž složku
+            try
+              DeleteDirectory(InstancePath, False);
+            except
+              // Při chybě tiše pokračuj (složka může být zamčená)
+            end;
           end;
         end;
       until FindNext(SearchRec) <> 0;
@@ -2425,23 +2496,67 @@ end;
 destructor TCursorBridge.Destroy;
 var
   InstancePath: string;
+  FsBridgeDir: string;
+  RetryCount: Integer;
+  Success: Boolean;
+  BaseScriptsFolder: string;
 begin
+  // POZNÁMKA: Cursor/záložka by už měla být zavřená (probíhá v FormCloseQuery před voláním destruktoru)
+  // Teď můžeme bezpečně smazat složku
+  
   // 1. Smaž vlastní složku této instance
+  // Všechny PID složky (domácí i cizí definice) jsou v DataPrg\Scripts\.fsbridge\{PID}\
   if FInstanceId <> '' then
   begin
-    InstancePath := GetInstanceDir;
+    BaseScriptsFolder := IncludeTrailingPathDelimiter(ExtractFilePath(ParamStr(0))) + 'DataPrg\Scripts';
+    InstancePath := IncludeTrailingPathDelimiter(BaseScriptsFolder)
+                  + '.fsbridge' + PathDelim
+                  + FInstanceId;
+    
     if DirectoryExists(InstancePath) then
     begin
-      try
-        DeleteDirectory(InstancePath, False);
-      except
-        // Při chybě tiše ignoruj (složka může být zamčená)
+      // Zkus smazat s několika pokusy (složka může být krátce zamčená)
+      Success := False;
+      RetryCount := 0;
+      while (not Success) and (RetryCount < 3) do
+      begin
+        try
+          // Smaž celou složku instance včetně všech podsložek a souborů
+          Success := DeleteDirectory(InstancePath, False);
+          if not Success then
+          begin
+            Inc(RetryCount);
+            if RetryCount < 3 then
+              Sleep(100); // Počkej 100ms před dalším pokusem
+          end;
+        except
+          Inc(RetryCount);
+          if RetryCount < 3 then
+            Sleep(100);
+        end;
       end;
     end;
   end;
   
   // 2. Vyčisti všechny ostatní staré složky (kde proces neběží)
-  CleanupOldInstanceFolders;
+  try
+    BaseScriptsFolder := IncludeTrailingPathDelimiter(ExtractFilePath(ParamStr(0))) + 'DataPrg\Scripts';
+    FsBridgeDir := IncludeTrailingPathDelimiter(BaseScriptsFolder) + '.fsbridge';
+    
+    if DirectoryExists(FsBridgeDir) then
+    begin
+      CleanupOldInstanceFolders(FsBridgeDir);
+      
+      // Pokus se smazat .fsbridge složku, pokud je prázdná (ignoruj chyby)
+      try
+        RemoveDir(FsBridgeDir);
+      except
+        // Tiše ignoruj - složka není prázdná nebo je použita
+      end;
+    end;
+  except
+    // Při chybě tiše ignoruj
+  end;
   
   inherited;
 end;

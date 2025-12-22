@@ -5053,6 +5053,8 @@ var
   CloseResult: TCursorCloseResult;
   ScriptContent: AnsiString;
   ScriptFromDB: AnsiString;
+  HomeDefsPath: string;
+  IsHomeDef: Boolean;
   {$ENDIF UCURSOR}
 begin
 
@@ -5159,6 +5161,15 @@ begin
               
               if res = IDYES then
               begin
+                // Nastav ExportFolder podle toho, odkud je definice
+                HomeDefsPath := NormalPath(ExtractFilePath(Application.ExeName)) + 'Dataprg\Defs\';
+                IsHomeDef := (FDefFileName <> '') and 
+                             (Pos(UpperCase(HomeDefsPath), UpperCase(FDefFileName)) = 1);
+                if IsHomeDef then
+                  FBridge.ExportFolder := 'DataPrg\Scripts'
+                else
+                  FBridge.ExportFolder := 'DataPrg\Scripts\.fsbridge\' + IntToStr(GetCurrentProcessId);
+                
                 // Otevři Cursor se scriptem z disku (aby uživatel nepřišel o stav na disku)
                 // Použijeme aktuální script z disku, ne z databáze
                 if FBridge.StartEditing(FCurrentFormId, ScriptContent, 0, 0) then
@@ -5191,20 +5202,22 @@ begin
     end;
     
     // KROK 3: Zavři soubor v Cursoru (pokud byl otevřený)
-    if CloseResult = ccrClosed then
+    // OPRAVA: Zavírat i když CloseResult není ccrClosed (např. ccrNotOpen, ccrError)
+    // - ccrClosed: script je uložený, můžeme zavřít
+    // - ccrNotOpen: extension neví o souboru, ale zkusíme zavřít (pro cizí definice)
+    // - ccrError: komunikace selhala, ale zkusíme zavřít
+    // NEZAVÍRÁME jen pro ccrUnsaved (neuložené změny - už bylo ošetřeno výše)
+    if CloseResult in [ccrClosed, ccrNotOpen, ccrError] then
     begin
-      CloseResult := FBridge.CloseCursorFile;
-      // Pokud bylo zavření úspěšné, aktualizuj FLastWrite
-      if CloseResult = ccrClosed then
+      // Pokus se zavřít záložku/Cursor (extension rozhodne, jestli zavře jen záložku nebo celý Cursor)
+      FBridge.CloseCursorFile;
+      
+      // Resetuj FStateFormWasChanged jen když byl script úspěšně uložen a zavřen
+      if (CloseResult = ccrClosed) and FStateFormWasChanged and FScriptChangedByCursor then
       begin
-        // Pokud byl script úspěšně zavřen a změna byla vyvolaná pouze synchronizací z Cursoru,
-        // resetuj FStateFormWasChanged
-        if FStateFormWasChanged and FScriptChangedByCursor then
-        begin
-          // WriteBridgeDebug('FormCloseQuery: Reset FStateFormWasChanged (změna byla pouze z Cursor synchronizace)'); // ZAKOMENTOVÁNO
-          SetChangeFlag(FALSE);
-          FScriptChangedByCursor := False;
-        end;
+        // WriteBridgeDebug('FormCloseQuery: Reset FStateFormWasChanged (změna byla pouze z Cursor synchronizace)'); // ZAKOMENTOVÁNO
+        SetChangeFlag(FALSE);
+        FScriptChangedByCursor := False;
       end;
     end;
   end;
@@ -6790,8 +6803,10 @@ begin
   
   {$IFDEF UCURSOR}
   // Vyprázdni FCurrentFile při zavření definice
-  if Assigned(FBridge) then
-    FBridge.ClearCurrentFile;
+  // ZAKOMENTOVÁNO - potřebujeme FCurrentFile pro správné zavření Cursoru při zavírání FA
+  // (bez toho se pro cizí definice nezavře Cursor záložka a nesmaže se dočasná složka)
+  // if Assigned(FBridge) then
+  //   FBridge.ClearCurrentFile;
   {$ENDIF UCURSOR}
   
   CloseData;
@@ -27206,9 +27221,29 @@ var
   Code: AnsiString;
   JumpLine, JumpCol: Integer;
   IsOpen: Boolean;
+  HomeDefsPath: string;
+  IsHomeDef: Boolean;
 begin
   JumpLine := 0;
   JumpCol := 0;
+  
+  // Zjisti, jestli je otevřená definice z domácí složky Dataprg\Defs
+  HomeDefsPath := NormalPath(ExtractFilePath(Application.ExeName)) + 'Dataprg\Defs\';
+  IsHomeDef := (FDefFileName <> '') and 
+               (Pos(UpperCase(HomeDefsPath), UpperCase(FDefFileName)) = 1);
+  
+  // Nastav ExportFolder podle toho, odkud je definice
+  if IsHomeDef then
+  begin
+    // Domácí definice → trvalá složka Scripts
+    FBridge.ExportFolder := 'DataPrg\Scripts';
+  end
+  else
+  begin
+    // Cizí definice → dočasná složka DataPrg\Scripts\.fsbridge/{PID}
+    FBridge.ExportFolder := 'DataPrg\Scripts\.fsbridge\' + IntToStr(GetCurrentProcessId);
+  end;
+  
   // identifikace aktuálního formuláře v FA
   FCurrentFormId := mtDefID.Value; // vaše logika
 
