@@ -9,19 +9,13 @@ import { hledatPodleAktUdaje } from '../commands/sendCommand';
  */
 export class CommandWatcher implements vscode.Disposable {
 	private fileWatcher: fs.FSWatcher | null = null;
-	private lastProcessedTime: number = 0;
+	private lastProcessedTimes: Map<string, number> = new Map(); // Časy zpracování pro každou instanci
 	private outputChannel: vscode.OutputChannel | null;
 	private pollingInterval: NodeJS.Timeout | null = null;
-	private editorChangeListener: vscode.Disposable | null = null;
 
 	constructor(outputChannel: vscode.OutputChannel | null) {
 		this.outputChannel = outputChannel;
 		this.startWatching();
-		
-		// Sleduj změny aktivního editoru - když se otevře FA script, restartuj watcher
-		this.editorChangeListener = vscode.window.onDidChangeActiveTextEditor(() => {
-			this.restartWatching();
-		});
 	}
 
 	private log(message: string): void {
@@ -29,11 +23,18 @@ export class CommandWatcher implements vscode.Disposable {
 			this.outputChannel.appendLine(message);
 		}
 		console.log(message);
-	}
-
-	private restartWatching(): void {
-		this.stopWatching();
-		this.startWatching();
+		
+		// DEBUG: Logování do souboru - odkomentuj pro ladění
+		// try {
+		// 	const workspaceRoot = getFsBridgeWorkspaceRoot();
+		// 	if (workspaceRoot) {
+		// 		const logPath = path.join(workspaceRoot, '.fsbridge', 'cursor_debug.log');
+		// 		const timestamp = new Date().toISOString().replace('T', ' ').substring(0, 19);
+		// 		fs.appendFileSync(logPath, `[${timestamp}] ${message}\n`, 'utf-8');
+		// 	}
+		// } catch (e) {
+		// 	// Ignoruj chyby při zápisu logu
+		// }
 	}
 
 	private stopWatching(): void {
@@ -54,75 +55,35 @@ export class CommandWatcher implements vscode.Disposable {
 			return;
 		}
 
-		const instanceDir = getFAInstanceDir(workspaceRoot);
-		if (!instanceDir) {
-			this.log('[CommandWatcher] Instance dir nenalezena - použiji polling');
-			// Pokud není instance složka, použij polling jako fallback
-			this.startPolling(workspaceRoot);
+		const fsbridgeDir = path.join(workspaceRoot, '.fsbridge');
+		this.log(`[CommandWatcher] Startuji polling pro VŠECHNY FA instance v: ${fsbridgeDir}`);
+
+		// Polling přes VŠECHNY instance složky - každých 150ms
+		// Tím zajistíme, že zachytíme příkazy ze všech FA instancí, ne jen z aktivní
+		this.pollingInterval = setInterval(() => {
+			this.pollAllInstances(fsbridgeDir);
+		}, 150);
+	}
+
+	private pollAllInstances(fsbridgeDir: string): void {
+		if (!fs.existsSync(fsbridgeDir)) {
 			return;
 		}
 
-		// facmd_from_fa.txt je pro příkazy z FA do Cursoru (např. check_unsaved_and_close)
-		// facmd.txt je pouze pro příkazy z Cursoru do FA (activate, compile, atd.)
-		const facmdPath = path.join(instanceDir, 'facmd_from_fa.txt');
-		const facmdDir = path.dirname(facmdPath);
-
-		this.log(`[CommandWatcher] Watching file: ${facmdPath}`);
-
-		// Sleduj změny v instance složce
-		if (fs.existsSync(facmdDir)) {
-			this.fileWatcher = fs.watch(facmdDir, (eventType, filename) => {
-				if (filename === 'facmd_from_fa.txt' && (eventType === 'rename' || eventType === 'change')) {
-					// Malé zpoždění pro zajištění, že soubor je plně zapsán
-					setTimeout(() => {
+		try {
+			const entries = fs.readdirSync(fsbridgeDir, { withFileTypes: true });
+			for (const entry of entries) {
+				// Hledej pouze složky s číselnými názvy (PID)
+				if (entry.isDirectory() && /^\d+$/.test(entry.name)) {
+					const facmdPath = path.join(fsbridgeDir, entry.name, 'facmd_from_fa.txt');
+					if (fs.existsSync(facmdPath)) {
 						this.processCommand(facmdPath);
-					}, 50); // Zkráceno z 100ms na 50ms pro rychlejší reakci
-				}
-			});
-			
-			// Spusť také polling jako fallback mechanismus (pro případ, že file watcher nefunguje)
-			// Polling kontroluje každých 200ms, jestli se neobjevil nový příkaz
-			this.pollingInterval = setInterval(() => {
-				if (fs.existsSync(facmdPath)) {
-					this.processCommand(facmdPath);
-				}
-			}, 200);
-		} else {
-			this.log(`[CommandWatcher] WARNING: Directory does not exist: ${facmdDir} - použiji polling`);
-			this.startPolling(workspaceRoot);
-		}
-	}
-
-	private startPolling(workspaceRoot: string): void {
-		// Polling každých 200ms - zkontroluj, jestli se neobjevila instance složka nebo facmd_from_fa.txt
-		this.pollingInterval = setInterval(() => {
-			const instanceDir = getFAInstanceDir(workspaceRoot);
-			if (instanceDir) {
-				// Instance složka se objevila - přepni na file watcher
-				this.log('[CommandWatcher] Instance dir nalezena - přepínám na file watcher');
-				this.restartWatching();
-				return;
-			}
-
-			// Zkontroluj všechny možné instance složky a zkus najít facmd_from_fa.txt
-			const fsbridgeDir = path.join(workspaceRoot, '.fsbridge');
-			if (fs.existsSync(fsbridgeDir)) {
-				try {
-					const entries = fs.readdirSync(fsbridgeDir, { withFileTypes: true });
-					for (const entry of entries) {
-						if (entry.isDirectory() && /^\d+$/.test(entry.name)) {
-							const facmdPath = path.join(fsbridgeDir, entry.name, 'facmd_from_fa.txt');
-							if (fs.existsSync(facmdPath)) {
-								this.log(`[CommandWatcher] Nalezen facmd_from_fa.txt v polling módu: ${facmdPath}`);
-								this.processCommand(facmdPath);
-							}
-						}
 					}
-				} catch (error) {
-					// Ignoruj chyby při čtení složky
 				}
 			}
-		}, 200); // Zkráceno z 500ms na 200ms pro rychlejší reakci
+		} catch (error) {
+			// Ignoruj chyby při čtení složky
+		}
 	}
 
 	private async processCommand(facmdPath: string): Promise<void> {
@@ -130,13 +91,14 @@ export class CommandWatcher implements vscode.Disposable {
 			return;
 		}
 
-		// Zkontroluj čas modifikace - pokud je stejný jako poslední zpracovaný, přeskoč
+		// Zkontroluj čas modifikace - pokud je stejný jako poslední zpracovaný pro tuto instanci, přeskoč
 		const stats = fs.statSync(facmdPath);
-		if (stats.mtimeMs === this.lastProcessedTime) {
+		const lastTime = this.lastProcessedTimes.get(facmdPath) || 0;
+		if (stats.mtimeMs === lastTime) {
 			return;
 		}
 
-		this.lastProcessedTime = stats.mtimeMs;
+		this.lastProcessedTimes.set(facmdPath, stats.mtimeMs);
 
 		try {
 			// Načti příkaz
@@ -202,50 +164,71 @@ export class CommandWatcher implements vscode.Disposable {
 	}
 
 	private async handleCheckUnsavedAndClose(facmdPath: string): Promise<void> {
-		const workspaceRoot = getFsBridgeWorkspaceRoot();
-		if (!workspaceRoot) {
-			return;
-		}
-
-		const instanceDir = getFAInstanceDir(workspaceRoot);
-		if (!instanceDir) {
-			return;
-		}
-
+		// OPRAVA: Extrahuj instance složku přímo z facmdPath, ne podle aktivní záložky!
+		const instanceDir = path.dirname(facmdPath);
 		const responsePath = path.join(instanceDir, 'facmd_response.txt');
-		const editor = vscode.window.activeTextEditor;
-
-		if (!editor) {
-			// Žádný editor otevřený
+		
+		// Přečti current_form.txt z instance složky - tím zjistíme, který FormId má FA zavřít
+		const currentFormFile = path.join(instanceDir, 'current_form.txt');
+		let targetFormId = '';
+		
+		if (fs.existsSync(currentFormFile)) {
+			try {
+				let content = fs.readFileSync(currentFormFile, 'utf-8');
+				if (content.charCodeAt(0) === 0xFEFF) {
+					content = content.slice(1);
+				}
+				targetFormId = content.trim();
+				this.log(`[CommandWatcher] Target FormId from current_form.txt: ${targetFormId}`);
+			} catch (error) {
+				this.log(`[CommandWatcher] Chyba při čtení current_form.txt: ${error}`);
+			}
+		}
+		
+		// Najdi záložku s odpovídajícím FormId
+		let targetTab: vscode.Tab | null = null;
+		let targetDocument: vscode.TextDocument | null = null;
+		
+		if (targetFormId) {
+			for (const tabGroup of vscode.window.tabGroups.all) {
+				for (const tab of tabGroup.tabs) {
+					if (tab.input instanceof vscode.TabInputText) {
+						const tabInput = tab.input as vscode.TabInputText;
+						const tabFileName = path.basename(tabInput.uri.fsPath);
+						const tabFormId = extractFormIdFromFileName(tabFileName);
+						
+						if (tabFormId === targetFormId) {
+							targetTab = tab;
+							// Zkus najít odpovídající dokument
+							targetDocument = vscode.workspace.textDocuments.find(
+								doc => doc.uri.fsPath === tabInput.uri.fsPath
+							) || null;
+							break;
+						}
+					}
+				}
+				if (targetTab) break;
+			}
+		}
+		
+		if (!targetTab) {
+			// Záložka nenalezena
 			fs.writeFileSync(responsePath, 'NOT_OPEN', 'utf-8');
-			this.log('[CommandWatcher] Žádný editor otevřený');
+			this.log('[CommandWatcher] Záložka pro FormId nenalezena');
 			return;
 		}
-
-		const document = editor.document;
-		const fileName = path.basename(document.fileName);
-
-		// Zkontroluj, jestli je to FA script soubor
-		if (!fileName.match(/^(script_|u_)[a-zA-Z0-9_]+\.pas$/)) {
-			// Není to FA script - zavři záložku bez kontroly
-			await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
-			fs.writeFileSync(responsePath, 'OK', 'utf-8');
-			this.log('[CommandWatcher] Zavřena záložka (není FA script)');
-			return;
-		}
-
+		
 		// Zkontroluj neuložené změny
-		if (document.isDirty) {
+		if (targetDocument && targetDocument.isDirty) {
 			// Má neuložené změny - odpověz a NEZAVÍREJ
-			const formId = extractFormIdFromFileName(fileName);
-			const message = `UNSAVED:Script ${formId} má neuložené změny`;
+			const message = `UNSAVED:Script ${targetFormId} má neuložené změny`;
 			fs.writeFileSync(responsePath, message, 'utf-8');
-			this.log(`[CommandWatcher] Script má neuložené změny: ${formId}`);
+			this.log(`[CommandWatcher] Script má neuložené změny: ${targetFormId}`);
 			return;
 		}
-
+		
 		// Soubor je uložený - zavři záložku
-		await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
+		await vscode.window.tabGroups.close(targetTab);
 		fs.writeFileSync(responsePath, 'OK', 'utf-8');
 		this.log('[CommandWatcher] Script zavřen (uložený)');
 	}
@@ -321,53 +304,74 @@ export class CommandWatcher implements vscode.Disposable {
 	}
 
 	private async handleCloseFile(facmdPath: string): Promise<void> {
-		const workspaceRoot = getFsBridgeWorkspaceRoot();
-		if (!workspaceRoot) {
-			return;
-		}
-
-		const instanceDir = getFAInstanceDir(workspaceRoot);
-		if (!instanceDir) {
-			return;
-		}
-
+		// OPRAVA: Extrahuj instance složku přímo z facmdPath, ne podle aktivní záložky!
+		// facmdPath je např. "D:\...\Scripts\.fsbridge\12345\facmd_from_fa.txt"
+		const instanceDir = path.dirname(facmdPath);
 		const responsePath = path.join(instanceDir, 'facmd_response.txt');
-		const editor = vscode.window.activeTextEditor;
-
-		if (!editor) {
-			// Žádný editor otevřený
-			fs.writeFileSync(responsePath, 'NOT_OPEN', 'utf-8');
-			this.log('[CommandWatcher] Žádný editor otevřený');
-			return;
-		}
-
-		const document = editor.document;
-		const fileName = path.basename(document.fileName);
-
-		// Zkontroluj, jestli je to FA script soubor
-		if (!fileName.match(/^(script_|u_)[a-zA-Z0-9_]+\.pas$/)) {
-			// Není to FA script - zavři záložku bez kontroly
-			await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
-			fs.writeFileSync(responsePath, 'OK', 'utf-8');
-			this.log('[CommandWatcher] Zavřena záložka (není FA script)');
-			
-			// Zkontroluj, zda jsou ještě nějaké otevřené záložky
-			if (vscode.window.visibleTextEditors.length === 0) {
-				this.log('[CommandWatcher] Žádné otevřené záložky - zavírám Cursor');
-				setTimeout(() => {
-					vscode.commands.executeCommand('workbench.action.quit');
-				}, 100);
+		
+		// Přečti current_form.txt z instance složky - tím zjistíme, který FormId má FA zavřít
+		const currentFormFile = path.join(instanceDir, 'current_form.txt');
+		let targetFormId = '';
+		
+		if (fs.existsSync(currentFormFile)) {
+			try {
+				let content = fs.readFileSync(currentFormFile, 'utf-8');
+				// Odstraň BOM pokud existuje
+				if (content.charCodeAt(0) === 0xFEFF) {
+					content = content.slice(1);
+				}
+				targetFormId = content.trim();
+				this.log(`[CommandWatcher] Target FormId from current_form.txt: ${targetFormId}`);
+			} catch (error) {
+				this.log(`[CommandWatcher] Chyba při čtení current_form.txt: ${error}`);
 			}
-			return;
 		}
-
-		// Zavři záložku (bez kontroly neuložených změn - to už bylo zkontrolováno dříve)
-		await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
+		
+		// Najdi záložku s odpovídajícím FormId a zavři ji
+		let tabClosed = false;
+		
+		if (targetFormId) {
+			// Projdi všechny tab groups a najdi záložku s odpovídajícím FormId
+			this.log(`[CommandWatcher] Hledám záložku pro targetFormId: "${targetFormId}"`);
+			for (const tabGroup of vscode.window.tabGroups.all) {
+				for (const tab of tabGroup.tabs) {
+					if (tab.input instanceof vscode.TabInputText) {
+						const tabInput = tab.input as vscode.TabInputText;
+						const tabFileName = path.basename(tabInput.uri.fsPath);
+						const tabFormId = extractFormIdFromFileName(tabFileName);
+						this.log(`[CommandWatcher] Záložka: "${tabFileName}" -> FormId: "${tabFormId}"`);
+						
+						if (tabFormId === targetFormId) {
+							// Našli jsme správnou záložku - zavři ji
+							this.log(`[CommandWatcher] MATCH! Zavírám záložku pro FormId: ${targetFormId}`);
+							await vscode.window.tabGroups.close(tab);
+							tabClosed = true;
+							break;
+						}
+					}
+				}
+				if (tabClosed) break;
+			}
+		}
+		
+		if (!tabClosed) {
+			// Fallback: pokud jsme nenašli záložku podle FormId, zavři aktivní
+			this.log('[CommandWatcher] Záložka pro FormId nenalezena, zavírám aktivní');
+			await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
+			tabClosed = true;
+		}
+		
 		fs.writeFileSync(responsePath, 'OK', 'utf-8');
 		this.log('[CommandWatcher] Script zavřen');
 		
-		// Zkontroluj, zda jsou ještě nějaké otevřené záložky
-		if (vscode.window.visibleTextEditors.length === 0) {
+		// Zkontroluj, zda jsou ještě nějaké otevřené záložky (počítej skutečné taby, ne viditelné editory)
+		let totalTabs = 0;
+		for (const tabGroup of vscode.window.tabGroups.all) {
+			totalTabs += tabGroup.tabs.length;
+		}
+		this.log(`[CommandWatcher] Zbývající záložky: ${totalTabs}`);
+		
+		if (totalTabs === 0) {
 			this.log('[CommandWatcher] Žádné otevřené záložky - zavírám Cursor');
 			setTimeout(() => {
 				vscode.commands.executeCommand('workbench.action.quit');
@@ -446,10 +450,6 @@ export class CommandWatcher implements vscode.Disposable {
 
 	public dispose(): void {
 		this.stopWatching();
-		if (this.editorChangeListener) {
-			this.editorChangeListener.dispose();
-			this.editorChangeListener = null;
-		}
 	}
 }
 

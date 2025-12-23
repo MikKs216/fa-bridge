@@ -81,6 +81,10 @@ type
     function ReadAllText(const FileName: string): AnsiString;
 
     function RunCursorReuse(const AFolder, AFile: string; ALine, ACol: Integer): Boolean;
+    
+    // Aktivuje záložku v existujícím Cursoru bez spouštění nového
+    // Vrací True pokud Cursor běží a záložka byla aktivována, False pokud Cursor neběží
+    function ActivateTabOnly(const AFile: string): Boolean;
 
     // Nové pomocné metody pro spouštění editoru bez konzole
     function ResolveEditorCommand: string;
@@ -159,6 +163,7 @@ type
     procedure WriteMsgState(const StateJson: string); // Zapíše stav z Msg do famsgstate.json (UTF-8 s BOM)
 
     procedure ActivateCursorWindow;
+    procedure ActivateCurrentFile; // Aktivuje aktuální soubor v Cursoru (pro správné zavření záložky)
     
     // Kontrola a zavření souboru v Cursoru před zavřením FA
     function CheckAndCloseCursorFile: TCursorCloseResult;
@@ -1621,6 +1626,46 @@ begin
   end;
 end;
 
+function TCursorBridge.ActivateTabOnly(const AFile: string): Boolean;
+var
+  H: HWND;
+  Cmd, Params, WS, Ext: string;
+begin
+  Result := False;
+  
+  // Pokud soubor neexistuje, nic nedělej
+  if (AFile = '') or (not FileExists(AFile)) then
+    Exit;
+  
+  // Zkontroluj, jestli Cursor běží - pokud ne, nic nedělej (nespouštěj nový!)
+  if not IsCursorProcessAlive then
+    Exit;
+  
+  // Cursor běží - aktivuj záložku pomocí -r -g "soubor"
+  H := FindWindowByWorkspaceFile('fa_scripts');
+  if H <> 0 then
+  begin
+    // Aktivuj okno
+    SetForegroundWindow(H);
+    if IsIconic(H) then
+      ShowWindow(H, SW_RESTORE);
+  end;
+  
+  // Parametr -r aktivuje záložku v existujícím okně
+  Params := Format('-r -g "%s"', [AFile]);
+  WS := EffectiveExportFolder;
+  
+  // Najdi skutečný spustitelný soubor
+  Cmd := ResolveEditorCommand;
+  Ext := LowerCase(ExtractFileExt(Cmd));
+  
+  // Spusť příkaz pro aktivaci záložky
+  if (Ext = '.cmd') or (Ext = '.bat') then
+    Result := ShellExecNoConsole(Cmd, Params, WS, SW_HIDE)
+  else
+    Result := ShellExecNoConsole(Cmd, Params, WS, SW_SHOWNORMAL);
+end;
+
 procedure TCursorBridge.ActivateCursorWindow;
 var
   H: HWND;
@@ -1659,6 +1704,20 @@ begin
     if IsIconic(H) then
       ShowWindow(H, SW_RESTORE);
     SetForegroundWindow(H);
+  end;
+end;
+
+procedure TCursorBridge.ActivateCurrentFile;
+begin
+  // Aktivuje aktuální soubor v Cursoru bez změny obsahu
+  // Používá se před zavřením záložky, aby se zavřela správná záložka
+  // (extension zavírá AKTIVNÍ záložku, takže musíme mít aktivní tu správnou)
+  // DŮLEŽITÉ: Používáme ActivateTabOnly, která NESPOUŠTÍ nový Cursor pokud neběží
+  // (RunCursorReuse by spustila nový Cursor, což nechceme při zavírání FA)
+  if (FCurrentFile <> '') and FileExists(FCurrentFile) then
+  begin
+    if ActivateTabOnly(FCurrentFile) then
+      Sleep(300); // Pauza pro aktivaci záložky v Cursoru (zvýšeno pro spolehlivost)
   end;
 end;
 

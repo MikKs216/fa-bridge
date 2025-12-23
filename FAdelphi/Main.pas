@@ -5209,7 +5209,8 @@ begin
     // NEZAVÍRÁME jen pro ccrUnsaved (neuložené změny - už bylo ošetřeno výše)
     if CloseResult in [ccrClosed, ccrNotOpen, ccrError] then
     begin
-      // Pokus se zavřít záložku/Cursor (extension rozhodne, jestli zavře jen záložku nebo celý Cursor)
+      // Extension nyní zavírá správnou záložku podle current_form.txt (ne aktivní!)
+      // Není potřeba volat ActivateCurrentFile - extension to řeší sama
       FBridge.CloseCursorFile;
       
       // Resetuj FStateFormWasChanged jen když byl script úspěšně uložen a zavřen

@@ -20,7 +20,7 @@ Technická dokumentace pro vývojáře a AI asistenty.
 - **Jméno:** fa-bridge (Cursor Extension)
 - **Účel:** Propojení Cursor/VS Code s editorem FormStudio (FA)
 - **Technologie:** TypeScript, VS Code Extension API
-- **Aktuální verze:** 0.6.0
+- **Aktuální verze:** 0.9.9
 
 ### Funkčnost
 
@@ -110,6 +110,8 @@ Scripty se otevírají jako **záložky** v jednom okně Cursoru.
     current_form.txt                # Aktuální FormId této FA instance
     cursor_instance.txt             # PID Cursor procesu
     facmd.txt                       # Příkazy z Cursoru pro FA
+    facmd_from_fa.txt               # Příkazy z FA do Cursoru (close_file, check_unsaved)
+    facmd_response.txt              # Odpověď Cursoru na příkaz z FA
     fafield.txt                     # Data pole
     fadebug.txt                     # Debugger příkazy
 ```
@@ -182,6 +184,15 @@ for (const dir of instanceDirs) {
 5. **Zavření a znovuotevření FA**
    - Script se otevře v existujícím okně jako záložka
    - Historie AI chatu se zachová (stejný workspace)
+
+6. **Zavření FA instance**
+   - FA nejdřív pošle `check_unsaved` → Cursor odpoví OK nebo UNSAVED
+   - Pokud UNSAVED, FA zobrazí dialog s dotazem
+   - FA pošle `close_file` do `facmd_from_fa.txt`
+   - Cursor extension přečte `current_form.txt` a najde záložku podle FormId
+   - Cursor zavře KONKRÉTNÍ záložku (ne aktivní!) pomocí `tabGroups.close(tab)`
+   - Pokud nezbyly žádné záložky, Cursor se ukončí
+   - FA smaže svou složku `.fsbridge/{FA_PID}/`
 
 ---
 
@@ -347,11 +358,25 @@ vscode.languages.registerDefinitionProvider(
 
 ### commandWatcher.ts
 
-- `CommandWatcher` - Sleduje změny v `.fsbridge/facmd_from_fa.txt`
-- Zpracovává příkazy posílané z FA do Cursoru
-- Podporované příkazy: `check_unsaved_and_close` (kontrola neuložených změn před zavřením)
-- Používá `fs.watch()` pro monitorování změn souboru
+- `CommandWatcher` - Sleduje příkazy z FA do Cursoru
+- **Polling mechanismus:** Každých 150ms prochází VŠECHNY `.fsbridge/{PID}/` složky
+- Podporuje více instancí FA současně (každá má svou složku podle PID)
+- Zpracovává příkazy z `facmd_from_fa.txt` v každé instance složce
 - Automaticky smaže soubor po zpracování příkazu
+
+**Podporované příkazy:**
+- `check_unsaved` - Kontrola neuložených změn před zavřením FA
+- `close_file` - Zavření záložky scriptu (podle `current_form.txt`, ne aktivní záložky!)
+- `check_if_open` - Kontrola, zda je script otevřený v Cursoru
+
+**Klíčová logika zavírání záložek:**
+1. FA zapíše příkaz `close_file` do `.fsbridge/{FA_PID}/facmd_from_fa.txt`
+2. CommandWatcher přečte `current_form.txt` ze stejné složky → získá FormId
+3. Projde všechny záložky (`vscode.window.tabGroups.all`) a najde tu s odpovídajícím FormId
+4. Zavře konkrétní záložku pomocí `vscode.window.tabGroups.close(tab)`
+5. Pokud nezbyly žádné záložky, zavře celý Cursor
+
+**Debug logování:** Pro zapnutí logování do souboru `.fsbridge/cursor_debug.log` odkomentuj blok v metodě `log()`
 
 ### SnippetProvider.ts
 
@@ -1146,7 +1171,7 @@ Tyto funkce přidáme později:
 
 **Vytvořeno:** Říjen 2025  
 **Status:** ✅ Implementováno a funkční  
-**Verze:** 0.6.0
+**Verze:** 0.9.9
 
 📖 **Další dokumentace:**
 - [USER_GUIDE.md](USER_GUIDE.md) - Uživatelská příručka
