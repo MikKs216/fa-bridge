@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as child_process from 'child_process';
-import { writeFACommand, getFafieldPath, getFsBridgeWorkspaceRoot, getFAInstanceNotFoundMessage } from '../utils/fsBridge';
+import { writeFACommand, getFafieldPath, getFacmdPath, getFsBridgeWorkspaceRoot, getFAInstanceNotFoundMessage } from '../utils/fsBridge';
 import { saveFileHistory } from '../utils/fileHistory';
 import { getIntelliSenseProvider } from '../providers/PascalIntelliSenseProvider';
 
@@ -46,6 +46,7 @@ export async function faDoPopredi(): Promise<void> {
 /**
  * Uloží aktuální soubor pomocí VS Code API (zajišťuje trigger Local History)
  * Pokud soubor nemá změny, jen aktivuje FA do popředí
+ * Aktivace FA se provede POUZE pokud soubor odpovídá nějaké běžící FA instanci
  */
 export async function ulozitSoubor(): Promise<void> {
 	try {
@@ -60,13 +61,15 @@ export async function ulozitSoubor(): Promise<void> {
 
 		const document = editor.document;
 		
-		// Pokud je dokument neuložený, použij standardní save dialog
+		// Pokud je dokument neuložený, použij standardní save dialog (bez aktivace FA)
 		if (document.isUntitled) {
 			await vscode.commands.executeCommand('workbench.action.files.save');
-			// Aktivuj FA i po uložení neuloženého souboru
-			await writeFACommand('Aktivovat_formular');
 			return;
 		}
+
+		// Zkontroluj, jestli soubor odpovídá nějaké FA instanci
+		const workspaceRoot = getFsBridgeWorkspaceRoot();
+		const hasFAInstance = workspaceRoot ? getFacmdPath(workspaceRoot) !== null : false;
 
 		// Pokud soubor obsahuje změny, ulož ho
 		if (document.isDirty) {
@@ -75,11 +78,20 @@ export async function ulozitSoubor(): Promise<void> {
 			await document.save();
 			// Ulož historii PO úspěšném uložení
 			await saveFileHistory(document.fileName);
-			// Aktivuj FA po uložení
-			await writeFACommand('Aktivovat_formular');
+			
+			// Aktivuj FA pouze pokud soubor odpovídá FA instanci
+			if (hasFAInstance) {
+				await writeFACommand('Aktivovat_formular');
+			} else {
+				vscode.window.showWarningMessage('⚠ Soubor uložen, ale neodpovídá žádné běžící FA instanci - FA nebyla aktivována');
+			}
 		} else {
-			// Soubor nemá změny, jen aktivuj FA
-			await writeFACommand('Aktivovat_formular');
+			// Soubor nemá změny, aktivuj FA pouze pokud odpovídá FA instanci
+			if (hasFAInstance) {
+				await writeFACommand('Aktivovat_formular');
+			} else {
+				vscode.window.showWarningMessage('⚠ Soubor neodpovídá žádné běžící FA instanci - FA nebyla aktivována');
+			}
 		}
 	} catch (error) {
 		const msg = error instanceof Error ? error.message : String(error);

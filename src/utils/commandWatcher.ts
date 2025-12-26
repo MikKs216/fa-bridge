@@ -168,9 +168,9 @@ export class CommandWatcher implements vscode.Disposable {
 		const instanceDir = path.dirname(facmdPath);
 		const responsePath = path.join(instanceDir, 'facmd_response.txt');
 		
-		// Přečti current_form.txt z instance složky - tím zjistíme, který FormId má FA zavřít
+		// Přečti current_form.txt z instance složky - obsahuje ABSOLUTNÍ CESTU k souboru
 		const currentFormFile = path.join(instanceDir, 'current_form.txt');
-		let targetFormId = '';
+		let targetScriptPath = '';
 		
 		if (fs.existsSync(currentFormFile)) {
 			try {
@@ -178,26 +178,30 @@ export class CommandWatcher implements vscode.Disposable {
 				if (content.charCodeAt(0) === 0xFEFF) {
 					content = content.slice(1);
 				}
-				targetFormId = content.trim();
-				this.log(`[CommandWatcher] Target FormId from current_form.txt: ${targetFormId}`);
+				targetScriptPath = content.trim();
+				this.log(`[CommandWatcher] Target script path from current_form.txt: ${targetScriptPath}`);
 			} catch (error) {
 				this.log(`[CommandWatcher] Chyba při čtení current_form.txt: ${error}`);
 			}
 		}
 		
-		// Najdi záložku s odpovídajícím FormId
+		// Najdi záložku s odpovídající CESTOU
 		let targetTab: vscode.Tab | null = null;
 		let targetDocument: vscode.TextDocument | null = null;
 		
-		if (targetFormId) {
+		if (targetScriptPath) {
+			// Normalizuj cílovou cestu pro porovnání (Windows: case-insensitive)
+			const normalizedTargetPath = path.normalize(targetScriptPath).toLowerCase();
+			
 			for (const tabGroup of vscode.window.tabGroups.all) {
 				for (const tab of tabGroup.tabs) {
 					if (tab.input instanceof vscode.TabInputText) {
 						const tabInput = tab.input as vscode.TabInputText;
-						const tabFileName = path.basename(tabInput.uri.fsPath);
-						const tabFormId = extractFormIdFromFileName(tabFileName);
+						const tabPath = tabInput.uri.fsPath;
+						const normalizedTabPath = path.normalize(tabPath).toLowerCase();
 						
-						if (tabFormId === targetFormId) {
+						// Porovnej celé cesty (case-insensitive na Windows)
+						if (normalizedTabPath === normalizedTargetPath) {
 							targetTab = tab;
 							// Zkus najít odpovídající dokument
 							targetDocument = vscode.workspace.textDocuments.find(
@@ -214,16 +218,16 @@ export class CommandWatcher implements vscode.Disposable {
 		if (!targetTab) {
 			// Záložka nenalezena
 			fs.writeFileSync(responsePath, 'NOT_OPEN', 'utf-8');
-			this.log('[CommandWatcher] Záložka pro FormId nenalezena');
+			this.log('[CommandWatcher] Záložka pro cestu nenalezena');
 			return;
 		}
 		
 		// Zkontroluj neuložené změny
 		if (targetDocument && targetDocument.isDirty) {
 			// Má neuložené změny - odpověz a NEZAVÍREJ
-			const message = `UNSAVED:Script ${targetFormId} má neuložené změny`;
+			const message = `UNSAVED:Script ${path.basename(targetScriptPath)} má neuložené změny`;
 			fs.writeFileSync(responsePath, message, 'utf-8');
-			this.log(`[CommandWatcher] Script má neuložené změny: ${targetFormId}`);
+			this.log(`[CommandWatcher] Script má neuložené změny: ${targetScriptPath}`);
 			return;
 		}
 		
@@ -235,44 +239,73 @@ export class CommandWatcher implements vscode.Disposable {
 
 	private async handleCheckUnsaved(facmdPath: string): Promise<void> {
 		try {
-			const workspaceRoot = getFsBridgeWorkspaceRoot();
-			if (!workspaceRoot) {
-				this.log('[CommandWatcher] handleCheckUnsaved: Workspace root nenalezen');
-				return;
-			}
-
-			const instanceDir = getFAInstanceDir(workspaceRoot);
-			if (!instanceDir) {
-				this.log('[CommandWatcher] handleCheckUnsaved: Instance dir nenalezena');
-				return;
-			}
-
+			// OPRAVA: Extrahuj instance složku přímo z facmdPath, ne podle aktivní záložky!
+			const instanceDir = path.dirname(facmdPath);
 			const responsePath = path.join(instanceDir, 'facmd_response.txt');
-			this.log(`[CommandWatcher] handleCheckUnsaved: Response path: ${responsePath}`);
 			
-			const editor = vscode.window.activeTextEditor;
-
-			if (!editor) {
-				// Žádný editor otevřený
+			// Přečti current_form.txt z instance složky - obsahuje ABSOLUTNÍ CESTU k souboru
+			const currentFormFile = path.join(instanceDir, 'current_form.txt');
+			let targetScriptPath = '';
+			
+			if (fs.existsSync(currentFormFile)) {
+				try {
+					let content = fs.readFileSync(currentFormFile, 'utf-8');
+					// Odstraň BOM pokud existuje
+					if (content.charCodeAt(0) === 0xFEFF) {
+						content = content.slice(1);
+					}
+					targetScriptPath = content.trim();
+					this.log(`[CommandWatcher] handleCheckUnsaved: Target script path: ${targetScriptPath}`);
+				} catch (error) {
+					this.log(`[CommandWatcher] handleCheckUnsaved: Chyba při čtení current_form.txt: ${error}`);
+				}
+			}
+			
+			if (!targetScriptPath) {
+				// Nemáme cestu ke scriptu
 				fs.writeFileSync(responsePath, 'NOT_OPEN', 'utf-8');
-				this.log('[CommandWatcher] handleCheckUnsaved: Žádný editor otevřený - NOT_OPEN');
+				this.log('[CommandWatcher] handleCheckUnsaved: Cesta ke scriptu nenalezena - NOT_OPEN');
 				return;
 			}
-
-			const document = editor.document;
-			const fileName = path.basename(document.fileName);
-			this.log(`[CommandWatcher] handleCheckUnsaved: Kontroluji soubor: ${fileName}, isDirty: ${document.isDirty}`);
-
-			// Zkontroluj, jestli je to FA script soubor
-			if (!fileName.match(/^(script_|u_)[a-zA-Z0-9_]+\.pas$/)) {
-				// Není to FA script - odpověz OK (není co kontrolovat)
-				fs.writeFileSync(responsePath, 'OK', 'utf-8');
-				this.log('[CommandWatcher] handleCheckUnsaved: Není FA script - OK');
+			
+			// Normalizuj cílovou cestu pro porovnání (Windows: case-insensitive)
+			const normalizedTargetPath = path.normalize(targetScriptPath).toLowerCase();
+			
+			// Najdi dokument s odpovídající cestou
+			let targetDocument: vscode.TextDocument | null = null;
+			
+			for (const tabGroup of vscode.window.tabGroups.all) {
+				for (const tab of tabGroup.tabs) {
+					if (tab.input instanceof vscode.TabInputText) {
+						const tabInput = tab.input as vscode.TabInputText;
+						const tabPath = tabInput.uri.fsPath;
+						const normalizedTabPath = path.normalize(tabPath).toLowerCase();
+						
+						// Porovnej celé cesty (case-insensitive na Windows)
+						if (normalizedTabPath === normalizedTargetPath) {
+							// Našli jsme záložku - najdi odpovídající dokument
+							targetDocument = vscode.workspace.textDocuments.find(
+								doc => doc.uri.fsPath === tabInput.uri.fsPath
+							) || null;
+							break;
+						}
+					}
+				}
+				if (targetDocument) break;
+			}
+			
+			if (!targetDocument) {
+				// Záložka nenalezena
+				fs.writeFileSync(responsePath, 'NOT_OPEN', 'utf-8');
+				this.log('[CommandWatcher] handleCheckUnsaved: Záložka pro cestu nenalezena - NOT_OPEN');
 				return;
 			}
-
+			
+			const fileName = path.basename(targetScriptPath);
+			this.log(`[CommandWatcher] handleCheckUnsaved: Kontroluji soubor: ${fileName}, isDirty: ${targetDocument.isDirty}`);
+			
 			// Zkontroluj neuložené změny
-			if (document.isDirty) {
+			if (targetDocument.isDirty) {
 				// Má neuložené změny - odpověz
 				const formId = extractFormIdFromFileName(fileName);
 				const message = `UNSAVED:Script ${formId} má neuložené změny`;
@@ -280,7 +313,7 @@ export class CommandWatcher implements vscode.Disposable {
 				this.log(`[CommandWatcher] handleCheckUnsaved: Script má neuložené změny: ${formId} - UNSAVED`);
 				return;
 			}
-
+			
 			// Soubor je uložený - odpověz OK
 			fs.writeFileSync(responsePath, 'OK', 'utf-8');
 			this.log('[CommandWatcher] handleCheckUnsaved: Script je uložený - OK');
@@ -289,14 +322,9 @@ export class CommandWatcher implements vscode.Disposable {
 			this.log(`[CommandWatcher] handleCheckUnsaved: Chyba: ${msg}`);
 			// Zkus zapsat chybovou odpověď
 			try {
-				const workspaceRoot = getFsBridgeWorkspaceRoot();
-				if (workspaceRoot) {
-					const instanceDir = getFAInstanceDir(workspaceRoot);
-					if (instanceDir) {
-						const responsePath = path.join(instanceDir, 'facmd_response.txt');
-						fs.writeFileSync(responsePath, 'ERROR', 'utf-8');
-					}
-				}
+				const instanceDir = path.dirname(facmdPath);
+				const responsePath = path.join(instanceDir, 'facmd_response.txt');
+				fs.writeFileSync(responsePath, 'ERROR', 'utf-8');
 			} catch (e) {
 				// Ignoruj chybu při zápisu chybové odpovědi
 			}
@@ -309,9 +337,9 @@ export class CommandWatcher implements vscode.Disposable {
 		const instanceDir = path.dirname(facmdPath);
 		const responsePath = path.join(instanceDir, 'facmd_response.txt');
 		
-		// Přečti current_form.txt z instance složky - tím zjistíme, který FormId má FA zavřít
+		// Přečti current_form.txt z instance složky - obsahuje ABSOLUTNÍ CESTU k souboru
 		const currentFormFile = path.join(instanceDir, 'current_form.txt');
-		let targetFormId = '';
+		let targetScriptPath = '';
 		
 		if (fs.existsSync(currentFormFile)) {
 			try {
@@ -320,30 +348,34 @@ export class CommandWatcher implements vscode.Disposable {
 				if (content.charCodeAt(0) === 0xFEFF) {
 					content = content.slice(1);
 				}
-				targetFormId = content.trim();
-				this.log(`[CommandWatcher] Target FormId from current_form.txt: ${targetFormId}`);
+				targetScriptPath = content.trim();
+				this.log(`[CommandWatcher] Target script path from current_form.txt: ${targetScriptPath}`);
 			} catch (error) {
 				this.log(`[CommandWatcher] Chyba při čtení current_form.txt: ${error}`);
 			}
 		}
 		
-		// Najdi záložku s odpovídajícím FormId a zavři ji
+		// Najdi záložku s odpovídající CESTOU a zavři ji
 		let tabClosed = false;
 		
-		if (targetFormId) {
-			// Projdi všechny tab groups a najdi záložku s odpovídajícím FormId
-			this.log(`[CommandWatcher] Hledám záložku pro targetFormId: "${targetFormId}"`);
+		if (targetScriptPath) {
+			// Normalizuj cílovou cestu pro porovnání (Windows: case-insensitive)
+			const normalizedTargetPath = path.normalize(targetScriptPath).toLowerCase();
+			
+			// Projdi všechny tab groups a najdi záložku s odpovídající cestou
+			this.log(`[CommandWatcher] Hledám záložku pro cestu: "${targetScriptPath}"`);
 			for (const tabGroup of vscode.window.tabGroups.all) {
 				for (const tab of tabGroup.tabs) {
 					if (tab.input instanceof vscode.TabInputText) {
 						const tabInput = tab.input as vscode.TabInputText;
-						const tabFileName = path.basename(tabInput.uri.fsPath);
-						const tabFormId = extractFormIdFromFileName(tabFileName);
-						this.log(`[CommandWatcher] Záložka: "${tabFileName}" -> FormId: "${tabFormId}"`);
+						const tabPath = tabInput.uri.fsPath;
+						const normalizedTabPath = path.normalize(tabPath).toLowerCase();
+						this.log(`[CommandWatcher] Záložka: "${tabPath}"`);
 						
-						if (tabFormId === targetFormId) {
+						// Porovnej celé cesty (case-insensitive na Windows)
+						if (normalizedTabPath === normalizedTargetPath) {
 							// Našli jsme správnou záložku - zavři ji
-							this.log(`[CommandWatcher] MATCH! Zavírám záložku pro FormId: ${targetFormId}`);
+							this.log(`[CommandWatcher] MATCH! Zavírám záložku: ${tabPath}`);
 							await vscode.window.tabGroups.close(tab);
 							tabClosed = true;
 							break;
@@ -355,8 +387,8 @@ export class CommandWatcher implements vscode.Disposable {
 		}
 		
 		if (!tabClosed) {
-			// Fallback: pokud jsme nenašli záložku podle FormId, zavři aktivní
-			this.log('[CommandWatcher] Záložka pro FormId nenalezena, zavírám aktivní');
+			// Fallback: pokud jsme nenašli záložku podle cesty, zavři aktivní
+			this.log('[CommandWatcher] Záložka pro cestu nenalezena, zavírám aktivní');
 			await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
 			tabClosed = true;
 		}
@@ -402,6 +434,7 @@ export class CommandWatcher implements vscode.Disposable {
 
 		const document = editor.document;
 		const fileName = path.basename(document.fileName);
+		const filePath = document.fileName;
 
 		// Zkontroluj, jestli je to FA script soubor
 		if (!fileName.match(/^(script_|u_)[a-zA-Z0-9_]+\.pas$/)) {
@@ -411,41 +444,36 @@ export class CommandWatcher implements vscode.Disposable {
 			return;
 		}
 
-		// Extrahuj FormId z názvu souboru
-		const formId = extractFormIdFromFileName(fileName);
-		if (!formId) {
-			fs.writeFileSync(responsePath, 'NOT_FA_SCRIPT', 'utf-8');
-			this.log('[CommandWatcher] Nelze extrahovat FormId z názvu souboru');
-			return;
-		}
-
 		// Zkontroluj, jestli je tento script otevřený v aktivní záložce
-		// Porovnejme FormId z názvu souboru s FormId z current_form.txt
+		// Porovnejme CELOU CESTU aktivního souboru s cestou v current_form.txt
 		const currentFormFile = path.join(instanceDir, 'current_form.txt');
 		if (fs.existsSync(currentFormFile)) {
-			let currentFormId = '';
+			let currentScriptPath = '';
 			try {
 				let content = fs.readFileSync(currentFormFile, 'utf-8');
 				// Odstraň BOM pokud existuje
 				if (content.charCodeAt(0) === 0xFEFF) {
 					content = content.slice(1);
 				}
-				currentFormId = content.trim();
+				currentScriptPath = content.trim();
 			} catch (error) {
 				this.log(`[CommandWatcher] Chyba při čtení current_form.txt: ${error}`);
 			}
 
-			// Pokud FormId odpovídá, script je otevřený
-			if (currentFormId === formId) {
+			// Porovnej celé cesty (case-insensitive na Windows)
+			const normalizedCurrentPath = path.normalize(currentScriptPath).toLowerCase();
+			const normalizedActivePath = path.normalize(filePath).toLowerCase();
+			
+			if (normalizedCurrentPath === normalizedActivePath) {
 				fs.writeFileSync(responsePath, 'OPEN', 'utf-8');
-				this.log(`[CommandWatcher] Script je otevřený: ${formId}`);
+				this.log(`[CommandWatcher] Script je otevřený: ${filePath}`);
 				return;
 			}
 		}
 
 		// Script není otevřený (nebo je otevřený jiný script)
 		fs.writeFileSync(responsePath, 'NOT_OPEN', 'utf-8');
-		this.log(`[CommandWatcher] Script není otevřený: ${formId}`);
+		this.log(`[CommandWatcher] Script není otevřený: ${filePath}`);
 	}
 
 	public dispose(): void {

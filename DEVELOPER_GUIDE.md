@@ -20,7 +20,7 @@ Technická dokumentace pro vývojáře a AI asistenty.
 - **Jméno:** fa-bridge (Cursor Extension)
 - **Účel:** Propojení Cursor/VS Code s editorem FormStudio (FA)
 - **Technologie:** TypeScript, VS Code Extension API
-- **Aktuální verze:** 0.9.9
+- **Aktuální verze:** 0.10.2
 
 ### Funkčnost
 
@@ -136,6 +136,13 @@ begin
   Params := '--new-window ' + FolderArg + FileArg;
 end;
 ```
+
+**Poznámka k odezvě (~0,5s):** Při aktivaci Cursoru z FA může uživatel vnímat zpoždění cca 0,5 sekundy. Toto zpoždění je způsobeno:
+- **Spuštěním CLI příkazu** `cursor.exe` - režie Windows při vytváření procesu
+- **Zpracováním parametrů Cursorem** - Electron/VS Code potřebuje čas na zpracování `-r` a `-g` parametrů
+- **IPC komunikací** mezi CLI a hlavním oknem Cursoru
+
+Toto zpoždění je inherentní architektuře VS Code/Cursor a nelze ho výrazně snížit. Drobné `Sleep` hodnoty v Delphi kódu (50-100ms) mají minimální vliv na celkovou odezvu.
 
 #### Logika Alt+Q z Cursoru → FA
 
@@ -1171,7 +1178,7 @@ Tyto funkce přidáme později:
 
 **Vytvořeno:** Říjen 2025  
 **Status:** ✅ Implementováno a funkční  
-**Verze:** 0.9.9
+**Verze:** 0.10.2
 
 📖 **Další dokumentace:**
 - [USER_GUIDE.md](USER_GUIDE.md) - Uživatelská příručka

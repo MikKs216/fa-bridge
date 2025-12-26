@@ -2242,6 +2242,7 @@ type
     procedure BridgeExternalSave(const Text: AnsiString); // událost z bridge
     procedure WriteBridgeDebug(const AMessage: string); // bezpečný debug zápis
     procedure TimerPollTimer(Sender: TObject);
+    procedure UpdateTimerState; // Nastaví timer podle stavu dxBarButtonUseCursorEditor
     procedure OpenScriptInCursor;
     procedure ProcessFACommand(const Command: string);
     function BuildVariablesJson: string; // sestavení JSON s proměnnými ze skriptu
@@ -11009,6 +11010,7 @@ begin
     {$IFNDEF FINALBUILD}
     {$IFDEF UCURSOR}
     dxBarButtonUseCursorEditor.Down := iniFile.ReadBool(Name, 'UseCursorEditor', false);
+    UpdateTimerState; // Nastav timer podle načteného stavu
     {$ENDIF UCURSOR}
     {$ENDIF FINALBUILD}
 
@@ -23158,6 +23160,7 @@ begin
       FreeAndNil(fmScriptEditor); // aby se pri dalsim otevreni nacetl script do editoru
   end;
   SetDesignButtons;
+  UpdateTimerState; // Nastav timer podle nového stavu přepínače
 {$ENDIF FINALBUILD}
 end;
 
@@ -27128,7 +27131,12 @@ begin
   TimerPoll := TTimer.Create(Self);
   TimerPoll.Interval := 250; // 250 ms (sníženo z 500ms pro rychlejší odezvu při přepínání)
   TimerPoll.OnTimer  := TimerPollTimer;
-  TimerPoll.Enabled := True;
+  // Timer bude aktivován až po načtení stavu z INI v LoadAndSetPositionInFS
+  TimerPoll.Enabled := False;
+  
+  // Pokud je přepínač už nastavený (např. z design-time), použij jeho stav
+  // Jinak bude nastaven po načtení z INI
+  UpdateTimerState;
 end;
 
 procedure TfaMain.FAToFront;
@@ -27149,6 +27157,16 @@ procedure TfaMain.AppDone;
 begin
   TimerPoll.Enabled := False;
   FreeAndNil(FBridge);
+end;
+
+procedure TfaMain.UpdateTimerState;
+begin
+  {$IFDEF UCURSOR}
+  if Assigned(TimerPoll) then
+  begin
+    TimerPoll.Enabled := dxBarButtonUseCursorEditor.Down;
+  end;
+  {$ENDIF UCURSOR}
 end;
 
 procedure TfaMain.TimerPollTimer(Sender: TObject);

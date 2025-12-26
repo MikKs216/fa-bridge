@@ -602,9 +602,11 @@ var
   RetryCount: Integer;
   Success: Boolean;
 begin
-  // Zapíše aktuální FormId do current_form.txt (atomicky s retry)
-  // Cursor extension používá tento soubor pro určení, která FA instance edituje který script
-  if FormId = '' then Exit;
+  // Zapíše absolutní cestu k souboru do current_form.txt (atomicky s retry)
+  // Cursor extension používá tento soubor pro identifikaci správné záložky
+  // DŮLEŽITÉ: Používáme celou cestu, ne jen FormId, protože může být otevřeno
+  // více formulářů se stejným ID z různých umístění (vlastní vs. cizí)
+  if (FormId = '') or (FCurrentFile = '') then Exit;
   
   FormFile := GetCurrentFormFilePath;
   
@@ -612,7 +614,8 @@ begin
   EnsureDir(ExtractFilePath(FormFile));
   
   // Použij atomický zápis s retry mechanismem
-  Content := AnsiString(FormId);
+  // Zapisujeme ABSOLUTNÍ CESTU k souboru (může obsahovat mezery)
+  Content := AnsiString(FCurrentFile);
   Success := False;
   RetryCount := 0;
   
