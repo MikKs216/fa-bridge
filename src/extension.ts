@@ -27,6 +27,7 @@ import { registerHelpPanel } from './views/HelpPanel';
 import { registerIntelliSenseProvider, getIntelliSenseProvider } from './providers/PascalIntelliSenseProvider';
 import { CommandWatcher } from './utils/commandWatcher';
 import { registerBeginEndMatcher } from './providers/BeginEndMatcher';
+import { registerCodeLensProvider } from './providers/PascalCodeLensProvider';
 import { compareWithPreviousVersion, showHistoryVersions, setHistoryRefreshCallback } from './utils/fileHistory';
 import { HistoryPanel } from './historyPanel';
 import { HistoryProvider, HistoryItem } from './historyProvider';
@@ -319,6 +320,10 @@ export function activate(context: vscode.ExtensionContext) {
 	registerBeginEndMatcher(context);
 	outputChannel.appendLine('[FA Bridge] Begin/End matcher registrován');
 
+	// Registruj CodeLens provider pro zobrazení referencí
+	context.subscriptions.push(registerCodeLensProvider(context, outputChannel));
+	outputChannel.appendLine('[FA Bridge] CodeLens provider registrován');
+
 	// Output Channel se zobrazí automaticky v dropdownu Output panelu
 	// Není potřeba ho explicitně zobrazovat
 
@@ -403,6 +408,18 @@ export function activate(context: vscode.ExtensionContext) {
 			await provider.goToDefinition();
 		}),
 		
+		// Command pro zobrazení referencí (volaný z CodeLens)
+		vscode.commands.registerCommand('faBridge.showReferences', 
+			(uri: vscode.Uri, position: vscode.Position, locations: vscode.Location[]) => {
+				vscode.commands.executeCommand(
+					'editor.action.showReferences',
+					uri,
+					position,
+					locations
+				);
+			}
+		),
+
 		// Command pro zobrazení statistik IntelliSense
 		vscode.commands.registerCommand('faBridge.showIntelliSenseStats', () => {
 			const provider = getIntelliSenseProvider();
