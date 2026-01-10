@@ -5075,9 +5075,9 @@ begin
       begin
         // Soubor má neuložené změny - upozorni uživatele a zastav zavírání
         MsgBoxWarn(Caption, 
-          'Script v Cursoru má neuložené změny.' + #13#10 +
-          'Nejdříve uložte změny v Cursoru (Alt+Q) do FA' + #13#10 +
-          'a pak zavřete FA znovu.', 
+          'Script v Cursoru má neuložené změny.' + #13#10 + #13#10 +
+          'Nejdřív ulož změny v Cursoru do FA' + #13#10 +
+          'a pak zavři FA znovu.', 
           MB_OK);
         FBridge.ActivateCursorWindow; // Přepni na Cursor okno
         CanClose := False;
@@ -5117,10 +5117,10 @@ begin
           begin
             // Obsah na disku se liší od obsahu v databázi - nahlásit a nezavřít FA
             MsgBoxWarn(Caption, 
-              'Script na disku se liší od scriptu v databázi FA.' + #13#10 +
+              'Script na disku se liší od scriptu ve FA.' + #13#10 +
               'Obsah byl změněn v Cursoru.' + #13#10 + #13#10 +
-              'Nejdříve uložte změny v Cursoru (Alt+Q) do FA' + #13#10 +
-              'a pak zavřete FA znovu.', 
+              'Nejdříve ulož změny v Cursoru do FA' + #13#10 +
+              'a pak zavři FA znovu.', 
               MB_OK);
             FBridge.ActivateCursorWindow; // Přepni na Cursor okno
             CanClose := False;
@@ -5162,9 +5162,9 @@ begin
               // Obsah na disku se liší od obsahu v databázi
               // Zeptej se uživatele, jestli chce otevřít Cursor pro kontrolu scriptu
               res := MessageAsk(Caption, 
-                'Script na disku se liší od scriptu v databázi FA.' + #13#10 +
+                'Script na disku se liší od scriptu ve FA.' + #13#10 +
                 'Obsah byl změněn v Cursoru.' + #13#10 + #13#10 +
-                'Chcete otevřít Cursor pro kontrolu změn?', 
+                'Chceš otevřít Cursor pro kontrolu změn?', 
                 [MBYES, MBNO]);
               
               if res = IDYES then
@@ -5191,7 +5191,7 @@ begin
                   // Nepodařilo se otevřít Cursor - zobraz varování a pokračuj v zavírání
                   MsgBoxWarn(Caption, 
                     'Nepodařilo se otevřít Cursor.' + #13#10 +
-                    'Script na disku se liší od scriptu v databázi FA.', 
+                    'Script na disku se liší od scriptu ve FA.', 
                     MB_OK);
                   // Pokračuj v zavírání FA (uživatel může změny zkontrolovat později)
                 end;
@@ -19371,8 +19371,8 @@ begin
             {$IFDEF UCURSOR}
             // Zobraz hlášení jen když editujeme v Cursoru
             if Assigned(FBridge) and (FBridge.CurrentFile <> '') then
-              MsgBoxErr('FORM asistent - Chyba kompilace scriptu',
-                'Chyba v scriptu:' + #13#10 + #13#10 + E.Message, 
+              MsgBoxErr('FORM asistent',
+                'Chyba ve scriptu:' + #13#10 + #13#10 + E.Message, 
                 MB_OK);
             {$ENDIF UCURSOR}
             raise; // Přehodí výjimku dál
@@ -27320,11 +27320,11 @@ begin
         begin
           // Obsah na disku se liší od obsahu v databázi - zeptat uživatele
           res := MsgBoxAsk(Caption, 
-            'Script na disku se liší od scriptu v databázi FA.' + #13#10 +
+            'Script na disku se liší od scriptu ve FA.' + #13#10 +
             'Obsah byl změněn v Cursoru.' + #13#10 + #13#10 +
-            'Chcete přepsat změny stavem z databáze FA?' + #13#10 + #13#10 +
-            'ANO = přepsat změny z Cursoru' + #13#10 +
-            'NE = zachovat změny z Cursoru a jen aktivovat Cursor',
+            'Chceš přepsat script v Cursoru stavem z FA?' + #13#10 + #13#10 +
+            'ANO = přepsat script v Cursoru' + #13#10 +
+            'NE = zachovat script v Cursoru',
             MB_YESNO or MB_ICONQUESTION);
           
           if res = IDNO then
