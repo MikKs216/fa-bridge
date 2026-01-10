@@ -171,24 +171,33 @@ export class FABridgeTreeProvider implements vscode.TreeDataProvider<CategoryTre
 				new vscode.ThemeIcon('symbol-array'),
 				'Vloží údaj z FA ve formátu [:názevÚdaje:]'
 			),
-			new CommandTreeItem(
-				'Help (Ctrl+F1)',
-				{
-					command: 'faBridge.openHelp',
-					title: 'Help',
-				},
-				new vscode.ThemeIcon('book'),
-				'Otevře HTML help s tématem podle slova pod kurzorem'
-			),
-			new CommandTreeItem(
-				'Hledat v TextSearch (Shift+Ctrl+F1)',
-				{
-					command: 'faBridge.openTextSearch',
-					title: 'Hledat v TextSearch',
-				},
-				new vscode.ThemeIcon('search'),
-				'Otevře TextSearch.exe se slovem pod kurzorem'
-			),
+		new CommandTreeItem(
+			'Help (Ctrl+F1)',
+			{
+				command: 'faBridge.openHelp',
+				title: 'Help',
+			},
+			new vscode.ThemeIcon('book'),
+			'Otevře HTML help s tématem podle slova pod kurzorem'
+		),
+		new CommandTreeItem(
+			'Otevřít FA.chm (Ctrl+Alt+F1)',
+			{
+				command: 'faBridge.openFaChm',
+				title: 'Otevřít FA.chm',
+			},
+			new vscode.ThemeIcon('book'),
+			'Otevře FA.chm help soubor'
+		),
+		new CommandTreeItem(
+			'Hledat v TextSearch (Shift+Ctrl+F1)',
+			{
+				command: 'faBridge.openTextSearch',
+				title: 'Hledat v TextSearch',
+			},
+			new vscode.ThemeIcon('search'),
+			'Otevře TextSearch.exe se slovem pod kurzorem'
+		),
 		];
 
 		// Vrať příkazy přímo bez kategorie

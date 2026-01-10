@@ -774,6 +774,7 @@ let helpPanel: vscode.WebviewPanel | undefined = undefined;
 
 /**
  * Otevře TextSearch.exe se slovem pod kurzorem (Ctrl+Shift+F1)
+ * Pokud kurzor není na slově, otevře TextSearch.exe bez parametru
  */
 export async function openTextSearch(): Promise<void> {
 	try {
@@ -793,11 +794,6 @@ export async function openTextSearch(): Promise<void> {
 			searchWord = editor.document.getText(wordRange);
 		}
 
-		if (!searchWord) {
-			vscode.window.showErrorMessage('✗ Kurzor není na žádném slově');
-			return;
-		}
-
 		// Najdi workspace root
 		const workspaceRoot = getFsBridgeWorkspaceRoot();
 		if (!workspaceRoot) {
@@ -812,9 +808,11 @@ export async function openTextSearch(): Promise<void> {
 			return;
 		}
 
-		// Spusť TextSearch.exe s parametrem hledaného slova
+		// Spusť TextSearch.exe s parametrem hledaného slova (pokud existuje)
 		// Parametr musí být v uvozovkách pro správné zpracování
-		const command = `"${textSearchPath}" "${searchWord}"`;
+		const command = searchWord 
+			? `"${textSearchPath}" "${searchWord}"` 
+			: `"${textSearchPath}"`;
 		
 		child_process.exec(command, (error, stdout, stderr) => {
 			if (error) {
@@ -825,6 +823,46 @@ export async function openTextSearch(): Promise<void> {
 				vscode.window.showErrorMessage(`✗ Chyba při spuštění TextSearch: ${error.message}`);
 			} else {
 				console.log(`[TextSearch] Spuštěno: ${command}`);
+			}
+		});
+	} catch (error) {
+		const msg = error instanceof Error ? error.message : String(error);
+		vscode.window.showErrorMessage(`✗ Chyba: ${msg}`);
+	}
+}
+
+/**
+ * Otevře FA.chm soubor pomocí Windows CHM prohlížeče (Ctrl+Alt+F1)
+ */
+export async function openFaChm(): Promise<void> {
+	try {
+		// Najdi workspace root
+		const workspaceRoot = getFsBridgeWorkspaceRoot();
+		if (!workspaceRoot) {
+			throw new Error('Žádný workspace otevřen nebo .fsbridge složka nenalezena');
+		}
+
+		// Cesta k FA.chm v _source složce
+		const faChmPath = path.join(workspaceRoot, '_source', 'FA.chm');
+
+		if (!fs.existsSync(faChmPath)) {
+			vscode.window.showErrorMessage(`✗ FA.chm nebyl nalezen: ${faChmPath}`);
+			return;
+		}
+
+		// Otevři FA.chm pomocí Windows výchozího CHM prohlížeče
+		// Použij "start" příkaz pro otevření s výchozím programem
+		const command = `start "" "${faChmPath}"`;
+		
+		child_process.exec(command, { shell: 'cmd.exe' }, (error, stdout, stderr) => {
+			if (error) {
+				console.error(`[FA.chm] Chyba při otevírání: ${error.message}`);
+				if (stderr) {
+					console.error(`[FA.chm] Stderr: ${stderr}`);
+				}
+				vscode.window.showErrorMessage(`✗ Chyba při otevírání FA.chm: ${error.message}`);
+			} else {
+				console.log(`[FA.chm] Otevřen: ${faChmPath}`);
 			}
 		});
 	} catch (error) {

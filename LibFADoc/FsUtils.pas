@@ -1044,29 +1044,47 @@ procedure CreateFDFFile(const AFDFString: string; const APDFFileName: string;
 /// <summary>Provede konverzi nepřípustných znaků ve FDF.</summary>
 function EncodeFDFString(const AStr: string): string;
 
-/// <summary>TODO: doplnit dokumentaci</summary>
+/// <summary>Vrací obsah souboru z FDR.</summary>
+/// <param name="AFileName">Jméno požadovaného souboru.</param>
+/// <returns>Obsah souboru z FDR. Rozbalí FDR soubor do Worku a vrátí obsah souboru AFileName. Často se používá právě jen na rozbalení FDR souboru.</returns>
 function GetTxtFileFromFDR(const AFileName: string): string;
 
-/// <summary>TODO: doplnit dokumentaci</summary>
+/// <summary>Otevře náhled formuláře podle předaných dat nebo připraví k odeslání e-mailem nebo uloží do PDF souboru na disk.</summary>
+/// <param name="AFormData">Data formuláře.</param>
+/// <param name="ASendMail">True, pokud se má otevřít dialog pro odeslání mailem.</param>
+/// <param name="AOnlyPrepareFile">True, pokud se má uložit jen soubor na disk.</param>
+/// <param name="AOutPDFFileName">Cesta pro uložení na disk (výstupní parametr).</param>
 procedure DoPrintForm(const AFormData: string;
    ASendMail: boolean; AOnlyPrepareFile: boolean; var AOutPDFFileName: string);
 
-/// <summary>TODO: doplnit dokumentaci</summary>
+/// <summary>Uloží pracovní tabulku mtWork do textu.</summary>
+/// <returns>Data tabulky v textu.</returns>
 function mtWorkSaveToString: string;
 
-/// <summary>TODO: doplnit dokumentaci</summary>
+/// <summary>Naplní pracovní tabulku mtWork z textu.</summary>
+/// <param name="str">Text s daty tabulky.</param>
 procedure mtWorkLoadFromString(str: string);
 
-/// <summary>TODO: doplnit dokumentaci</summary>
+/// <summary>Vrací cestu ke složce Work.</summary>
+/// <returns>Cesta ke složce Work.</returns>
 function GetDirWorkPath: string;
 
-/// <summary>TODO: doplnit dokumentaci</summary>
+/// <summary>Vrací cestu k exe souboru programu.</summary>
+/// <returns>Cesta k exe souboru programu.</returns>
 function GetExeFilePath: string;
 
-/// <summary>TODO: doplnit dokumentaci</summary>
+/// <summary>Zkopíruje soubor na disku.</summary>
+/// <param name="ASourceFileName">Cesta ke zdrojovému souboru.</param>
+/// <param name="ADestinationFileName">Cílová cesta.</param>
+/// <returns>True, pokud se kopírování povedlo.</returns>
 function DoCopyFile(ASourceFileName: string; ADestinationFileName: string): boolean;
 
-/// <summary>TODO: doplnit dokumentaci</summary>
+/// <summary>Otevře dialog pro výběr z nainstalovaných certifikátů.</summary>
+/// <param name="AHash">Hash certifikátu, na který se má combo postavit, vrací hash vybraného certifikátu (výstupní parametr).</param>
+/// <param name="ASubject">Krátký název držitele certifikátu (výstupní parametr).</param>
+/// <param name="AFullSubject">Celý název držitele certifikátu (výstupní parametr).</param>
+/// <param name="ACertifikat">Obsah certifikátu (výstupní parametr).</param>
+/// <returns>True, když uživatel vybral certifikát.</returns>
 function VyberCertifikat(var AHash:string; var ASubject:string;
   var AFullSubject:string; var ACertifikat:string):boolean;
 
@@ -1082,41 +1100,84 @@ function FloatFieldIntPartStr(AFieldName: string; AFormatFloat: boolean = TRUE):
 /// <returns>Desetinná část čísla jako řetězec.</returns>
 function FloatFieldFracPartStr(AFieldName: string; ADigit: integer = -2): string;
 
-/// <summary>TODO: doplnit dokumentaci</summary>
+/// <summary>Zvýší počítadlo použití tisku nebo el. podání v licenci start.</summary>
+/// <returns>True, pokud má uživatel nárok na tisk nebo el. podání (má licenci nebo nemá ještě vyčerpaný povolený počet).</returns>
 function StartCounterZero: boolean;
 
-/// <summary>TODO: doplnit dokumentaci</summary>
+/// <summary>Převede text z kódování UTF8 do ANSI.</summary>
+/// <param name="str">Text k překódování.</param>
+/// <returns>Překódovaný text.</returns>
 function Utf8ToAnsiString(const str: string): string;
 
-/// <summary>TODO: doplnit dokumentaci</summary>
+/// <summary>Otevře dialog na výběr adresáře.</summary>
+/// <param name="Caption">Nadpis okna.</param>
+/// <param name="Root">Složka, kde má začít zobrazení stromu adresářů.</param>
+/// <param name="Directory">Vrácená vybraná složka (výstupní parametr).</param>
+/// <returns>True, pokud uživatel složku vybral. False, pokud stornoval.</returns>
 function SelectDir(const Caption: string; const Root: WideString; var Directory: string): Boolean;
 
-/// <summary>TODO: doplnit dokumentaci</summary>
+/// <summary>Vrací obsah PDS souboru (soubor s daty pro PDF formulář).</summary>
+/// <param name="APDSFileName">Jméno PDS souboru (výchozí je prázdný řetězec, použije se aktuální formulář).</param>
+/// <returns>Obsah PDS souboru.</returns>
 function GetPDS(const APDSFileName: string = ''): string;
 
-/// <summary>TODO: doplnit dokumentaci</summary>
+/// <summary>Zkontroluje existenci DIČ v registru VIES.</summary>
+/// <param name="countrycode">Dvojmístný kód státu, např. CZ, SK, DE apod.</param>
+/// <param name="vatno">DIČ plátce.</param>
+/// <param name="vysledek">Pokud byl subjekt nalezen, vrací název a adresu subjektu (výstupní parametr).</param>
+/// <returns>-1 nejde ověřit (např. chyba při připojení, nefunkční služba), 0 DIČ neexistuje, 1 DIČ existuje.</returns>
 function SCheckVAT(countrycode:string; vatno:string; var vysledek:string):integer;
 
-/// <summary>TODO: doplnit dokumentaci</summary>
+/// <summary>V registru MFČR testuje, zda je plátce DPH spolehlivý.</summary>
+/// <param name="vatno">DIČ plátce DPH (může být uveden včetně kódu CZ, nebo bez něj).</param>
+/// <param name="vysledek">Textový výsledek testu (výstupní parametr).</param>
+/// <returns>-1 nejde ověřit (např. chyba při připojení, nefunkční služba), 0 DIČ nenalezeno, 1 DIČ nalezeno spolehlivý, 2 DIČ nalezeno nespolehlivý.</returns>
 function SCheckPlatce(vatno:string; var vysledek:string):integer;
 
-/// <summary>TODO: doplnit dokumentaci</summary>
+/// <summary>Načte osobu z registru ARES.</summary>
+/// <param name="AICO">Identifikační číslo firmy, dle kterého se v registru ARES vyhledává.</param>
+/// <param name="ATypOsoby">Typ osoby (výstupní parametr).</param>
+/// <param name="ANazevFirmy">Název firmy (výstupní parametr).</param>
+/// <param name="AUlice">Ulice (výstupní parametr).</param>
+/// <param name="ACisloPop">Číslo popisné (výstupní parametr).</param>
+/// <param name="ACisloOrientacni">Číslo orientační (výstupní parametr).</param>
+/// <param name="AObec">Obec (výstupní parametr).</param>
+/// <param name="APSC">PSČ (výstupní parametr).</param>
+/// <param name="AMsg">Případná chybová hlášení (výstupní parametr).</param>
+/// <returns>True, pokud firmu podaří nalézt. V OUT parametrech vrací jednotlivé údaje odpovídající názvu. V AMsg vrací chybová hlášení, popř. informaci o neúspěšném hledání.</returns>
 function SNactiAdresuZARES(const AICO: string;
   var ATypOsoby, ANazevFirmy, AUlice, ACisloPop, ACisloOrientacni, AObec, APSC, AMsg: string): boolean;
 
-/// <summary>TODO: doplnit dokumentaci</summary>
+/// <summary>Načte osobu z registru ARES. Oproti SNactiAdresuZARES vrací i DIČ firmy.</summary>
+/// <param name="AICO">Identifikační číslo firmy, dle kterého se v registru ARES vyhledává.</param>
+/// <param name="ATypOsoby">Typ osoby (výstupní parametr).</param>
+/// <param name="ANazevFirmy">Název firmy (výstupní parametr).</param>
+/// <param name="AUlice">Ulice (výstupní parametr).</param>
+/// <param name="ACisloPop">Číslo popisné (výstupní parametr).</param>
+/// <param name="ACisloOrientacni">Číslo orientační (výstupní parametr).</param>
+/// <param name="AObec">Obec (výstupní parametr).</param>
+/// <param name="APSC">PSČ (výstupní parametr).</param>
+/// <param name="ADIC">DIČ firmy (výstupní parametr).</param>
+/// <param name="AMsg">Případná chybová hlášení (výstupní parametr).</param>
+/// <returns>True, pokud firmu podaří nalézt. V OUT parametrech vrací jednotlivé údaje odpovídající názvu. V AMsg vrací chybová hlášení, popř. informaci o neúspěšném hledání.</returns>
 function SNactiAdresuZARESD(const AICO: string;
   var ATypOsoby, ANazevFirmy, AUlice, ACisloPop, ACisloOrientacni, AObec, APSC, ADIC, AMsg: string): boolean;
 
-/// <summary>TODO: doplnit dokumentaci</summary>
+/// <summary>Otevře dialog s informace z registru ARES.</summary>
+/// <param name="AICO">IČO.</param>
+/// <param name="AMsgAsk">True, pokud má být zobrazen dotaz na převzetí údajů (výchozí je false).</param>
+/// <param name="AWithCreditCheck">True, pokud se má zobrazit odkaz na otevření CreditCheck (výchozí je False).</param>
+/// <returns>Informace z ARES.</returns>
 function ShowInfoARES(const AICO: string;
   AMsgAsk: Boolean = false; AWithCreditCheck: Boolean = False): string;
 
 //funkce pouzivane pro import el. podani z XML
-/// <summary>TODO: doplnit dokumentaci</summary>
+/// <summary>Smaže všechny údaje na formuláři.</summary>
 procedure mtValuesClearFields;
 
-/// <summary>TODO: doplnit dokumentaci</summary>
+/// <summary>Konverze nepřípustných znaků v XML.</summary>
+/// <param name="AStr">Text XML kódu.</param>
+/// <returns>Text XML kódu s převedenými znaky.</returns>
 function ReplaceXmlStr(const AStr: string): string;
 
 /// <summary>Pokusí se převést datum ze vstupního textu.</summary>
@@ -1139,228 +1200,350 @@ function TryEncodeDateTimeEx(const AYear,AMonth,ADay,AHour,AMinute,ASecond,
 function DateTimeStrEval(const DateTimeFormat: string;
   const DateTimeStr: string): TDateTime;
 
-/// <summary>TODO: doplnit dokumentaci</summary>
+/// <summary>Vytáhne a zformátuje informace o podání do textu.</summary>
+/// <returns>Text informací o podání.</returns>
 function GetFillingInfo: string;
 
 //breakpoint do script editoru
-/// <summary>TODO: doplnit dokumentaci</summary>
+/// <summary>Vloží breakpoint do kódu pro ladění ve script editoru.</summary>
+/// <param name="AEnabled">True pro povolení breakpointu.</param>
+/// <param name="ABpID">Identifikátor breakpointu.</param>
+/// <param name="AVar1">Proměnná pro zobrazení v hlášení breakpointu.</param>
+/// <param name="AVar2">Proměnná pro zobrazení v hlášení breakpointu.</param>
+/// <param name="AVar3">Proměnná pro zobrazení v hlášení breakpointu.</param>
+/// <param name="AVar4">Proměnná pro zobrazení v hlášení breakpointu.</param>
+/// <param name="AVar5">Proměnná pro zobrazení v hlášení breakpointu.</param>
+/// <param name="AVar6">Proměnná pro zobrazení v hlášení breakpointu.</param>
+/// <param name="AVar7">Proměnná pro zobrazení v hlášení breakpointu.</param>
+/// <param name="AVar8">Proměnná pro zobrazení v hlášení breakpointu.</param>
+/// <param name="AVar9">Proměnná pro zobrazení v hlášení breakpointu.</param>
 procedure BP(AEnabled: boolean; ABpID: string;
   AVar1: variant; AVar2: variant; AVar3: variant;
   AVar4: variant; AVar5: variant; AVar6: variant;
   AVar7: variant; AVar8: variant; AVar9: variant);
 
 //dalsi
-/// <summary>TODO: doplnit dokumentaci</summary>
+/// <summary>Připraví náhled formuláře a otevře dialog pro odeslání e-mailem nebo datovou schránkou.</summary>
+/// <returns>True, pokud uživatel formulář odeslal.</returns>
 function ControlAndSendForm: boolean;
 
-/// <summary>TODO: doplnit dokumentaci</summary>
+/// <summary>Uloží formulář bez provedení kontrol.</summary>
 procedure SaveFormWithoutCheck;
 
-/// <summary>TODO: doplnit dokumentaci</summary>
+/// <summary>Zjistí velikost souboru.</summary>
+/// <param name="AFilePath">Cesta k souboru.</param>
+/// <returns>Velikost souboru v bytech.</returns>
 function SizeOfFile(const AFilePath: string): double;
 
-/// <summary>TODO: doplnit dokumentaci</summary>
+/// <summary>Zkusí zjistit, jestli je v clipboardu poštovní adresa a pokud je, tak ji rozebere a předá ve tvaru CSV: psc,"obec","ulice","jmeno1","jmeno2","jmeno3".</summary>
+/// <returns>Text s rozebranou adresou.</returns>
 function GetAdrClip: string;
 
-/// <summary>TODO: doplnit dokumentaci</summary>
+/// <summary>Uloží do globální proměnné GScriptFieldName jméno aktuálního údaje.</summary>
 procedure SetGScriptFieldName;
 
-/// <summary>TODO: doplnit dokumentaci</summary>
+/// <summary>Zkontroluje, jestli je záznam o platbě uložený v platebním kalendáři.</summary>
+/// <param name="APayCnt">Celkový počet plateb formuláře (výstupní parametr).</param>
+/// <param name="ASendPayCnt">Počet odeslaných plateb (výstupní parametr).</param>
+/// <param name="APaidPayCnt">Počet zaplacených plateb (výstupní parametr).</param>
+/// <returns>True, pokud jsou v dokumentech vygenerované platby z formuláře.</returns>
 function IsPaymentInDB(
   var APayCnt: integer;
   var ASendPayCnt: integer;
   var APaidPayCnt: integer): boolean;
 
-/// <summary>TODO: doplnit dokumentaci</summary>
+/// <summary>Smaže všechny platby aktuálního formuláře v platebním kalendáři.</summary>
 procedure DelPaymentInDB;
 
-/// <summary>TODO: doplnit dokumentaci</summary>
+/// <summary>Otevře dialog s dotazem a tlačítky Ano, Ne, Zrušit.</summary>
+/// <param name="ACaption">Nadpis okna dialogu.</param>
+/// <param name="AMsg">Zobrazená zpráva.</param>
+/// <param name="ADefBtn">Výchozí tlačítko dialogu.</param>
+/// <returns>Kód stisknutého tlačítka.</returns>
 function MsgAskYesNoCancel(const ACaption, AMsg: string; ADefBtn: TMsgDlgBtn): integer;
 
-/// <summary>TODO: doplnit dokumentaci</summary>
+/// <summary>Uloží dokument do archivu dokumentů.</summary>
+/// <param name="APath">Cesta k souboru.</param>
+/// <param name="ANazevDokumentu">Objeví se v tabulce dokumentů jako název souboru, pokud nebude zadané, doplní se jméno souboru (výchozí je prázdný řetězec).</param>
+/// <param name="AComment">Krátká poznámka (výchozí je prázdný řetězec).</param>
+/// <param name="ACommentMemo">Dlouhá poznámka (výchozí je prázdný řetězec).</param>
+/// <returns>ID záznamu v AdrDoc.</returns>
 function SaveDocumentToDB(const APath: string;
   ANazevDokumentu: string = '';
   const AComment: string = ''; const ACommentMemo: string = ''): string;
 
-/// <summary>TODO: doplnit dokumentaci</summary>
+/// <summary>Otevře formulář na portálu ČSSZ.</summary>
+/// <param name="fn">Jméno XML souboru.</param>
+/// <remarks>Zobrazí dotaz na otevření XML formuláře na portálu ČSSZ.</remarks>
 procedure OpenWebPortalCSSZ(const fn: string);
 
-/// <summary>TODO: doplnit dokumentaci</summary>
+/// <summary>Odešle soubor(y) e-mailem nebo datovou schránkou. Pokud se má poslat přes DS, tak se zadává do AMailAddr ve formátu '#IDDS#2p2n5ad#ÚzP pro Prahu 1 Prahu 1'.</summary>
+/// <param name="AMailAddr">E-mailová adresa nebo formát pro DS.</param>
+/// <param name="ASubject">Předmět.</param>
+/// <param name="ABody">Tělo zprávy.</param>
+/// <param name="AAttachmentsFileNames">StringList s cestami k přikládaným souborům.</param>
+/// <param name="AShowDialog">True, pokud se má zobrazit dialog před odesláním.</param>
+/// <param name="AErrorMsg">Chybová zpráva v případě neúspěchu (výstupní parametr).</param>
+/// <returns>String, ve kterém je uložena cesta k souboru, do kterého uživatel vybral, že se má uložit výstup.</returns>
 function SendFilesByEmailOrDS(AMailAddr, ASubject, ABody: string;
   AAttachmentsFileNames: TStringList; AShowDialog: boolean; out AErrorMsg: string): string;
 
-/// <summary>TODO: doplnit dokumentaci</summary>
+/// <summary>Umožní vybrat adresu mailovou nebo datové schránky. Pokud je vybrána, tak vrací e-mail nebo identifikaci DS ve tvaru '#IDDS#2p2n5ad#ÚzP pro Prahu 1 Prahu 1'. Když není žádný email na výběr ale bylo stisknuto tlačítko e-mailem, tak vrací zavináč. Když bylo stisknuto Storno, tak vrací prázdný řetězec.</summary>
+/// <param name="AOnlyEmail">Zda se má vybírat jen e-mail (ne datová schránka) (výchozí je False).</param>
+/// <returns>E-mailovou adresu nebo ID datové schránky.</returns>
 function SelectEmailOrDS(AOnlyEmail: Boolean = False): string;
 
-/// <summary>TODO: doplnit dokumentaci</summary>
+/// <summary>Vrací cestu k PDF editoru.</summary>
+/// <returns>Cesta k PDF editoru.</returns>
 function PDFEditorPath: string;
 
-/// <summary>TODO: doplnit dokumentaci</summary>
+/// <summary>Nastaví příznak, že je otevřen náhled v PDF editoru.</summary>
+/// <param name="AIsOpen">Příznak otevření editoru.</param>
 procedure SetOpenPDFEditorFlag(AIsOpen: Boolean);
 
-/// <summary>TODO: doplnit dokumentaci</summary>
+/// <summary>Zjistí stav příznaku otevření náhledu v PDF editoru.</summary>
+/// <returns>True, pokud je náhled PDF otevřen.</returns>
 function GetOpenPDFEditorFlag: boolean;
 
-/// <summary>TODO: doplnit dokumentaci</summary>
+/// <summary>Zobrazí nebo skryje progressbar ve stavovém řádku.</summary>
+/// <param name="APos">-1 skryje, 0 inicializuje, 1..AMax nastaví pozici.</param>
+/// <param name="AMax">Maximum, zadává se jen při inicializaci, v jiném případě se nepoužije (výchozí je 100).</param>
 procedure ShowProgress(APos: Integer; AMax: Integer = 100);
 
-/// <summary>TODO: doplnit dokumentaci</summary>
+/// <summary>Vytvoří fieldy v tabulce wt1 nebo wt2 (až wt6) a tabulku otevře (před tím všechny fieldy zruší, takže se dá zavolat opakovaně a vytvořit jiné fieldy).</summary>
+/// <param name="ATableNameCis">Číslo tabulky (1 až 6).</param>
+/// <param name="AFieldNames">Definice fieldu ve tvaru 'A1,1,30,0,,;A2,1,30,0,,' (jiné fieldy než string jsou možné).</param>
 procedure CreateWtFields(ATableNameCis: integer; const AFieldNames: string);
 
-/// <summary>TODO: doplnit dokumentaci</summary>
+/// <summary>Uloží tabulku Wt do textu.</summary>
+/// <param name="ATableNameCis">Pořadové číslo tabulky (1 až 6).</param>
+/// <returns>Text s daty tabulky.</returns>
 function SaveWtToString(ATableNameCis: integer): string;
 
-/// <summary>TODO: doplnit dokumentaci</summary>
+/// <summary>Načte tabulku Wt z textu.</summary>
+/// <param name="ATableNameCis">Pořadové číslo tabulky (1 až 6).</param>
+/// <param name="str">Text obsahující data tabulky.</param>
 procedure LoadWtFromString(ATableNameCis: integer; str: string);
 
-/// <summary>TODO: doplnit dokumentaci</summary>
+/// <summary>Zavolá proceduru Application.ProcessMessages, aby program dostal řízení.</summary>
 procedure AppProcessMessages;
 
-/// <summary>TODO: doplnit dokumentaci</summary>
+/// <summary>Zkontroluje, jestli je nainstalovaný .NET libovolné verze.</summary>
+/// <returns>True, pokud je .NET nainstalovaný.</returns>
 function CheckDotNet: boolean;
 
-/// <summary>TODO: doplnit dokumentaci</summary>
+/// <summary>Spustí .NET skript v cs-scriptu.</summary>
+/// <param name="AScript">Vlastní skript nebo odkaz na .NET skript ve skriptu formuláře s dvojtečkami.</param>
+/// <param name="AParams">Parametry pro předání do .NET skriptu (výchozí je prázdný řetězec).</param>
+/// <param name="ACscs">False spustí csws.exe - winform, True spustí cscs.exe - konzolovou aplikaci (výchozí je False).</param>
+/// <param name="AParamsRef">Odkaz na DLL soubor, zadává se ve tvaru: "/r:soubor.dll" (výchozí je prázdný řetězec).</param>
 procedure RunDotNetStript(const AScript: string; const AParams: string = ''; ACscs: Boolean = False; const AParamsRef: string = '');
 
-/// <summary>TODO: doplnit dokumentaci</summary>
+/// <summary>Uloží textovou přílohu z formuláře do PDF.</summary>
+/// <returns>Cesta k uloženému souboru.</returns>
 function SaveAppendixToPDF: string;
 
-/// <summary>TODO: doplnit dokumentaci</summary>
+/// <summary>Zjistí, zda je nainstalovaná konkrétní verze .NET Framework.</summary>
+/// <param name="version">Verze .NET Framework (např. "4.0", "4.5").</param>
+/// <param name="service">Service pack verze.</param>
+/// <returns>True, pokud je požadovaná verze .NET nainstalovaná.</returns>
 function IsDotNetDetected(version: string; service: integer): boolean;
 
-/// <summary>TODO: doplnit dokumentaci</summary>
+/// <summary>Uloží data vloženého formuláře.</summary>
+/// <remarks>Používá se však jen ve specifických případech, např. při importu XML EPO z nastavení klienta.</remarks>
 procedure ForceSaveNestedData;
 
-/// <summary>TODO: doplnit dokumentaci</summary>
+/// <summary>Zavře formulář.</summary>
+/// <remarks>Uloží data vloženého formuláře a formulář zavře. Používá se však jen ve specifických případech, např. při importu XML EPO z nastavení klienta.</remarks>
 procedure ForceCloseFA;
 
-/// <summary>TODO: doplnit dokumentaci</summary>
+/// <summary>Uloží data formuláře do databáze.</summary>
+/// <returns>True, pokud se uložení podařilo.</returns>
+/// <remarks>Používá se však jen ve specifických případech, např. při importu XML EPO z nastavení klienta.</remarks>
 function SaveNewFormToDB: boolean;
 
-/// <summary>TODO: doplnit dokumentaci</summary>
+/// <summary>Inicializuje a zobrazí dialog s progressbarem.</summary>
+/// <param name="AStepCount">Počet kroků progressbaru.</param>
+/// <param name="AEnableBreak">Pokud je True, tak je možné přerušit akci klávesou Esc (výchozí je False).</param>
+/// <param name="ACaption">Vlastní titulek dialogu (výchozí je prázdný řetězec).</param>
+/// <param name="AText">Vlastní text v dialogu (výchozí je prázdný řetězec).</param>
 procedure LoadingStart(AStepCount: Integer; AEnableBreak: Boolean = False;
   const ACaption: string = ''; const AText: string = '');
 
-/// <summary>TODO: doplnit dokumentaci</summary>
+/// <summary>Zavře dialog s progressbarem.</summary>
 procedure LoadingStop;
 
-/// <summary>TODO: doplnit dokumentaci</summary>
+/// <summary>V dialogu s progressbarem zajistí posun progressbaru o jeden krok.</summary>
 procedure LoadingStep;
 
-/// <summary>TODO: doplnit dokumentaci</summary>
+/// <summary>Zjistí, zda bylo požádáno o přerušení aktuální akce v dialogu s progressbarem.</summary>
+/// <returns>True, pokud bylo požádáno o přerušení.</returns>
 function LoadingBreakRequest: boolean;
 
-/// <summary>TODO: doplnit dokumentaci</summary>
+/// <summary>Exportuje sestavu FastReportu (FR3) do PDF.</summary>
+/// <param name="AReportFileNameCsvList">Seznam souborů, oddělených čárkou.</param>
+/// <returns>Projde seznam a případné FR3 sestavy převede do PDF. Seznam AReportFileNameCsvList může obsahovat kombinaci FR3 i PDF.</returns>
 function ConvertFR3ToPDF(const AReportFileNameCsvList: string): string;
 
-/// <summary>TODO: doplnit dokumentaci</summary>
+/// <summary>Přeruší editaci formuláře.</summary>
+/// <returns>True, pokud bylo přerušení úspěšné.</returns>
+/// <remarks>Používá se však jen ve specifických případech, např. při importu XML EPO z nastavení klienta.</remarks>
 function DoCancelEditForm: boolean;
 
-/// <summary>TODO: doplnit dokumentaci</summary>
+/// <summary>Vrací vypočtenou hodnotu výrazu AStrValue.</summary>
+/// <param name="AStrValue">Výraz, který se má zpracovat.</param>
+/// <returns>Vypočtená hodnota výrazu AStrValue.</returns>
 function EvalScript(AStrValue: string): string;
 
-/// <summary>TODO: doplnit dokumentaci</summary>
+/// <summary>Volá funkci nebo proceduru ze skriptu.</summary>
+/// <param name="AMethodName">Název volané funkce nebo procedury.</param>
+/// <returns>Výsledek volání funkce nebo procedury.</returns>
 function EvalMethod(AMethodName: string): string;
 
-/// <summary>TODO: doplnit dokumentaci</summary>
+/// <summary>Volá funkci nebo proceduru (s parametry) ze skriptu.</summary>
+/// <param name="AMethodName">Název volané funkce nebo procedury.</param>
+/// <param name="AParam">Parametry volané funkce (může být maximálně 6 parametrů).</param>
+/// <returns>Výsledek volání funkce nebo procedury.</returns>
 function EvalParamMethod(AMethodName: string; AParam: variant): string;
 
-/// <summary>TODO: doplnit dokumentaci</summary>
+/// <summary>Z dat v příkazu k úhradě vytvoří soubor Homebankingu.</summary>
+/// <param name="ABaUcet">Číslo vlastního bankovního účtu.</param>
+/// <param name="AKodBanky">Kód banky.</param>
+/// <param name="AFormatHB">Formát HB.</param>
+/// <param name="APrevPrikCsv">Hlavička převodního příkazu v CSV.</param>
+/// <param name="APrevPrikPCsv">Položky převodního příkazu v CSV.</param>
+/// <param name="ABoFirmaCsv">Údaje o odesílateli.</param>
+/// <param name="AFirmaUctCsv">Údaje o účetní firmě (v FA nevyplňujeme).</param>
+/// <param name="AOutText">Data pro uložení (výstupní parametr).</param>
+/// <param name="AMsg">Případné chybové hlášení (výstupní parametr).</param>
+/// <returns>True, pokud se vytvoření souboru podařilo.</returns>
 function CreateHBWithImportCSV(const ABaUcet,
   AKodBanky, AFormatHB: string;
   const APrevPrikCsv, APrevPrikPCsv, ABoFirmaCsv, AFirmaUctCsv: string;
   var AOutText, AMsg: string): boolean;
 
-/// <summary>TODO: doplnit dokumentaci</summary>
+/// <summary>Odešle do banky FIO data příkazu k úhradě (přes API).</summary>
+/// <param name="AXmlFile">Připravený soubor (XML nebo CSV).</param>
+/// <param name="AFileFormat">Formát dat (XML nebo CSV).</param>
+/// <param name="AToken">Vygenerovaný token.</param>
 procedure SendOrderFioAPI(const AXmlFile, AFileFormat, AToken: string);
 
 //funkce na cteni globalnich parametru pro instanci
-/// <summary>TODO: doplnit dokumentaci</summary>
+/// <summary>Vrací globální StringList pro práci s daty.</summary>
+/// <returns>Globální StringList.</returns>
 function Gsl: TStringList;
 
-/// <summary>TODO: doplnit dokumentaci</summary>
-function GFillMemo: string; //tabulky z nastaveni klienta (mtAuta v csv)
+/// <summary>Vrací tabulky z nastavení klienta (např. mtAuta v CSV formátu).</summary>
+/// <returns>Tabulky z nastavení klienta v CSV formátu.</returns>
+function GFillMemo: string;
 
-/// <summary>TODO: doplnit dokumentaci</summary>
+/// <summary>Vrací aktuální stav skriptu.</summary>
+/// <returns>Aktuální stav skriptu.</returns>
 function GScriptState: TScriptState;
 
-/// <summary>TODO: doplnit dokumentaci</summary>
+/// <summary>Vrací jméno aktuálního údaje ve formuláři.</summary>
+/// <returns>Jméno aktuálního údaje.</returns>
 function GScriptFieldName: string;
 
-/// <summary>TODO: doplnit dokumentaci</summary>
+/// <summary>Vrací původní jméno údaje před změnou.</summary>
+/// <returns>Původní jméno údaje.</returns>
 function GScriptOldFieldName: string;
 
-/// <summary>TODO: doplnit dokumentaci</summary>
+/// <summary>Nastaví globální stav skriptu.</summary>
+/// <param name="value">Nový stav skriptu.</param>
 procedure SetValueGScriptState(value: TScriptState);
 
-/// <summary>TODO: doplnit dokumentaci</summary>
+/// <summary>Nastaví globální jméno aktuálního údaje.</summary>
+/// <param name="value">Jméno údaje.</param>
 procedure SetValueGScriptFieldName(value: string);
 
-/// <summary>TODO: doplnit dokumentaci</summary>
+/// <summary>Nastaví globální původní jméno údaje.</summary>
+/// <param name="value">Původní jméno údaje.</param>
 procedure SetValueGScriptOldFieldName(value: string);
 
-/// <summary>TODO: doplnit dokumentaci</summary>
+/// <summary>Vrací jméno údaje, na který se má přejít.</summary>
+/// <returns>Jméno údaje pro přechod.</returns>
 function GGotoFieldName: string;
 
-/// <summary>TODO: doplnit dokumentaci</summary>
+/// <summary>Vrací připravené seznamy pro skript.</summary>
+/// <returns>Připravené seznamy.</returns>
 function GScriptPreparedLists: string;
 
-/// <summary>TODO: doplnit dokumentaci</summary>
+/// <summary>Vrací definice ID formulářů.</summary>
+/// <returns>Definice ID formulářů.</returns>
 function GScriptGetFormsIDDefs: string;
 
-/// <summary>TODO: doplnit dokumentaci</summary>
+/// <summary>Vrací zobrazovanou hodnotu údaje.</summary>
+/// <returns>Zobrazovaná hodnota údaje.</returns>
 function GScriptFldDisplayValue: string;
 
-/// <summary>TODO: doplnit dokumentaci</summary>
+/// <summary>Vrací, zda se mají nulové hodnoty mazat.</summary>
+/// <returns>True, pokud se mají nulové hodnoty mazat.</returns>
 function GScriptZeroValueClear: boolean;
 
-/// <summary>TODO: doplnit dokumentaci</summary>
+/// <summary>Vrací informace o podání formuláře.</summary>
+/// <returns>Informace o podání.</returns>
 function GScriptFillingInfo: string;
 
-/// <summary>TODO: doplnit dokumentaci</summary>
+/// <summary>Vrací, zda se má zobrazovat oddělovač tisíců.</summary>
+/// <returns>True, pokud se má zobrazovat oddělovač tisíců.</returns>
 function GShowThousandSeparator: boolean;
 
-/// <summary>TODO: doplnit dokumentaci</summary>
+/// <summary>Vrací stav vloženého formuláře.</summary>
+/// <returns>Stav vloženého formuláře.</returns>
 function GSlaveState: TSlaveState;
 
-/// <summary>TODO: doplnit dokumentaci</summary>
+/// <summary>Vrací jméno údaje pro kontrolu přechodu.</summary>
+/// <returns>Jméno údaje pro kontrolu přechodu.</returns>
 function GCheckGotoFldName: string;
 
-/// <summary>TODO: doplnit dokumentaci</summary>
+/// <summary>Vrací, zda je povoleno ZIP podání.</summary>
+/// <returns>True, pokud je povoleno ZIP podání.</returns>
 function GScriptFillingZip: boolean;
 
-/// <summary>TODO: doplnit dokumentaci</summary>
+/// <summary>Nastaví globální příznak ZIP podání.</summary>
+/// <param name="value">True, pokud je povoleno ZIP podání.</param>
 procedure SetValueGScriptFillingZip(value: boolean);
 
 //vystup funkce GetFormsOrDocuments
-/// <summary>TODO: doplnit dokumentaci</summary>
+/// <summary>Vrací ID formuláře z výstupu funkce GetFormsOrDocuments.</summary>
+/// <returns>ID formuláře.</returns>
 function GfodFrmID: string;
 
-/// <summary>TODO: doplnit dokumentaci</summary>
+/// <summary>Vrací ID definice formuláře z výstupu funkce GetFormsOrDocuments.</summary>
+/// <returns>ID definice formuláře.</returns>
 function GfodFrmDefID: string;
 
-/// <summary>TODO: doplnit dokumentaci</summary>
+/// <summary>Vrací ID dokumentu z výstupu funkce GetFormsOrDocuments.</summary>
+/// <returns>ID dokumentu.</returns>
 function GfodDocId: string;
 
-/// <summary>TODO: doplnit dokumentaci</summary>
+/// <summary>Vrací seznam souborů z výstupu funkce GetFormsOrDocuments.</summary>
+/// <returns>Seznam souborů.</returns>
 function GfodFiles: string;
 
-/// <summary>TODO: doplnit dokumentaci</summary>
+/// <summary>Vrací GUID z výstupu funkce GetFormsOrDocuments.</summary>
+/// <returns>GUID.</returns>
 function GfodGUID: string;
 
-/// <summary>TODO: doplnit dokumentaci</summary>
+/// <summary>Nastaví globální ID formuláře z výstupu funkce GetFormsOrDocuments.</summary>
+/// <param name="value">ID formuláře.</param>
 procedure SetValueGfodFrmID(value: string);
 
-/// <summary>TODO: doplnit dokumentaci</summary>
+/// <summary>Nastaví globální ID definice formuláře z výstupu funkce GetFormsOrDocuments.</summary>
+/// <param name="value">ID definice formuláře.</param>
 procedure SetValueGfodFrmDefID(value: string);
 
-/// <summary>TODO: doplnit dokumentaci</summary>
+/// <summary>Nastaví globální ID dokumentu z výstupu funkce GetFormsOrDocuments.</summary>
+/// <param name="value">ID dokumentu.</param>
 procedure SetValueGfodDocId(value: string);
 
-/// <summary>TODO: doplnit dokumentaci</summary>
+/// <summary>Nastaví globální seznam souborů z výstupu funkce GetFormsOrDocuments.</summary>
+/// <param name="value">Seznam souborů.</param>
 procedure SetValueGfodFiles(value: string);
 
-/// <summary>TODO: doplnit dokumentaci</summary>
+/// <summary>Nastaví globální GUID z výstupu funkce GetFormsOrDocuments.</summary>
+/// <param name="value">GUID.</param>
 procedure SetValueGfodGUID(value: string);
 
 //------------------------------------------------
@@ -2222,4 +2405,598 @@ function IsEmailValid(const AEmailStr: string; AIsMailList: Boolean = false): Bo
 /// <param name="AIdds">ID datové schránky k ověření.</param>
 /// <returns>True, pokud je ID datové schránky platné, jinak false.</returns>
 function CheckIDDS(AIdds: string): boolean;
+
+//Funkce z JclStrings
+
+// String Search and Find Functions
+/// <summary>Najde pozici podřetězce v řetězci od zadaného indexu.</summary>
+/// <param name="Substr">Hledaný podřetězec.</param>
+/// <param name="S">Řetězec k prohledání.</param>
+/// <param name="Index">Počáteční index pro hledání (výchozí je 1).</param>
+/// <returns>Pozice podřetězce (počítáno od 1), nebo 0 pokud není nalezen.</returns>
+function StrFind(const Substr, S: string; const Index: SizeInt = 1): SizeInt;
+
+/// <summary>Najde pozici podřetězce v řetězci (case-insensitive).</summary>
+/// <param name="SubStr">Hledaný podřetězec.</param>
+/// <param name="S">Řetězec k prohledání.</param>
+/// <returns>Pozice podřetězce (počítáno od 1), nebo 0 pokud není nalezen.</returns>
+function StrIPos(const SubStr, S: string): SizeInt;
+
+/// <summary>Najde poslední pozici podřetězce v řetězci.</summary>
+/// <param name="SubStr">Hledaný podřetězec.</param>
+/// <param name="S">Řetězec k prohledání.</param>
+/// <returns>Pozice podřetězce (počítáno od 1), nebo 0 pokud není nalezen.</returns>
+function StrLastPos(const SubStr, S: string): SizeInt;
+
+/// <summary>Zjistí, zda řetězec začíná některým z prefixů.</summary>
+/// <param name="S">Řetězec k testování.</param>
+/// <param name="Prefixes">Pole prefixů.</param>
+/// <returns>True, pokud řetězec začíná některým z prefixů, jinak false.</returns>
+function StrHasPrefix(const S: string; const Prefixes: array of string): Boolean;
+
+/// <summary>Zjistí, zda řetězec končí některým z sufixů.</summary>
+/// <param name="S">Řetězec k testování.</param>
+/// <param name="Suffixes">Pole sufixů.</param>
+/// <returns>True, pokud řetězec končí některým z sufixů, jinak false.</returns>
+function StrHasSuffix(const S: string; const Suffixes: array of string): Boolean;
+
+// String Extraction Functions
+/// <summary>Vrátí řetězec po zadaném podřetězci.</summary>
+/// <param name="SubStr">Podřetězec, po kterém se má vrátit část řetězce.</param>
+/// <param name="S">Zdrojový řetězec.</param>
+/// <returns>Část řetězce po podřetězci, nebo prázdný řetězec pokud není nalezen.</returns>
+function StrAfter(const SubStr, S: string): string;
+
+/// <summary>Vrátí řetězec před zadaným podřetězcem.</summary>
+/// <param name="SubStr">Podřetězec, před kterým se má vrátit část řetězce.</param>
+/// <param name="S">Zdrojový řetězec.</param>
+/// <returns>Část řetězce před podřetězcem, nebo prázdný řetězec pokud není nalezen.</returns>
+function StrBefore(const SubStr, S: string): string;
+
+/// <summary>Rozdělí řetězec na dvě části podle podřetězce.</summary>
+/// <param name="SubStr">Podřetězec, podle kterého se má rozdělit řetězec.</param>
+/// <param name="S">Zdrojový řetězec.</param>
+/// <param name="Left">Část řetězce před podřetězcem (výstupní parametr).</param>
+/// <param name="Right">Část řetězce za podřetězcem (výstupní parametr).</param>
+/// <returns>True, pokud byl podřetězec nalezen a rozdělení proběhlo, jinak false.</returns>
+function StrSplit(const SubStr, S: string; var Left, Right: string): boolean;
+
+/// <summary>Vrátí levou část řetězce o zadaném počtu znaků.</summary>
+/// <param name="S">Zdrojový řetězec.</param>
+/// <param name="Count">Počet znaků k vrácení.</param>
+/// <returns>Levá část řetězce.</returns>
+function StrLeft(const S: string; Count: SizeInt): string;
+
+/// <summary>Vrátí pravou část řetězce o zadaném počtu znaků.</summary>
+/// <param name="S">Zdrojový řetězec.</param>
+/// <param name="Count">Počet znaků k vrácení.</param>
+/// <returns>Pravá část řetězce.</returns>
+function StrRight(const S: string; Count: SizeInt): string;
+
+/// <summary>Vrátí část řetězce od zadané pozice o zadaném počtu znaků.</summary>
+/// <param name="S">Zdrojový řetězec.</param>
+/// <param name="Start">Počáteční pozice (počítáno od 1).</param>
+/// <param name="Count">Počet znaků k vrácení.</param>
+/// <returns>Část řetězce od pozice Start o délce Count.</returns>
+function StrMid(const S: string; Start, Count: SizeInt): string;
+
+/// <summary>Vrací pozici N-tého výskytu podřetězce v řetězci.</summary>
+/// <param name="S">Řetězec, ve kterém chceme zjišťovat pozici N-tého výskytu.</param>
+/// <param name="SubS">Podřetězec, který hledáme.</param>
+/// <param name="N">Číslo výskytu podřetězce v řetězci.</param>
+/// <returns>Pozici N-tého výskytu podřetězce SubS v řetězci S. V případě, že N-tý výskyt podřetězce není nalezen, je vrácena 0. Vyhledávání rozlišuje malá a velká písmena.</returns>
+function StrNPos(const S: string; SubS: string; N: SizeInt): SizeInt;
+
+/// <summary>Vyrobí řetězec složený z Count počtů podřetězce S.</summary>
+/// <param name="S">Řetězec, který se má opakovat.</param>
+/// <param name="Count">Číslo, udávající počet opakování řetězce.</param>
+/// <returns>Řetězec složený z Count opakování řetězce S.</returns>
+function StrRepeat(const S: string; Count: SizeInt): string;
+
+/// <summary>Vrací počet výskytů podřetězce v řetězci.</summary>
+/// <param name="S">Řetězec, ve kterém chceme zjišťovat počet výskytů podřetězce.</param>
+/// <param name="SubS">Podřetězec, jehož výskyty chceme spočítat.</param>
+/// <returns>Počet výskytů podřetězce SubS v řetězci S.</returns>
+function StrStrCount(const S: string; SubS: string): SizeInt;
+
+// String Transformation Functions
+/// <summary>Převede řetězec na velká písmena.</summary>
+/// <param name="S">Řetězec k převedení.</param>
+/// <returns>Řetězec s velkými písmeny.</returns>
+function StrUpper(const S: string): string;
+
+/// <summary>Převede řetězec na malá písmena.</summary>
+/// <param name="S">Řetězec k převedení.</param>
+/// <returns>Řetězec s malými písmeny.</returns>
+function StrLower(const S: string): string;
+
+/// <summary>Nahradí výskyty podřetězce v řetězci.</summary>
+/// <param name="S">Řetězec k úpravě (výstupní parametr).</param>
+/// <param name="Search">Hledaný podřetězec.</param>
+/// <param name="Replace">Nahrazující podřetězec.</param>
+/// <param name="Flags">Příznaky nahrazení (výchozí je prázdná množina).</param>
+procedure StrReplace(var S: string; const Search, Replace: string; Flags: TReplaceFlags = []);
+
+/// <summary>Nahradí všechny výskyty jednoho znaku jiným znakem.</summary>
+/// <param name="S">Řetězec k úpravě.</param>
+/// <param name="Source">Znak k nahrazení.</param>
+/// <param name="Replace">Nahrazující znak.</param>
+/// <returns>Řetězec s nahrazenými znaky.</returns>
+function StrReplaceChar(const S: string; const Source, Replace: Char): string;
+
+/// <summary>Odstraní zleva zadaný znak z řetězce.</summary>
+/// <param name="S">Řetězec k úpravě.</param>
+/// <param name="C">Znak k odstranění.</param>
+/// <returns>Řetězec bez odstraněných znaků zleva.</returns>
+function StrTrimCharLeft(const S: string; C: Char): string;
+
+/// <summary>Odstraní zprava zadaný znak z řetězce.</summary>
+/// <param name="S">Řetězec k úpravě.</param>
+/// <param name="C">Znak k odstranění.</param>
+/// <returns>Řetězec bez odstraněných znaků zprava.</returns>
+function StrTrimCharRight(const S: string; C: Char): string;
+
+/// <summary>Odstraní uvozovky z začátku a konce řetězce.</summary>
+/// <param name="S">Řetězec k úpravě.</param>
+/// <returns>Řetězec bez uvozovek.</returns>
+function StrTrimQuotes(const S: string): string;
+
+/// <summary>Doplní řetězec zleva na zadanou délku výplňovým znakem.</summary>
+/// <param name="S">Řetězec k doplnění.</param>
+/// <param name="Len">Požadovaná délka výsledného řetězce.</param>
+/// <param name="C">Výplňový znak (výchozí je mezera).</param>
+/// <returns>Doplněný řetězec.</returns>
+function StrPadLeft(const S: string; Len: SizeInt; C: Char = ' '): string;
+
+/// <summary>Doplní řetězec zprava na zadanou délku výplňovým znakem.</summary>
+/// <param name="S">Řetězec k doplnění.</param>
+/// <param name="Len">Požadovaná délka výsledného řetězce.</param>
+/// <param name="C">Výplňový znak (výchozí je mezera).</param>
+/// <returns>Doplněný řetězec.</returns>
+function StrPadRight(const S: string; Len: SizeInt; C: Char = ' '): string;
+
+/// <summary>Vycentruje řetězec na zadanou délku pomocí výplňového znaku.</summary>
+/// <param name="S">Řetězec k vycentrování.</param>
+/// <param name="L">Požadovaná délka výsledného řetězce.</param>
+/// <param name="C">Výplňový znak (výchozí je mezera).</param>
+/// <returns>Vycentrovaný řetězec.</returns>
+function StrCenter(const S: string; L: SizeInt; C: Char = ' '): string;
+
+// String Test Functions
+/// <summary>Zjistí, zda řetězec obsahuje pouze písmena (alfanumerické znaky).</summary>
+/// <param name="S">Řetězec k testování.</param>
+/// <returns>True, pokud řetězec obsahuje pouze písmena, jinak false.</returns>
+function StrIsAlpha(const S: string): Boolean;
+
+/// <summary>Zjistí, zda řetězec obsahuje pouze písmena a číslice.</summary>
+/// <param name="S">Řetězec k testování.</param>
+/// <returns>True, pokud řetězec obsahuje pouze písmena a číslice, jinak false.</returns>
+function StrIsAlphaNum(const S: string): Boolean;
+
+/// <summary>Testuje, zda řetězec obsahuje pouze alfanumerické znaky a podtržítko.</summary>
+/// <param name="S">Řetězec, který testujeme.</param>
+/// <returns>True, pokud řetězec obsahuje pouze alfanumerické znaky nebo podtržítko, tzn. znaky z ['a'..'z', 'A'..'Z', '0'..'9', '_'].</returns>
+function StrIsAlphaNumUnderscore(const S: string): Boolean;
+
+/// <summary>Zjistí, zda řetězec obsahuje pouze číslice.</summary>
+/// <param name="S">Řetězec k testování.</param>
+/// <returns>True, pokud řetězec obsahuje pouze číslice, jinak false.</returns>
+function StrIsDigit(const S: string): Boolean;
+
+/// <summary>Porovná dva řetězce na shodu.</summary>
+/// <param name="S1">První řetězec k porovnání.</param>
+/// <param name="S2">Druhý řetězec k porovnání.</param>
+/// <param name="CaseSensitive">Pokud je true, porovnání je citlivé na velikost písmen (výchozí je false).</param>
+/// <returns>True, pokud jsou řetězce shodné, jinak false.</returns>
+function StrSame(const S1, S2: string; CaseSensitive: Boolean = False): Boolean;
+
+// String Token Functions
+/// <summary>Extrahuje token z řetězce podle oddělovače.</summary>
+/// <param name="S">Řetězec k procházení (výstupní parametr - zbývající část).</param>
+/// <param name="Separator">Oddělovač tokenů.</param>
+/// <returns>Extrahovaný token.</returns>
+function StrToken(var S: string; Separator: Char): string;
+
+/// <summary>Rozdělí řetězec na tokeny podle oddělovače a přidá je do TStrings.</summary>
+/// <param name="S">Řetězec k rozdělení.</param>
+/// <param name="Separator">Oddělovač tokenů.</param>
+/// <param name="List">Cílový TStrings (výstupní parametr).</param>
+procedure StrTokenToStrings(S: string; Separator: Char; const List: TStrings);
+
+// TStrings Manipulation Functions
+/// <summary>Rozdělí řetězec na TStrings podle oddělovače.</summary>
+/// <param name="S">Řetězec k rozdělení.</param>
+/// <param name="Sep">Oddělovač.</param>
+/// <param name="List">Cílový TStrings (výstupní parametr).</param>
+/// <param name="AllowEmptyString">Pokud je true, prázdné řetězce se přidají do seznamu (výchozí je true).</param>
+procedure StrToStrings(S, Sep: string; const List: TStrings; const AllowEmptyString: Boolean = True);
+
+/// <summary>Převede TStrings na řetězec spojený oddělovačem.</summary>
+/// <param name="List">Zdrojový TStrings.</param>
+/// <param name="Sep">Oddělovač.</param>
+/// <param name="AllowEmptyString">Pokud je true, prázdné řetězce se zahrnou (výchozí je true).</param>
+/// <returns>Řetězec s řádky spojenými oddělovačem.</returns>
+function StringsToStr(const List: TStrings; const Sep: string; const AllowEmptyString: Boolean = True): string;
+
+// Conversion Functions
+/// <summary>Bezpečně převede řetězec na celé číslo.</summary>
+/// <param name="S">Řetězec k převedení.</param>
+/// <returns>Převedené číslo, nebo 0 pokud převod selhal.</returns>
+function StrToIntSafe(const S: string): Integer;
+
+/// <summary>Bezpečně převede řetězec na číslo s plovoucí desetinnou čárkou.</summary>
+/// <param name="S">Řetězec k převedení.</param>
+/// <returns>Převedené číslo, nebo 0 pokud převod selhal.</returns>
+function StrToFloatSafe(const S: string): Float;
+
+// Standardní Delphi funkce pro dokumentaci
+/// <summary>Vrací absolutní hodnotu čísla ("-" znaménko je odstraněno).</summary>
+/// <param name="X">Číslo.</param>
+/// <returns>Absolutní hodnota čísla.</returns>
+function Abs(X): Extended;
+
+/// <summary>Zvýší číslo X o hodnotu 1, resp. o hodnotu uvedenou v proměnné N.</summary>
+/// <param name="X">Číslo, které chceme zvyšovat (výstupní parametr).</param>
+/// <param name="N">Hodnota, o kterou budeme číslo zvyšovat. Pokud není uvedeno, zvýší se číslo o 1.</param>
+procedure Inc(var X; N: Longint = 1);
+
+/// <summary>Sníží číslo X o hodnotu 1, resp. o hodnotu uvedenou v proměnné N.</summary>
+/// <param name="X">Číslo, které chceme snižovat (výstupní parametr).</param>
+/// <param name="N">Hodnota, o kterou budeme číslo snižovat. Pokud není uvedeno, sníží se číslo o 1.</param>
+procedure Dec(var X; N: Longint = 1);
+
+/// <summary>Vrací podřetězec řetězce nebo pole.</summary>
+/// <param name="S">Text, ze kterého kopírujeme.</param>
+/// <param name="Index">Pozice, od které kopírujeme.</param>
+/// <param name="Count">Počet znaků, které chceme kopírovat.</param>
+/// <returns>Řetězec obsahující Count znaků řetězce S počínaje jeho Index-tým znakem.</returns>
+function Copy(S: String; Index: Integer; Count: Integer): String;
+
+/// <summary>Vymaže z řetězce jeho část.</summary>
+/// <param name="S">Text, ze kterého mažeme (výstupní parametr).</param>
+/// <param name="Index">Pozice, od které mažeme.</param>
+/// <param name="Count">Počet znaků, které chceme smazat.</param>
+procedure Delete(var S: String; Index: Integer; Count: Integer);
+
+/// <summary>Odstraňuje počáteční a koncové mezery v řetězci.</summary>
+/// <param name="S">Řetězec, ze kterého odstraňujeme mezery.</param>
+/// <returns>Řetězec bez počátečních a koncových mezer.</returns>
+function Trim(const S: string): string;
+
+/// <summary>Odstraňuje počáteční mezery v řetězci.</summary>
+/// <param name="S">Řetězec, ze kterého odstraňujeme mezery.</param>
+/// <returns>Řetězec bez počátečních mezer.</returns>
+function TrimLeft(const S: string): string;
+
+/// <summary>Odstraňuje koncové mezery v řetězci.</summary>
+/// <param name="S">Řetězec, ze kterého odstraňujeme mezery.</param>
+/// <returns>Řetězec bez koncových mezer.</returns>
+function TrimRight(const S: string): string;
+
+/// <summary>Vrátí počet znaků v řetězci nebo počet prvků v poli.</summary>
+/// <param name="S">Řetězec nebo pole.</param>
+/// <returns>Počet znaků v řetězci, nebo počet prvků v poli.</returns>
+function Length(S): Integer;
+
+/// <summary>Vrací pozici prvního výskytu podřetězce v řetězci.</summary>
+/// <param name="Substr">Podřetězec, jehož pozici zjišťujeme.</param>
+/// <param name="S">Řetězec, ve kterém podřetězec hledáme.</param>
+/// <returns>Pozice prvního výskytu. V případě, že řetězec není nalezen, je vrácena 0. Vyhledávání rozlišuje malá a velká písmena.</returns>
+function Pos(Substr: string; S: string): Integer;
+
+/// <summary>Vrací znak pro zadanou ASCII hodnotou.</summary>
+/// <param name="X">ASCII hodnota (Byte).</param>
+/// <returns>Znak mající pořadovou hodnotu (hodnotu ASCII).</returns>
+function Chr(X: Byte): Char;
+
+/// <summary>Vrací pořadovou hodnotu výrazu ordinálního typu.</summary>
+/// <param name="X">Výraz ordinálního typu.</param>
+/// <returns>Pořadová hodnota X.</returns>
+function Ord(X): Longint;
+
+/// <summary>Funkce Int vrací celočíselnou část desetinného čísla jako desetinné číslo.</summary>
+/// <param name="X">Desetinné číslo.</param>
+/// <returns>Celočíselná část X, tj. X zaokrouhlené dolů.</returns>
+function Int(X: Extended): Extended;
+
+/// <summary>Zaokrouhlí reálnou hodnotu na celočíselnou.</summary>
+/// <param name="X">Reálná hodnota.</param>
+/// <returns>Zaokrouhlí X na nejbližší celé číslo. Pokud je X přesně v půli mezi oběma sousedními celými čísly, vrací Round hodnotu s větší absolutní hodnotou.</returns>
+function Round(X: Extended): Int64;
+
+/// <summary>Převede (zkrátí) hodnotu reálného typu na hodnotu celočíselnou.</summary>
+/// <param name="X">Reálná hodnota.</param>
+/// <returns>Celočíselná hodnota, která vznikne zaokrouhlením hodnoty výrazu X směrem dolů (tedy odstraněním desetinné části).</returns>
+function Trunc(X: Extended): Int64;
+
+/// <summary>Funkce Frac vrací desetinnou část desetinného čísla.</summary>
+/// <param name="X">Desetinné číslo.</param>
+/// <returns>Zlomková část X; tzn. Frac(X) = X - Int(X).</returns>
+function Frac(X: Extended): Extended;
+
+/// <summary>Převede řetězec na malá písmena.</summary>
+/// <param name="S">Text, který převádíme.</param>
+/// <returns>Řetězec se stejným textem, ale převeden na malá písmena. Nepřevádí písmena s diakritikou, na to lze použít funkci AnsiLowerCase.</returns>
+function LowerCase(const S: string): string;
+
+/// <summary>Převede řetězec na velká písmena.</summary>
+/// <param name="S">Text, který převádíme.</param>
+/// <returns>Řetězec se stejným textem, ale převeden na velká písmena. Nepřevádí písmena s diakritikou, na to lze použít funkci AnsiUpperCase.</returns>
+function UpperCase(const S: string): string;
+
+/// <summary>Převede celé číslo na řetězec.</summary>
+/// <param name="Value">Celočíselné číslo.</param>
+/// <returns>Textová reprezentace čísla. Pokud číslo obsahuje desetinnou část, zaokrouhlí číslo aritmeticky na celé číslo.</returns>
+function IntToStr(Value: integer): string;
+
+/// <summary>Převede řetězec na celé číslo.</summary>
+/// <param name="S">Řetězec, reprezentující číslo.</param>
+/// <returns>Převede řetězec čísel na odpovídající celé číslo. Pokud řetězec neobsahuje platnou číselnou hodnotu, vyvolá se výjimka.</returns>
+function StrToInt(S: string): Integer;
+
+/// <summary>Převede desetinné číslo na řetězec.</summary>
+/// <param name="Value">Desetinné číslo.</param>
+/// <returns>Hodnota je zobrazena na 15 platných číslic.</returns>
+function FloatToStr(Value: Extended): string;
+
+/// <summary>Převede řetězec na číslo s desetinnou čárkou.</summary>
+/// <param name="S">Řetězec, reprezentující číslo.</param>
+/// <returns>Převede řetězec čísel na odpovídající desetinné číslo. Řetězec S může obsahovat znaménka + nebo - a oddělovač desetinné části. Na začátku a na konci může být mezera, která se ignoruje. Pokud řetězec neobsahuje platnou hodnotu, vyvolá se výjimka.</returns>
+function StrToFloat(S: string): Extended;
+
+/// <summary>Vrací aktuální datum.</summary>
+/// <returns>Aktuální datum.</returns>
+function Date: TDateTime;
+
+/// <summary>Vrací aktuální datum a čas.</summary>
+/// <returns>Aktuální datum a čas.</returns>
+function Now: TDateTime;
+
+/// <summary>Převede datumovou hodnotu TDateTime na řetězec.</summary>
+/// <param name="Date">Datumový údaj.</param>
+/// <returns>Řetězec reprezentující datum.</returns>
+function DateToStr(Date: TDateTime): string;
+
+/// <summary>Převede řetězec na datumovou hodnotu (TDateTime).</summary>
+/// <param name="S">Řetězec, reprezentující datum.</param>
+/// <returns>Převede řetězec na datumovou hodnotu. Pokud S neobsahuje platné datum, vyvolá se výjimka.</returns>
+function StrToDate(const S: string): TDateTime;
+
+/// <summary>Převede datum a čas TDateTime na řetězec.</summary>
+/// <param name="DateTime">Datum a čas.</param>
+/// <returns>Řetězec reprezentující datum a čas.</returns>
+function DateTimeToStr(DateTime: TDateTime): string;
+
+/// <summary>Vrací formátovaný řetězec sestavený z formátu řetězce a řady argumentů.</summary>
+/// <param name="Format">Řetězec (obsahující formátovací znaky), který budeme formátovat.</param>
+/// <param name="Args">Pole argumentů, které jsou aplikovány na formátovací znaky.</param>
+/// <returns>Formátovaný řetězec sestavený z formátu řetězce a řady argumentů.</returns>
+function Format(const Format: string; const Args: array of const): string;
+
+/// <summary>Naformátuje datum TDateTime do požadovaného řetězce.</summary>
+/// <param name="Format">Formát, do kterého chceme datum převést.</param>
+/// <param name="DateTime">Zadané datum.</param>
+/// <returns>Naformátuje datum TDateTime do požadovaného řetězce. Pokud je parametr Format prázdný, použije se formát 'c'.</returns>
+function FormatDateTime(const Format: string; DateTime: TDateTime): string;
+
+/// <summary>Naformátuje desetinného čísla na řetězce.</summary>
+/// <param name="Format">Požadovaný formát.</param>
+/// <param name="Value">Číselná hodnota.</param>
+/// <returns>Naformátuje číslo na požadovaný formát. Pokud je parametr Format prázdný, vrací původní číslo převedené na řetězec.</returns>
+function FormatFloat(const Format: string; Value: Extended): string;
+
+/// <summary>Vrátí větší ze dvou čísel.</summary>
+/// <param name="A">První číslo.</param>
+/// <param name="B">Druhé číslo.</param>
+/// <returns>Větší ze dvou čísel.</returns>
+function Max(A, B: Integer): Integer; overload;
+function Max(A, B: Int64): Int64; overload;
+function Max(A, B: Single): Single; overload;
+function Max(A, B: Double): Double; overload;
+function Max(A, B: Extended): Extended; overload;
+
+/// <summary>Vrátí menší ze dvou čísel.</summary>
+/// <param name="A">První číslo.</param>
+/// <param name="B">Druhé číslo.</param>
+/// <returns>Menší ze dvou čísel.</returns>
+function Min(A, B: Integer): Integer; overload;
+function Min(A, B: Int64): Int64; overload;
+function Min(A, B: Single): Single; overload;
+function Min(A, B: Double): Double; overload;
+function Min(A, B: Extended): Extended; overload;
+
+/// <summary>Testuje, zda daný soubor existuje.</summary>
+/// <param name="FileName">Název souboru včetně cesty.</param>
+/// <returns>Vrací hodnotu True pokud daný soubor existuje, v opačném případě vrací False.</returns>
+function FileExists(const FileName: string): Boolean;
+
+/// <summary>Zobrazí dialog s tlačítkem OK.</summary>
+/// <param name="Msg">Zobrazený text.</param>
+procedure ShowMessage(const Msg: string);
+
+/// <summary>Extrahuje jméno a příponu z úplného názvu souboru (včetně cesty).</summary>
+/// <param name="FileName">Název souboru včetně cesty.</param>
+/// <returns>Jméno souboru s příponou.</returns>
+function ExtractFileName(const FileName: string): string;
+
+/// <summary>Vrací písmeno jednotky a adresářovou část z názvu souboru.</summary>
+/// <param name="FileName">Název souboru včetně cesty.</param>
+/// <returns>Cesta k souboru včetně koncového oddělovače.</returns>
+function ExtractFilePath(const FileName: string): string;
+
+/// <summary>Extrahuje příponu z úplného názvu souboru (včetně cesty).</summary>
+/// <param name="FileName">Název souboru včetně cesty.</param>
+/// <returns>Přípona souboru včetně tečky.</returns>
+function ExtractFileExt(const FileName: string): string;
+
+/// <summary>Extrahuje písmeno jednotky a adresářovou část z FileName.</summary>
+/// <param name="FileName">Název souboru včetně cesty.</param>
+/// <returns>Cesta k adresáři bez koncového oddělovače.</returns>
+function ExtractFileDir(const FileName: string): string;
+
+/// <summary>Mění příponu za jménem souboru.</summary>
+/// <param name="FileName">Název souboru.</param>
+/// <param name="Extension">Nová přípona.</param>
+/// <returns>Název souboru s novou příponou.</returns>
+function ChangeFileExt(const FileName: string; const Extension: string): string;
+
+/// <summary>Odstraní z disku soubor podle jeho jména.</summary>
+/// <param name="FileName">Název souboru včetně cesty.</param>
+/// <returns>V případě, že byl soubor z disku odstraněn, vrací hodnotu True. Pokud soubor na disku neexistuje, nebo se jej nepodařilo smazat, vrací False.</returns>
+function DeleteFile(const FileName: string): Boolean;
+
+/// <summary>Zjišťuje zda daný adresář existuje.</summary>
+/// <param name="DirectoryName">Název adresáře.</param>
+/// <returns>Vrací hodnotu True pokud daný adresář existuje, v opačném případě vrací False.</returns>
+function DirectoryExists(const DirectoryName: string): Boolean;
+
+/// <summary>Vytvoří jeden nebo více vnořených adresářů specifikované cesty.</summary>
+/// <param name="Dir">Název adresáře, který chceme vytvořit.</param>
+/// <returns>Pokud adresáře v dané cestě Dir neexistují, vytvoří je. Vrací TRUE, pokud se adresáře podařilo vytvořit.</returns>
+function ForceDirectories(Dir: string): Boolean;
+
+/// <summary>Převede řetězec na malá písmena, podporuje diakritiku.</summary>
+/// <param name="S">Text, který převádíme.</param>
+/// <returns>Řetězec se stejným textem, ale převeden na malá písmena.</returns>
+function AnsiLowerCase(const S: string): string;
+
+/// <summary>Převede řetězec na velká písmena, podporuje diakritiku.</summary>
+/// <param name="S">Text, který převádíme.</param>
+/// <returns>Řetězec se stejným textem, ale převeden na velká písmena.</returns>
+function AnsiUpperCase(const S: string): string;
+
+/// <summary>Porovná dva řetězce, nerozlišuje velká a malá písmena.</summary>
+/// <param name="S1">První řetězec.</param>
+/// <param name="S2">Druhý řetězec.</param>
+/// <returns>AnsiSameText porovnává S1 a S2 a vrátí hodnotu true, pokud jsou stejné (jinak vrátí hodnotu false). AnsiSameText není case sensitive, tzn. nerozlišuje velká a malá písmena ('A' je stejné jako 'a').</returns>
+function AnsiSameText(const S1, S2: string): Boolean;
+
+/// <summary>Porovná dva řetězce, nerozlišuje velká a malá písmena. Není vhodné pro porovnání řetězců s diakritikou.</summary>
+/// <param name="S1">První řetězec.</param>
+/// <param name="S2">Druhý řetězec.</param>
+/// <returns>SameText porovnává S1 a S2 a vrátí hodnotu true, pokud jsou stejné (jinak vrátí hodnotu false). SameText není case sensitive, tzn. nerozlišuje velká a malá písmena ('A' je stejné jako 'a'). To však neplatí pro znaky s diakritikou.</returns>
+function SameText(const S1, S2: string): Boolean;
+
+/// <summary>Převede řetězec ANSI na UTF-8.</summary>
+/// <param name="S">Řetězec ANSI.</param>
+/// <returns>Řetězec UTF-8.</returns>
+function AnsiToUTF8(const S: string): string;
+
+/// <summary>Převede řetězec UTF-8 na ANSI.</summary>
+/// <param name="S">Řetězec UTF-8.</param>
+/// <returns>Řetězec ANSI.</returns>
+function UTF8ToAnsi(const S: string): string;
+
+/// <summary>Převede logickou hodnotu (True, False) na řetězec.</summary>
+/// <param name="B">Logická hodnota.</param>
+/// <param name="UseBoolStrs">Parametr, určující, v jakém tvaru má být vrácena výsledná hodnota (výchozí je False).</param>
+/// <returns>Převede logickou hodnotu na řetězec. Pokud UseBoolStrs je False, vrací '-1' pro True a '0' pro False. Pokud UseBoolStrs je True, vrací 'True' nebo 'False'.</returns>
+function BoolToStr(B: Boolean; UseBoolStrs: Boolean = False): string;
+
+/// <summary>Převede řetězec na logickou hodnotu (True, False).</summary>
+/// <param name="S">Řetězec.</param>
+/// <returns>Pokud parametr S může být převeden na číslo, tak funkce vrací False, pokud je číslo 0, jinak vrací True. Pokud S nelze převést na číslo, vyvolá se výjimka.</returns>
+function StrToBool(const S: string): Boolean;
+
+/// <summary>Převádí hodnotu typu variant na řetězec.</summary>
+/// <param name="V">Hodnota typu Variant.</param>
+/// <returns>VarToStr převede hodnotu variantu V na řetězec a vrátí výsledek. V případě, že variant má hodnotu null, VarToStr vrátí prázdný řetězec.</returns>
+function VarToStr(const V: Variant): string;
+
+/// <summary>Vrátí den v měsíci reprezentovaný hodnotou TDateTime.</summary>
+/// <param name="AValue">Datum, ze kterého chceme získat den.</param>
+/// <returns>Funkce vrací den v měsíci reprezentovaný stanovenou hodnotu TDateTime. DayOf vrací hodnotu mezi 1 a 31. DayOf vrací stejnou hodnotu jako funkce DayOfTheMonth.</returns>
+function DayOf(const AValue: TDateTime): Word;
+
+/// <summary>Vrátí měsíc v roce reprezentovaný hodnotou TDateTime.</summary>
+/// <param name="AValue">Datum, ze kterého chceme získat měsíc.</param>
+/// <returns>Vrací měsíc v roce reprezentovaný stanovenou hodnotu TDateTime. MonthOf vrací hodnotu mezi 1 a 12. MonthOf vrací stejnou hodnotu jako funkce MonthOfTheYear.</returns>
+function MonthOf(const AValue: TDateTime): Word;
+
+/// <summary>Vrátí rok reprezentovaný hodnotou TDateTime.</summary>
+/// <param name="AValue">Datum, ze kterého chceme získat rok.</param>
+/// <returns>Vrací rok zadaný určitou hodnotu TDateTime. YearOf vrací hodnotu mezi 1 a 9999.</returns>
+function YearOf(const AValue: TDateTime): Word;
+
+/// <summary>Vrací počet celých dní mezi dvěma datumovými údaji.</summary>
+/// <param name="ANow">Počáteční datum.</param>
+/// <param name="AThen">Konečné datum.</param>
+/// <returns>Vrací počet celých dní mezi dvěma datumovými údaji. Počítá pouze celé dny, tzn. výsledkem rozdílu mezi 01.01.2016 23:59 a 02.01.2016 23:58 je 0, protože do celého dne chybí 1 minuta.</returns>
+function DaysBetween(const ANow, AThen: TDateTime): Integer;
+
+/// <summary>Vrátí počet dnů v daném měsíci zadaného datumového údaje.</summary>
+/// <param name="AValue">Datumový údaj, ze kterého chceme zjistit počet dní daného měsíce.</param>
+/// <returns>Počet dní v měsíci.</returns>
+function DaysInMonth(const AValue: TDateTime): Word;
+
+/// <summary>Vrací počet dní v uvedeném měsíci a roce.</summary>
+/// <param name="AYear">Rok mezi 1 a 9999.</param>
+/// <param name="AMonth">Měsíc mezi 1 a 12.</param>
+/// <returns>Vrací počet dní v zadaném měsíci a roce.</returns>
+function DaysInAMonth(const AYear, AMonth: Word): Word;
+
+/// <summary>Vrací počet dnů v roce zadaného datumového údaje.</summary>
+/// <param name="AValue">Datumový údaj, ze kterého chceme zjistit počet dní daného roku.</param>
+/// <returns>Počet dní v roce (365 nebo 366 pro přestupný rok).</returns>
+function DaysInAYear(const AValue: TDateTime): Word;
+
+/// <summary>Extrahuje rok, měsíc, den z datumového údaje TDateTime.</summary>
+/// <param name="Date">Datumový údaj, ze kterého chceme zjistit rok, měsíc a den.</param>
+/// <param name="Year">Vrácený rok (výstupní parametr).</param>
+/// <param name="Month">Vrácený měsíc (výstupní parametr).</param>
+/// <param name="Day">Vrácený den (výstupní parametr).</param>
+procedure DecodeDate(Date: TDateTime; var Year, Month, Day: Word);
+
+/// <summary>Extrahuje rok, měsíc, den a den v týdnu z datumového údaje TDateTime.</summary>
+/// <param name="DateTime">Datumový údaj, ze kterého chceme zjistit rok, měsíc a den.</param>
+/// <param name="Year">Vrácený rok (výstupní parametr).</param>
+/// <param name="Month">Vrácený měsíc (výstupní parametr).</param>
+/// <param name="Day">Vrácený den (výstupní parametr).</param>
+/// <param name="DOW">Den v týdnu (Day-of-Week). Pozor, neděle je 1 a pondělí je 2 (výstupní parametr).</param>
+/// <returns>Z datumového údaje vrací rok, měsíc, den a den v týdnu. Pokud je rok přestupný, je návratová hodnota True, v opačném případě je False.</returns>
+function DecodeDateFully(const DateTime: TDateTime; var Year, Month, Day, DOW: Word): boolean;
+
+/// <summary>Z roku, měsíce a dne vytvoří datum typu TDateTime.</summary>
+/// <param name="Year">Rok - hodnota mezi 1 a 9999.</param>
+/// <param name="Month">Měsíc - hodnota mezi 1 a 12.</param>
+/// <param name="Day">Platný den - dle měsíce hodnota 28, 29, 30 nebo 31.</param>
+/// <returns>Pokud vytvořené datum není platná hodnota typu TDateTime, vyvolá se výjimka.</returns>
+function EncodeDate(Year, Month, Day: Word): TDateTime;
+
+/// <summary>Vrací datum zvýšené nebo snížené o zadaný počet dní.</summary>
+/// <param name="AValue">Datum.</param>
+/// <param name="ANumberOfDays">Číslo, udávající počet dní, o které budeme uvedené datum zvyšovat (nebo snižovat v případě záporné hodnoty) (výchozí je 1).</param>
+/// <returns>Datum zvýšené nebo snížené o zadaný počet dní.</returns>
+function IncDay(const AValue: TDateTime; const ANumberOfDays: Integer = 1): TDateTime;
+
+/// <summary>Vrací datum zvýšené nebo snížené o zadaný počet měsíců.</summary>
+/// <param name="Date">Datum.</param>
+/// <param name="NumberOfMonths">Číslo, udávající počet měsíců, o které budeme uvedené datum zvyšovat (nebo snižovat v případě záporné hodnoty) (výchozí je 1).</param>
+/// <returns>Datum zvýšené nebo snížené o zadaný počet měsíců.</returns>
+function IncMonth(const Date: TDateTime; NumberOfMonths: Integer = 1): TDateTime;
+
+/// <summary>Vrací datum zvýšené nebo snížené o zadaný počet roků.</summary>
+/// <param name="AValue">Datum.</param>
+/// <param name="ANumberOfYears">Číslo, udávající počet roků, o které budeme uvedené datum zvyšovat (nebo snižovat v případě záporné hodnoty) (výchozí je 1).</param>
+/// <returns>Datum zvýšené nebo snížené o zadaný počet roků.</returns>
+function IncYear(const AValue: TDateTime; const ANumberOfYears: Integer = 1): TDateTime;
+
+/// <summary>Převede řetězec na hodnotu měny.</summary>
+/// <param name="S">Řetězec.</param>
+/// <returns>Převede řetězec čísel na odpovídající hodnotu měny. Řetězec S může obsahovat znaménka + nebo - a oddělovač desetinné části. Na začátku a na konci může být mezera, která se ignoruje. Pokud řetězec neobsahuje platnou hodnotu, vyvolá se výjimka.</returns>
+function StrToCurr(S: string): Currency;
+
+/// <summary>Převede zadaný variant na datum typu TDateTime.</summary>
+/// <param name="V">Variant, reprezentující datum.</param>
+/// <returns>Převede variant na datumovou hodnotu typu TDateTime. Pokud V neobsahuje platné datum, vyvolá se výjimka.</returns>
+function VarToDateTime(const V: Variant): TDateTime;
+
+/// <summary>Vytvoří a vyplní jednorozměrné pole.</summary>
+/// <param name="Values">Hodnoty, které se mají převést na pole.</param>
+/// <returns>Vrací jednorozměrné pole Variant s prvky danými parametrem Values.</returns>
+function VarArrayOf(const Values: array of Variant): Variant;
+
+/// <summary>Funkce vrací aktuální rok.</summary>
+/// <returns>Vrací aktuální rok podle gregoriánského kalendáře. Hodnota je vrácena jako čtyři číslice.</returns>
+function CurrentYear: Word;
 

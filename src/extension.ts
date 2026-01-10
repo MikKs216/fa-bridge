@@ -17,6 +17,7 @@ import {
 	hledatOdZacatku,
 	openHelp,
 	openTextSearch,
+	openFaChm,
 } from './commands/sendCommand';
 import { getValidInstanceId, getFsBridgeWorkspaceRoot } from './utils/fsBridge';
 import { registerFABridgePanel } from './views/FABridgePanel';
@@ -353,6 +354,7 @@ export function activate(context: vscode.ExtensionContext) {
 		vscode.commands.registerCommand('faBridge.vlozitUdajSDvojteckami', vlozitUdajSDvojteckami),
 		vscode.commands.registerCommand('faBridge.hledatOdZacatku', hledatOdZacatku),
 		vscode.commands.registerCommand('faBridge.openHelp', openHelp),
+		vscode.commands.registerCommand('faBridge.openFaChm', openFaChm),
 		vscode.commands.registerCommand('faBridge.openTextSearch', openTextSearch),
 		
 		// Commands pro historii souborů

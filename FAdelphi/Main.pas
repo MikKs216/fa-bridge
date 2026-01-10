@@ -4812,6 +4812,10 @@ begin
 {$IFNDEF FINALBUILD}
   {$IFDEF UCURSOR}
   if dxBarButtonUseCursorEditor.Down then begin
+    // Pokud je formulář v režimu NESTED (vnořený formulář), neinteraguj s Cursorem
+    if FNestedState then
+      Exit;
+      
     if Assigned(FBridge) and (FLastFieldName <> '') then
     begin
       // Identifikace aktuálního formuláře v FA
@@ -5065,9 +5069,13 @@ begin
   {$IFDEF UCURSOR}
   // WriteBridgeDebug('FormCloseQuery: START, FStateFormWasChanged=' + BoolToStr(FStateFormWasChanged)); // ZAKOMENTOVÁNO
   
-  // KROK 1: Zkontroluj neuložené změny v Cursoru
-  if Assigned(FBridge) then
+  // Pokud je formulář v režimu NESTED (vnořený formulář), vynecháme veškeré operace s Cursorem
+  // Vnořený formulář se zavře jako modální okno a nemá ovlivňovat Cursor hlavního formuláře
+  if not FNestedState then
   begin
+    // KROK 1: Zkontroluj neuložené změny v Cursoru
+    if Assigned(FBridge) then
+    begin
     CloseResult := FBridge.CheckUnsavedChanges;
     
     case CloseResult of
@@ -5230,7 +5238,8 @@ begin
         FScriptChangedByCursor := False;
       end;
     end;
-  end;
+  end; // if Assigned(FBridge)
+  end; // if not FNestedState
   {$ENDIF UCURSOR}
   //
   if FFileOpened and FIsOpenedPDFEditor then begin
@@ -17380,7 +17389,7 @@ begin
  {$IFNDEF FINALBUILD}
   {$IFDEF UCURSOR}
   // Vyprázdni FCurrentFile když otevíráme původní editor kódu v FA (ne v Cursoru)
-  if Assigned(FBridge) then
+  if not FNestedState and Assigned(FBridge) then
     FBridge.ClearCurrentFile;
   {$ENDIF UCURSOR}
   
@@ -19369,8 +19378,8 @@ begin
         except
           on e: Exception do begin
             {$IFDEF UCURSOR}
-            // Zobraz hlášení jen když editujeme v Cursoru
-            if Assigned(FBridge) and (FBridge.CurrentFile <> '') then
+            // Zobraz hlášení jen když editujeme v Cursoru (a nejsme ve vnořeném formuláři)
+            if not FNestedState and Assigned(FBridge) and (FBridge.CurrentFile <> '') then
               MsgBoxErr('FORM asistent',
                 'Chyba ve scriptu:' + #13#10 + #13#10 + E.Message, 
                 MB_OK);
@@ -19685,7 +19694,8 @@ begin
     FLastFieldName:=fldName;
   ShowHintSb(FLastFieldName);
   {$IFDEF UCURSOR}
-  FBridge.WriteFieldText(FLastFieldName);
+  if not FNestedState then
+    FBridge.WriteFieldText(FLastFieldName);
   {$ENDIF UCURSOR}
 {$ENDIF FINALBUILD}
 end; {ShowFieldState}
@@ -27189,6 +27199,11 @@ end;
 
 procedure TfaMain.TimerPollTimer(Sender: TObject);
 begin
+  // Pokud je formulář v režimu NESTED (vnořený formulář), nepolluj Cursor
+  // Vnořený formulář nemá vlastní script editor a nemá interagovat s Cursorem
+  if FNestedState then
+    Exit;
+    
   if Assigned(FBridge) then
   begin
     FBridge.PollTick; // detekuje Ctrl+S v Cursoru a případně zavolá BridgeExternalSave
@@ -27265,6 +27280,11 @@ var
   NeedCheck: Boolean;
   res: Integer;
 begin
+  // Pokud je formulář v režimu NESTED (vnořený formulář), neotevírej Cursor
+  // Vnořený formulář nemá vlastní script editor a nemá interagovat s Cursorem
+  if FNestedState then
+    Exit;
+  
   JumpLine := 0;
   JumpCol := 0;
   
@@ -27357,6 +27377,11 @@ procedure TfaMain.ProcessFACommand(const Command: string);
 var 
   s: AnsiString;
 begin
+  // Pokud je formulář v režimu NESTED (vnořený formulář), nezpracovávej příkazy z Cursoru
+  // Vnořený formulář nemá vlastní script editor a nemá interagovat s Cursorem
+  if FNestedState then
+    Exit;
+    
   // Debug: zapiš začátek zpracování příkazu - ZAKOMENTOVÁNO
   {try
     if Assigned(FBridge) then
@@ -27473,6 +27498,10 @@ var
   MtValuesJson: string;
 begin
   if not Assigned(ScripterT) then
+    Exit;
+    
+  // Pokud je formulář v režimu NESTED (vnořený formulář), nezapisuj stav do Cursoru
+  if FNestedState then
     Exit;
 
   // Získání proměnných ze skriptu
