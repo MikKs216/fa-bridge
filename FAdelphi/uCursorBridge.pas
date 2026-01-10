@@ -74,14 +74,11 @@ type
     function EnsureDir(const Dir: string): Boolean;
     function IsAbsolutePath(const P: string): Boolean;
     function EffectiveExportFolder: string;
-
-    function GetScriptFileName(const FormId: string): string;
     procedure AtomicWriteAllText(const FileName, Text: AnsiString);
     function GetFileWriteTime(const FileName: string): TDateTime;
-    function ReadAllText(const FileName: string): AnsiString;
 
     function RunCursorReuse(const AFolder, AFile: string; ALine, ACol: Integer): Boolean;
-    
+
     // Aktivuje záložku v existujícím Cursoru bez spouštění nového
     // Vrací True pokud Cursor běží a záložka byla aktivována, False pokud Cursor neběží
     function ActivateTabOnly(const AFile: string): Boolean;
@@ -158,6 +155,8 @@ type
     function ReadFieldText: string; // Přečte obsah fafield.txt
     procedure WriteFieldText(const FieldName: string); // Zapíše název fieldu do fafield.txt
     function ReadScriptFileContent: AnsiString; // Načte obsah aktuálního scriptu z disku
+    function ReadAllText(const FileName: string): AnsiString; // Přečte celý obsah souboru
+    function GetScriptFileName(const FormId: string): string; // Vrátí cestu k souboru scriptu pro daný FormId
     
     // Debugger podpora
     procedure WriteMsgState(const StateJson: string); // Zapíše stav z Msg do famsgstate.json (UTF-8 s BOM)

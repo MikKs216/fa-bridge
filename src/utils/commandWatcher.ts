@@ -387,10 +387,11 @@ export class CommandWatcher implements vscode.Disposable {
 		}
 		
 		if (!tabClosed) {
-			// Fallback: pokud jsme nenašli záložku podle cesty, zavři aktivní
-			this.log('[CommandWatcher] Záložka pro cestu nenalezena, zavírám aktivní');
-			await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
-			tabClosed = true;
+			// OPRAVA: Záložka nenalezena - script nebyl otevřen v Cursoru
+			// Nezavíráme aktivní záložku! Pouze odpovíme NOT_OPEN
+			this.log('[CommandWatcher] Záložka pro cestu nenalezena - script nebyl otevřen, nic nezavíráme');
+			fs.writeFileSync(responsePath, 'NOT_OPEN', 'utf-8');
+			return;
 		}
 		
 		fs.writeFileSync(responsePath, 'OK', 'utf-8');

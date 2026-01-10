@@ -1,6 +1,15 @@
 import * as vscode from 'vscode';
 
 /**
+ * Struktura try bloku
+ */
+interface TryBlock {
+	tryOffset: number;
+	finallyOrExceptOffset: number | null;
+	endOffset: number | null;
+}
+
+/**
  * Provider pro zvýrazňování odpovídajících begin/end bloků v Pascal kódu
  * Zvýrazňuje nejbližší pár begin/end, který obklopuje aktuální pozici kurzoru
  */
@@ -47,11 +56,96 @@ export class BeginEndMatcher {
 	}
 
 	/**
+	 * Najde všechny try, finally, except pozice a jejich odpovídající end
+	 * Vrací Set offsetů end, které patří k try blokům a mapu try bloků
+	 */
+	private findTryBlocks(document: vscode.TextDocument): {
+		tryEnds: Set<number>;
+		tryBlocks: Array<TryBlock>;
+	} {
+		const text = document.getText();
+		const tryEnds = new Set<number>();
+		const tryBlocks: Array<TryBlock> = [];
+		
+		// Regex pro try, finally, except (case-insensitive, musí být samostatné slovo)
+		const tryRegex = /\b(?i:try)\b/g;
+		const finallyRegex = /\b(?i:finally)\b/g;
+		const exceptRegex = /\b(?i:except)\b/g;
+		const endRegex = /\b(?i:end)\b/g;
+
+		// Najdi všechny try pozice
+		const tries: Array<{ offset: number }> = [];
+		let match;
+		while ((match = tryRegex.exec(text)) !== null) {
+			tries.push({ offset: match.index });
+		}
+
+		// Najdi všechny finally, except a end pozice
+		const finallys: Array<{ offset: number }> = [];
+		while ((match = finallyRegex.exec(text)) !== null) {
+			finallys.push({ offset: match.index });
+		}
+
+		const excepts: Array<{ offset: number }> = [];
+		while ((match = exceptRegex.exec(text)) !== null) {
+			excepts.push({ offset: match.index });
+		}
+
+		const ends: Array<{ offset: number }> = [];
+		while ((match = endRegex.exec(text)) !== null) {
+			ends.push({ offset: match.index });
+		}
+
+		// Pro každý try najdi odpovídající finally/except a end
+		for (const tryPos of tries) {
+			// Najdi nejbližší finally nebo except po try
+			let finallyOrExcept: { offset: number } | null = null;
+			
+			const finallyAfterTry = finallys.filter(f => f.offset > tryPos.offset)
+				.sort((a, b) => a.offset - b.offset)[0];
+			const exceptAfterTry = excepts.filter(e => e.offset > tryPos.offset)
+				.sort((a, b) => a.offset - b.offset)[0];
+
+			if (finallyAfterTry && exceptAfterTry) {
+				finallyOrExcept = finallyAfterTry.offset < exceptAfterTry.offset 
+					? finallyAfterTry 
+					: exceptAfterTry;
+			} else if (finallyAfterTry) {
+				finallyOrExcept = finallyAfterTry;
+			} else if (exceptAfterTry) {
+				finallyOrExcept = exceptAfterTry;
+			}
+
+			let endAfterFinally: { offset: number } | null = null;
+			if (finallyOrExcept) {
+				// Najdi nejbližší end po finally/except
+				endAfterFinally = ends.filter(e => e.offset > finallyOrExcept!.offset)
+					.sort((a, b) => a.offset - b.offset)[0] || null;
+				
+				if (endAfterFinally) {
+					// Tento end patří k try bloku, přidej ho do Set
+					tryEnds.add(endAfterFinally.offset);
+				}
+			}
+
+			tryBlocks.push({
+				tryOffset: tryPos.offset,
+				finallyOrExceptOffset: finallyOrExcept?.offset ?? null,
+				endOffset: endAfterFinally?.offset ?? null
+			});
+		}
+
+		return { tryEnds, tryBlocks };
+	}
+
+	/**
 	 * Najde všechny begin a end pozice v dokumentu
 	 */
 	private findAllBeginEnd(document: vscode.TextDocument): {
 		begins: Array<{ offset: number; line: number; column: number }>;
 		ends: Array<{ offset: number; line: number; column: number }>;
+		tryEnds: Set<number>;
+		tryBlocks: Array<TryBlock>;
 	} {
 		const text = document.getText();
 		
@@ -81,21 +175,61 @@ export class BeginEndMatcher {
 			});
 		}
 
-		return { begins, ends };
+		// Najdi všechny end, které patří k try blokům
+		const { tryEnds, tryBlocks } = this.findTryBlocks(document);
+
+		return { begins, ends, tryEnds, tryBlocks };
+	}
+
+	/**
+	 * Najde try blok, ve kterém se nachází daný offset
+	 */
+	private findTryBlockContaining(offset: number, tryBlocks: Array<TryBlock>): TryBlock | null {
+		for (const block of tryBlocks) {
+			if (block.tryOffset <= offset) {
+				if (block.endOffset === null || offset <= block.endOffset) {
+					return block;
+				}
+			}
+		}
+		return null;
 	}
 
 	/**
 	 * Najde odpovídající end pro daný begin offset
+	 * Ignoruje end, které patří k try...finally...end nebo try...except...end blokům
 	 */
 	private findMatchingEnd(
 		document: vscode.TextDocument,
 		beginOffset: number,
 		begins: Array<{ offset: number }>,
-		ends: Array<{ offset: number }>
+		ends: Array<{ offset: number }>,
+		tryEnds: Set<number>,
+		tryBlocks: Array<TryBlock>
 	): { offset: number; line: number; column: number } | null {
+		// Zjisti, zda je begin uvnitř try bloku
+		const containingTryBlock = this.findTryBlockContaining(beginOffset, tryBlocks);
+		
 		// Najdi všechny begin a end mezi beginOffset a koncem souboru
+		let relevantEnds = ends.filter(e => e.offset > beginOffset);
+		
+		// Pokud je begin uvnitř try bloku a je za finally/except, ignoruj pouze try-end tohoto bloku
+		// pokud je try-end za finally/except a před begin (což by nemělo nastat, ale pro jistotu)
+		if (containingTryBlock && containingTryBlock.finallyOrExceptOffset !== null && 
+			beginOffset > containingTryBlock.finallyOrExceptOffset && 
+			containingTryBlock.endOffset !== null &&
+			containingTryBlock.endOffset > beginOffset) {
+			// Begin je mezi finally/except a try-end, takže try-end je za begin a nemusíme ho ignorovat
+			// Ignoruj pouze ostatní try-end (z jiných try bloků)
+			relevantEnds = relevantEnds.filter(e => 
+				!tryEnds.has(e.offset) || e.offset === containingTryBlock.endOffset
+			);
+		} else {
+			// Jinak ignoruj všechny try-end
+			relevantEnds = relevantEnds.filter(e => !tryEnds.has(e.offset));
+		}
+		
 		const relevantBegins = begins.filter(b => b.offset > beginOffset);
-		const relevantEnds = ends.filter(e => e.offset > beginOffset);
 
 		// Seřaď podle pozice
 		relevantBegins.sort((a, b) => a.offset - b.offset);
@@ -133,16 +267,41 @@ export class BeginEndMatcher {
 
 	/**
 	 * Najde odpovídající begin pro daný end offset
+	 * Ignoruje end, které patří k try...finally...end nebo try...except...end blokům
 	 */
 	private findMatchingBegin(
 		document: vscode.TextDocument,
 		endOffset: number,
 		begins: Array<{ offset: number }>,
-		ends: Array<{ offset: number }>
+		ends: Array<{ offset: number }>,
+		tryEnds: Set<number>,
+		tryBlocks: Array<TryBlock>
 	): { offset: number; line: number; column: number } | null {
+		// Pokud tento end patří k try bloku, vrať null
+		if (tryEnds.has(endOffset)) {
+			return null;
+		}
+
+		// Zjisti, zda je end uvnitř try bloku
+		const containingTryBlock = this.findTryBlockContaining(endOffset, tryBlocks);
+		
 		// Najdi všechny begin a end před endOffset
+		let relevantEnds = ends.filter(e => e.offset < endOffset);
+		
+		// Pokud je end uvnitř try bloku a je za finally/except, ignoruj pouze try-end tohoto bloku před end
+		if (containingTryBlock && containingTryBlock.finallyOrExceptOffset !== null && 
+			endOffset > containingTryBlock.finallyOrExceptOffset && 
+			containingTryBlock.endOffset !== null) {
+			// Ignoruj pouze try-end tohoto bloku, pokud je před end
+			relevantEnds = relevantEnds.filter(e => 
+				!tryEnds.has(e.offset) || e.offset >= endOffset || e.offset !== containingTryBlock.endOffset
+			);
+		} else {
+			// Jinak ignoruj všechny try-end
+			relevantEnds = relevantEnds.filter(e => !tryEnds.has(e.offset));
+		}
+		
 		const relevantBegins = begins.filter(b => b.offset < endOffset);
-		const relevantEnds = ends.filter(e => e.offset < endOffset);
 
 		// Seřaď podle pozice (odzadu)
 		relevantBegins.sort((a, b) => b.offset - a.offset);
@@ -185,7 +344,9 @@ export class BeginEndMatcher {
 		document: vscode.TextDocument,
 		cursorOffset: number,
 		begins: Array<{ offset: number; line: number; column: number }>,
-		ends: Array<{ offset: number; line: number; column: number }>
+		ends: Array<{ offset: number; line: number; column: number }>,
+		tryEnds: Set<number>,
+		tryBlocks: Array<TryBlock>
 	): {
 		begin: vscode.Range | null;
 		end: vscode.Range | null;
@@ -202,7 +363,7 @@ export class BeginEndMatcher {
 
 		// Zkus najít nejbližší begin, který má odpovídající end za kurzorem
 		for (const begin of beginsBeforeCursor) {
-			const matchingEnd = this.findMatchingEnd(document, begin.offset, begins, ends);
+			const matchingEnd = this.findMatchingEnd(document, begin.offset, begins, ends, tryEnds, tryBlocks);
 			
 			if (matchingEnd && matchingEnd.offset >= cursorOffset) {
 				// Našli jsme pár, který obklopuje kurzor
@@ -224,11 +385,11 @@ export class BeginEndMatcher {
 		}
 
 		// Pokud kurzor není v žádném páru, zkus najít nejbližší end za kurzorem
-		const endsAfterCursor = ends.filter(e => e.offset >= cursorOffset);
+		const endsAfterCursor = ends.filter(e => e.offset >= cursorOffset && !tryEnds.has(e.offset));
 		if (endsAfterCursor.length > 0) {
 			endsAfterCursor.sort((a, b) => a.offset - b.offset);
 			const nearestEnd = endsAfterCursor[0];
-			const matchingBegin = this.findMatchingBegin(document, nearestEnd.offset, begins, ends);
+			const matchingBegin = this.findMatchingBegin(document, nearestEnd.offset, begins, ends, tryEnds, tryBlocks);
 			
 			if (matchingBegin) {
 				const beginPos = document.positionAt(matchingBegin.offset);
@@ -267,7 +428,7 @@ export class BeginEndMatcher {
 		const position = this.activeEditor.selection.active;
 		const cursorOffset = document.offsetAt(position);
 
-		const { begins, ends } = this.findAllBeginEnd(document);
+		const { begins, ends, tryEnds, tryBlocks } = this.findAllBeginEnd(document);
 		
 		// Nejdřív zkontroluj, jestli není kurzor přímo na begin nebo end
 		for (const begin of begins) {
@@ -278,7 +439,7 @@ export class BeginEndMatcher {
 			);
 			
 			if (beginRange.contains(position)) {
-				const matchingEnd = this.findMatchingEnd(document, begin.offset, begins, ends);
+				const matchingEnd = this.findMatchingEnd(document, begin.offset, begins, ends, tryEnds, tryBlocks);
 				if (matchingEnd) {
 					const endPos = document.positionAt(matchingEnd.offset);
 					const endRange = new vscode.Range(
@@ -292,6 +453,11 @@ export class BeginEndMatcher {
 		}
 
 		for (const end of ends) {
+			// Přeskoč end, které patří k try blokům
+			if (tryEnds.has(end.offset)) {
+				continue;
+			}
+
 			const endPos = document.positionAt(end.offset);
 			const endRange = new vscode.Range(
 				endPos,
@@ -299,7 +465,7 @@ export class BeginEndMatcher {
 			);
 			
 			if (endRange.contains(position)) {
-				const matchingBegin = this.findMatchingBegin(document, end.offset, begins, ends);
+				const matchingBegin = this.findMatchingBegin(document, end.offset, begins, ends, tryEnds, tryBlocks);
 				if (matchingBegin) {
 					const beginPos = document.positionAt(matchingBegin.offset);
 					const beginRange = new vscode.Range(
@@ -313,7 +479,7 @@ export class BeginEndMatcher {
 		}
 
 		// Pokud kurzor není přímo na begin/end, najdi obklopující pár
-		const { begin, end } = this.findEnclosingBeginEnd(document, cursorOffset, begins, ends);
+		const { begin, end } = this.findEnclosingBeginEnd(document, cursorOffset, begins, ends, tryEnds, tryBlocks);
 		
 		const decorations: vscode.Range[] = [];
 		if (begin) {

@@ -1,4 +1,6 @@
-﻿{ 17.12.2025 20:15:13 (GMT+1:00) > [mik on WIN-48QDB6JAV23] checked in Oprava  #7000  }
+﻿{ 9.1.2026 12:22:52 (GMT+1:00) > [mik on WIN-48QDB6JAV23] checked in Oprava exportu EPO na disk, ve funkci OpenPortalCSSZ  }
+{ 30.12.2025 20:58:06 (GMT+1:00) > [mik on WIN-48QDB6JAV23] checked in Dalsi upravy pro cursor  }
+{ 17.12.2025 20:15:13 (GMT+1:00) > [mik on WIN-48QDB6JAV23] checked in Oprava  #7000  }
 { 11.12.2025 12:57:34 (GMT+1:00) > [mik on WIN-48QDB6JAV23] checked in Cistka nepouzivanych veci pro cursor  }
 { 11.12.2025 12:41:52 (GMT+1:00) > [mik on WIN-48QDB6JAV23] checked in Zmeny pro editor cursor - horke klavesy  }
 { 28.10.2025 15:12:29 (GMT+1:00) > [mik on WIN-48QDB6JAV23] checked in Propojeni na Cursor / VS code 1 }
@@ -2626,7 +2628,8 @@ type
 
     {$IFDEF UCURSOR}
     procedure AppInit;
-    procedure AppDone;
+    procedure AppDoneStart;
+    procedure AppDoneFinish;
     procedure OnMsgCalled(const AMessage: string); // zpracování volání Msg z skriptu (public pro volání z FScriptUtils)
     {$ENDIF UCURSOR}
 
@@ -5072,7 +5075,9 @@ begin
       begin
         // Soubor má neuložené změny - upozorni uživatele a zastav zavírání
         MsgBoxWarn(Caption, 
-          'Script v Cursoru má neuložené změny. Nejdříve uložte změny v Cursoru do FORM asistenta a pak jej znovu zavřete.', 
+          'Script v Cursoru má neuložené změny.' + #13#10 +
+          'Nejdříve uložte změny v Cursoru (Alt+Q) do FA' + #13#10 +
+          'a pak zavřete FA znovu.', 
           MB_OK);
         FBridge.ActivateCursorWindow; // Přepni na Cursor okno
         CanClose := False;
@@ -5112,8 +5117,10 @@ begin
           begin
             // Obsah na disku se liší od obsahu v databázi - nahlásit a nezavřít FA
             MsgBoxWarn(Caption, 
-              'Script na disku se liší od scriptu v databázi FORM asistenta. ' +
-              'Obsah na disku byl změněn mimo FORM asistenta. Nejdříve uložte změny v Cursoru do FORM asistenta a pak jej znovu zavřete.', 
+              'Script na disku se liší od scriptu v databázi FA.' + #13#10 +
+              'Obsah byl změněn v Cursoru.' + #13#10 + #13#10 +
+              'Nejdříve uložte změny v Cursoru (Alt+Q) do FA' + #13#10 +
+              'a pak zavřete FA znovu.', 
               MB_OK);
             FBridge.ActivateCursorWindow; // Přepni na Cursor okno
             CanClose := False;
@@ -5155,9 +5162,9 @@ begin
               // Obsah na disku se liší od obsahu v databázi
               // Zeptej se uživatele, jestli chce otevřít Cursor pro kontrolu scriptu
               res := MessageAsk(Caption, 
-                'Script na disku se liší od scriptu v databázi FORM asistenta. ' +
-                'Obsah na disku byl změněn mimo FORM asistenta.' + #13#10 + #13#10 +
-                'Chcete otevřít Cursor pro kontrolu scriptu?', 
+                'Script na disku se liší od scriptu v databázi FA.' + #13#10 +
+                'Obsah byl změněn v Cursoru.' + #13#10 + #13#10 +
+                'Chcete otevřít Cursor pro kontrolu změn?', 
                 [MBYES, MBNO]);
               
               if res = IDYES then
@@ -5183,7 +5190,8 @@ begin
                 begin
                   // Nepodařilo se otevřít Cursor - zobraz varování a pokračuj v zavírání
                   MsgBoxWarn(Caption, 
-                    'Nepodařilo se otevřít Cursor. Script na disku se liší od scriptu v databázi.', 
+                    'Nepodařilo se otevřít Cursor.' + #13#10 +
+                    'Script na disku se liší od scriptu v databázi FA.', 
                     MB_OK);
                   // Pokračuj v zavírání FA (uživatel může změny zkontrolovat později)
                 end;
@@ -17532,7 +17540,7 @@ end; {MakeInactiveFieldInstructionPanel}
 procedure TfaMain.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
   {$IFDEF UCURSOR}
-  AppDone;
+  AppDoneStart;
   {$ENDIF UCURSOR}
   CloseData;
   //
@@ -17620,6 +17628,10 @@ begin
  end;
 {$ENDIF FA_APP}
 {$ENDIF STANDALONE}
+
+  {$IFDEF UCURSOR}
+  AppDoneFinish;
+  {$ENDIF UCURSOR}
 end; {FormClose}
 
 procedure TfaMain.cxContentEnter(Sender: TObject);
@@ -19359,7 +19371,9 @@ begin
             {$IFDEF UCURSOR}
             // Zobraz hlášení jen když editujeme v Cursoru
             if Assigned(FBridge) and (FBridge.CurrentFile <> '') then
-              MsgBoxErr('FORM sistent - Cursor editor','Chyba: ' + E.Message, MB_OK);
+              MsgBoxErr('FORM asistent - Chyba kompilace scriptu',
+                'Chyba v scriptu:' + #13#10 + #13#10 + E.Message, 
+                MB_OK);
             {$ENDIF UCURSOR}
             raise; // Přehodí výjimku dál
           end;
@@ -20790,7 +20804,7 @@ var openBrowser: string;
 begin
   openBrowser := ClientParam('FOExportXMLOpenEPO');
   if IsWebBrowser and (ExtractFileExt(fn)=cXMLDefaultExt) and
-    StrToBool(openBrowser) and
+    StrToBoolSafe(openBrowser) and  //Mik: oprava 9.1.2026 - bylo StrToBool
     (MessageAsk(Caption,'Chcete teď otevřít portál ČSSZ?', [MBYES, MBNO]) = IDYES) then
     OpenWebBrowser(
       'https://eportal.cssz.cz/ikr-cas/login?service=https%3A%2F%2Feportal.cssz.cz%2Fc%2Fportal%2Flogin',
@@ -27153,9 +27167,13 @@ begin
   SetFocus;
 end;
 
-procedure TfaMain.AppDone;
+procedure TfaMain.AppDoneStart;
 begin
   TimerPoll.Enabled := False;
+end;
+
+procedure TfaMain.AppDoneFinish;
+begin
   FreeAndNil(FBridge);
 end;
 
@@ -27242,6 +27260,10 @@ var
   IsOpen: Boolean;
   HomeDefsPath: string;
   IsHomeDef: Boolean;
+  ScriptFile: string;
+  ScriptOnDisk: AnsiString;
+  NeedCheck: Boolean;
+  res: Integer;
 begin
   JumpLine := 0;
   JumpCol := 0;
@@ -27283,7 +27305,44 @@ begin
 
   if not IsOpen then
   begin
-    // Script není otevřený - předat script a otevřít
+    // Script není otevřený - PŘED otevřením zkontroluj, jestli soubor na disku není jiný než v DB
+    ScriptFile := FBridge.GetScriptFileName(FCurrentFormId);
+    NeedCheck := FileExists(ScriptFile);
+    
+    if NeedCheck then
+    begin
+      try
+        // Načti obsah souboru z disku
+        ScriptOnDisk := FBridge.ReadAllText(ScriptFile);
+        
+        // Porovnej s obsahem z DB
+        if ScriptOnDisk <> Code then
+        begin
+          // Obsah na disku se liší od obsahu v databázi - zeptat uživatele
+          res := MsgBoxAsk(Caption, 
+            'Script na disku se liší od scriptu v databázi FA.' + #13#10 +
+            'Obsah byl změněn v Cursoru.' + #13#10 + #13#10 +
+            'Chcete přepsat změny stavem z databáze FA?' + #13#10 + #13#10 +
+            'ANO = přepsat změny z Cursoru' + #13#10 +
+            'NE = zachovat změny z Cursoru a jen aktivovat Cursor',
+            MB_YESNO or MB_ICONQUESTION);
+          
+          if res = IDNO then
+          begin
+            // Uživatel nechce přepsat - otevři s obsahem z disku (ne z DB)
+            // StartEditing automaticky uloží ScriptOnDisk na disk a otevře Cursor
+            FBridge.StartEditing(FCurrentFormId, ScriptOnDisk, JumpLine, JumpCol);
+            Exit;
+          end;
+          // res = IDYES - pokračuj normálně (přepíše soubor)
+        end;
+      except
+        // Pokud nastala chyba při čtení souboru, ignoruj (soubor může být zamčený)
+        // a pokračuj normálně (přepíše soubor)
+      end;
+    end;
+    
+    // Script není otevřený - předat script a otevřít (přepíše soubor)
     if not FBridge.StartEditing(FCurrentFormId, Code, JumpLine, JumpCol) then
       ShowMessage('Nepodařilo se spustit Cursor / VS code. Patrně není otevřený formulář nebo je špatně cesta.');
   end
