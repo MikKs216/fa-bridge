@@ -51,7 +51,7 @@ code --install-extension fa-bridge-0.5.93.vsix
 
 ## Verze
 
-**Aktuální verze:** 0.5.93
+**Aktuální verze:** 0.10.9
 
 ---
 

@@ -20,7 +20,7 @@ Technická dokumentace pro vývojáře a AI asistenty.
 - **Jméno:** fa-bridge (Cursor Extension)
 - **Účel:** Propojení Cursor/VS Code s editorem FormStudio (FA)
 - **Technologie:** TypeScript, VS Code Extension API
-- **Aktuální verze:** 0.10.2
+- **Aktuální verze:** 0.10.9
 
 ### Funkčnost
 
@@ -36,6 +36,8 @@ FA Bridge komunikuje s FormStudio přes soubor `.fsbridge/facmd.txt`:
 - `Najit_udaj` - Najde údaj ve formuláři (Shift+Alt+L)
 - **Sidebar Panel:** Ikona v levém panelu s tlačítky pro všechny příkazy (Shift+Alt+F)
 - **Panel obsahuje 4 sekce:** Příkazy, Msg Watch, HISTORIE, NÁPOVĚDA
+- **Otevření FA nápovědy:** Ctrl+Alt+F1 otevře FA.chm ze složky `_source`
+- **Hledání v dokumentaci:** Ctrl+Shift+F1 otevře TextSearch.exe (i bez slova pod kurzorem)
 
 ---
 
@@ -59,10 +61,11 @@ fa-bridge/
 │ │   ├── FABridgePanel.ts      # Sidebar TreeView panel (Příkazy)
 │ │   └── HelpPanel.ts          # Help panel (NÁPOVĚDA)
 │ ├── providers/
-│ │   ├── PascalIntelliSenseProvider.ts  # IntelliSense (Completion + Hover)
+│ │   ├── PascalIntelliSenseProvider.ts  # IntelliSense (Completion + Hover + Definition)
 │ │   ├── PascalDocParser.ts             # Parser Pascal dokumentace (XML docs)
+│ │   ├── PascalCodeLensProvider.ts      # CodeLens (počet referencí funkcí)
 │ │   ├── SnippetProvider.ts             # Pascal snippety
-│ │   └── BeginEndMatcher.ts             # Zvýrazňování begin/end bloků
+│ │   └── BeginEndMatcher.ts             # Zvýrazňování begin/end bloků (včetně try bloků)
 │ ├── debugger/
 │ │   └── msgWatch.ts           # Msg Watch panel
 │ └── test/
@@ -334,8 +337,15 @@ for (const dir of instanceDirs) {
 
 - **Completion** - Automatické doplňování funkcí a procedur
 - **Hover** - Zobrazení dokumentace při najetí myší
+  - Podporuje library funkce z `FScriptUtils.pas` a `FCommonUtils.pas`
+  - **Podporuje lokální funkce a konstanty** z aktuálního souboru
+  - `findFunctionDocInDocument()` - parsuje dokumentaci lokálních funkcí (XML i `{ }`)
+  - `findConstantDocInDocument()` - parsuje dokumentaci konstant včetně jejich hodnot
+  - **Formát zobrazení konstant:** Zobrazuje popis a hodnotu (např. "Výchozí sazba DPH. Hodnota: 0.21")
 - **Definition** - Go To Definition (F12, Ctrl+Click) pro přechod na definici funkce/procedury
 - Parsování dokumentace z `FScriptUtils.pas` a `FCommonUtils.pas` (XML dokumentace)
+- **Podpora XML komentářů** (`/// <summary>`, `<param>`, `<returns>`)
+- **Podpora blokových komentářů** (`{ }` s volitelným `@param`, `@returns`)
 - Asynchronní parsování v pozadí
 
 #### Implementace Go To Definition
@@ -385,6 +395,77 @@ vscode.languages.registerDefinitionProvider(
 
 **Debug logování:** Pro zapnutí logování do souboru `.fsbridge/cursor_debug.log` odkomentuj blok v metodě `log()`
 
+## Integrace v FA (Delphi)
+
+### Ochrana před přepisem skriptu
+
+**Problém:** Když se v Cursoru uloží změna skriptu na disk a pak se zavře záložka nebo Cursor, následné aktivování/otevírání skriptu z FA by přepsalo skript stavem z FA databáze.
+
+**Řešení:** Při aktivaci nebo otevření skriptu v Cursoru (`OpenScriptInCursor`) se kontroluje, zda skript na disku není jiný než v databázi:
+
+```pascal
+// Kontrola před otevřením/aktivací
+if not IsOpen then begin
+  // Script není otevřený - PŘED otevřením zkontroluj soubor
+  ScriptFile := FBridge.GetScriptFileName(FormId);
+  if FileExists(ScriptFile) then begin
+    ScriptOnDisk := FBridge.ReadAllText(ScriptFile);
+    NeedCheck := (ScriptOnDisk <> '') and (ScriptOnDisk <> ScriptText);
+    
+    if NeedCheck then begin
+      res := MsgBoxAsk(
+        'Skript na disku se liší od skriptu v databázi...',
+        'Přepsat skript?'
+      );
+      if res <> IDYES then begin
+        // Použij skript z disku pro otevření
+        FBridge.StartEditing(FormId, ScriptFile);
+        Exit;
+      end;
+    end;
+  end;
+end;
+```
+
+**Sjednocené dialogy:** Všechny dialogy týkající se změn skriptu používají jednotnou terminologii a formátování:
+- "Skript v Cursoru byl změněn..."
+- "Skript na disku se liší..."
+- "Přepsat skript v Cursoru stavem z FA?"
+
+### Ochrana vnořených formulářů (Nested Forms)
+
+**Problém:** Když se z FA formuláře otevře vnořený formulář (nested mode), jeho zavření způsobuje nechtěné zavírání Cursor záložek a ruší kontrolu změn v hlavním okně.
+
+**Řešení:** Všechny interakce s Cursorem jsou podmíněny kontrolou `FNestedState`:
+
+```pascal
+// Při zavírání formuláře
+if not FNestedState then begin
+  // Interakce s Cursorem pouze pokud NENÍ nested
+  if FBridge.IsScriptOpen(FormId) then begin
+    if FBridge.IsScriptModified(FormId) then begin
+      // ... kontrola změn ...
+    end;
+  end;
+end;
+```
+
+**Místa s ochranou:**
+- `FormCloseQuery` - kontrola změn při zavírání
+- `OpenScriptInCursor` - otevírání/aktivace skriptu
+- `TimerPollTimer` - polling změn
+- `ProcessFACommand` - zpracování příkazů
+- `ShowFieldState` - zobrazení stavu pole
+- `EditFormScriptUnModal` - editace skriptu
+- `OnMsgCalled` - callback zpráv
+
+**Detekce nested módu:**
+```pascal
+FNestedState := (ParamStr(1) = 'NESTED');
+```
+
+FA se otevírá v nested módu pomocí parametru `NESTED` na příkazové řádce.
+
 ### SnippetProvider.ts
 
 - Poskytuje Pascal code snippety pro rychlé psaní kódu
@@ -396,8 +477,25 @@ vscode.languages.registerDefinitionProvider(
 
 - Zvýrazňuje odpovídající begin/end bloky v Pascal kódu
 - Automaticky najde párový begin nebo end při umístění kurzoru
+- **Podpora try bloků:** Správně zpracovává `try...finally...end` a `try...except...end` bloky
+  - Identifikuje `end` patřící k `try` blokům a ignoruje je při hledání párového `begin`/`end`
+  - `findTryEnds()` - najde všechny `try` bloky a jejich `finally`/`except` a `end` klíčová slova
+  - `findTryBlockContaining()` - určí, zda je offset uvnitř `try` bloku
 - Vizuální indikace pomocí `vscode.window.createTextEditorDecorationType`
 - Usnadňuje orientaci ve vnořených blocích kódu
+
+### PascalCodeLensProvider.ts
+
+- Poskytuje CodeLens funkčnost pro Pascal soubory
+- **Zobrazuje počet referencí** nad deklaracemi funkcí a procedur
+- `findAllFunctions()` - najde všechny `function` a `procedure` deklarace v dokumentu
+- `findReferences()` - najde všechny volání funkce v dokumentu (ignoruje deklarace)
+- Kliknutí na CodeLens zobrazí seznam všech referencí
+- Příkaz `faBridge.showReferences` pro zobrazení referencí v panelu
+- **Formát zobrazení:**
+  - `0 referencí` → "žádné reference" (není kliknutelné)
+  - `1 reference` → "1 reference" (kliknutelné)
+  - `5+ referencí` → "5 referencí" (kliknutelné)
 
 ### PascalDocParser.ts
 
@@ -1131,6 +1229,9 @@ npm run test
 18. `faBridge.setLightTheme` - Switch to FA Pascal Light theme
 19. `faBridge.setDarkTheme` - Switch to FA Pascal Dark theme
 20. `faBridge.showIntelliSenseStats` - Show IntelliSense parsing statistics
+21. `faBridge.openFaChm` - Open FA.chm from `_source` folder (Ctrl+Alt+F1)
+22. `faBridge.openTextSearch` - Open TextSearch.exe (Ctrl+Shift+F1, works without word under cursor)
+23. `faBridge.showReferences` - Show list of references for a function (called from CodeLens)
 
 #### UI:
 
@@ -1151,6 +1252,8 @@ npm run test
 - `Alt+A` → Toggle field format
 - `Shift+Ctrl+[` → Vložit [.udaj.]
 - `Shift+Ctrl+]` → Vložit [:udaj:]
+- `Ctrl+Alt+F1` → Otevřít FA nápovědu (FA.chm)
+- `Ctrl+Shift+F1` → Hledat v dokumentaci (TextSearch.exe)
 
 ### Poznámky pro AI
 
@@ -1178,7 +1281,7 @@ Tyto funkce přidáme později:
 
 **Vytvořeno:** Říjen 2025  
 **Status:** ✅ Implementováno a funkční  
-**Verze:** 0.10.2
+**Verze:** 0.10.9
 
 📖 **Další dokumentace:**
 - [USER_GUIDE.md](USER_GUIDE.md) - Uživatelská příručka

@@ -3,7 +3,7 @@
   "displayName": "FA Bridge",
   "publisher": "fa-dev",
   "description": "Propojení Cursor/VS Code s editorem FormStudio (FA)",
-  "version": "0.10.8",
+  "version": "0.10.9",
   "repository": {
     "type": "git",
     "url": "https://github.com/fa-dev/fa-bridge"

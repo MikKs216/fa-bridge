@@ -258,12 +258,6 @@ export class PascalIntelliSenseProvider implements vscode.CompletionItemProvider
 		position: vscode.Position,
 		token: vscode.CancellationToken
 	): vscode.ProviderResult<vscode.Hover> {
-		// Pokud probíhá parsování, vrať undefined (nečekej)
-		if (this.isParsing) {
-			this.outputChannel.appendLine(`[Pascal IntelliSense] Hover: Parsování probíhá, čekám...`);
-			return undefined;
-		}
-
 		// Získej slovo pod kurzorem
 		const wordRange = document.getWordRangeAtPosition(position);
 		if (!wordRange) {
@@ -271,6 +265,28 @@ export class PascalIntelliSenseProvider implements vscode.CompletionItemProvider
 		}
 
 		const word = document.getText(wordRange);
+
+		// 1. PRIORITA: Hledej lokální konstantu
+		const constDoc = this.findLocalConstant(document, word);
+		if (constDoc) {
+			this.outputChannel.appendLine(`[Pascal IntelliSense] Hover: Nalezena lokální konstanta "${word}"`);
+			return new vscode.Hover(constDoc.markdown, wordRange);
+		}
+
+		// 2. PRIORITA: Hledej lokální funkci/proceduru
+		const localFuncDoc = this.findLocalFunction(document, word);
+		if (localFuncDoc) {
+			this.outputChannel.appendLine(`[Pascal IntelliSense] Hover: Nalezena lokální funkce "${word}"`);
+			return new vscode.Hover(localFuncDoc.markdown, wordRange);
+		}
+
+		// 3. PRIORITA: Hledej v library funkcích
+		// Pokud probíhá parsování, vrať undefined (nečekej)
+		if (this.isParsing) {
+			this.outputChannel.appendLine(`[Pascal IntelliSense] Hover: Parsování probíhá, čekám...`);
+			return undefined;
+		}
+
 		const funcDoc = this.findFunctionDoc(word);
 
 		if (!funcDoc) {
@@ -423,6 +439,235 @@ export class PascalIntelliSenseProvider implements vscode.CompletionItemProvider
 		} else {
 			vscode.window.showInformationMessage(`Definice pro "${word}" nebyla nalezena v aktuálním souboru`);
 		}
+	}
+
+	/**
+	 * Najde lokální konstantu v aktuálním dokumentu a vrátí její dokumentaci
+	 */
+	private findLocalConstant(document: vscode.TextDocument, word: string): { markdown: vscode.MarkdownString } | undefined {
+		const text = document.getText();
+		const lines = text.split(/\r?\n/);
+		const wordLower = word.toLowerCase();
+
+		// Regex pro konstanty: const NAME = VALUE;
+		// Pokrývá: const NAME = 'value'; const NAME = 123; const NAME = True;
+		const constRegex = /^\s*(\w+)\s*=\s*(.+?);/;
+
+		for (let i = 0; i < lines.length; i++) {
+			const line = lines[i];
+			const lineLower = line.toLowerCase();
+
+			// Nejdřív zkontroluj, jestli je to řádek s konstantou
+			const match = line.match(constRegex);
+			if (match) {
+				const constName = match[1];
+				const constValue = match[2].trim();
+
+				if (constName.toLowerCase() === wordLower) {
+					// Našli jsme konstantu! Hledej dokumentaci nad ní
+					const xmlComments = this.findXmlCommentsAbove(lines, i);
+					
+					const markdown = new vscode.MarkdownString();
+					markdown.isTrusted = true;
+
+					// Záhlaví
+					markdown.appendMarkdown(`**const** \`${constName}\` = \`${constValue}\`\n\n`);
+
+					// Dokumentace z XML komentářů
+					if (xmlComments.summary) {
+						markdown.appendMarkdown(`${xmlComments.summary}\n\n`);
+					}
+
+					return { markdown };
+				}
+			}
+		}
+
+		return undefined;
+	}
+
+	/**
+	 * Najde lokální funkci/proceduru v aktuálním dokumentu a vrátí její dokumentaci
+	 */
+	private findLocalFunction(document: vscode.TextDocument, word: string): { markdown: vscode.MarkdownString } | undefined {
+		const text = document.getText();
+		const lines = text.split(/\r?\n/);
+		const wordLower = word.toLowerCase();
+
+		// Regex pro function/procedure deklarace
+		const functionRegex = /^\s*(function|procedure)\s+(\w+)/i;
+
+		for (let i = 0; i < lines.length; i++) {
+			const line = lines[i];
+			const match = line.match(functionRegex);
+
+			if (match) {
+				const funcType = match[1].toLowerCase(); // 'function' nebo 'procedure'
+				const funcName = match[2];
+
+				if (funcName.toLowerCase() === wordLower) {
+					// Našli jsme funkci! Hledej dokumentaci nad ní
+					const xmlComments = this.findXmlCommentsAbove(lines, i);
+					
+					const markdown = new vscode.MarkdownString();
+					markdown.isTrusted = true;
+
+					// Záhlaví
+					markdown.appendMarkdown(`**${funcType}** \`${funcName}\`\n\n`);
+
+					// Signaturu (celý řádek s deklarací)
+					let signature = line.trim();
+					// Pokud pokračuje na další řádky, přidej je
+					let j = i + 1;
+					while (j < lines.length && !lines[j].includes('begin') && !lines[j].match(/^\s*(function|procedure)/i)) {
+						const nextLine = lines[j].trim();
+						if (nextLine) {
+							signature += ' ' + nextLine;
+						}
+						if (nextLine.includes(';')) {
+							break;
+						}
+						j++;
+					}
+					markdown.appendCodeblock(signature, 'pascal');
+					markdown.appendMarkdown('\n');
+
+					// Dokumentace z XML komentářů
+					if (xmlComments.summary) {
+						markdown.appendMarkdown(`${xmlComments.summary}\n\n`);
+					}
+
+					if (xmlComments.parameters.length > 0) {
+						markdown.appendMarkdown('**Parameters:**\n');
+						for (const param of xmlComments.parameters) {
+							markdown.appendMarkdown(`- \`${param.name}\`: ${param.description}\n`);
+						}
+						markdown.appendMarkdown('\n');
+					}
+
+					if (xmlComments.returns) {
+						markdown.appendMarkdown(`**Returns:** ${xmlComments.returns}\n`);
+					}
+
+					return { markdown };
+				}
+			}
+		}
+
+		return undefined;
+	}
+
+	/**
+	 * Najde XML dokumentační komentáře nad daným řádkem
+	 * Podporuje /// komentáře a { } komentáře
+	 */
+	private findXmlCommentsAbove(lines: string[], lineIndex: number): {
+		summary: string;
+		parameters: Array<{ name: string; description: string }>;
+		returns: string;
+	} {
+		const result = {
+			summary: '',
+			parameters: [] as Array<{ name: string; description: string }>,
+			returns: ''
+		};
+
+		const commentLines: string[] = [];
+
+		// Hledej komentáře nad řádkem (jdi nahoru dokud nenajdeš ne-komentář)
+		for (let i = lineIndex - 1; i >= 0; i--) {
+			const line = lines[i].trim();
+
+			// Prázdný řádek? Pokračuj
+			if (!line) {
+				continue;
+			}
+
+			// XML komentář začínající ///
+			if (line.startsWith('///')) {
+				commentLines.unshift(line.substring(3).trim());
+				continue;
+			}
+
+			// Komentář v { }
+			if (line.startsWith('{') && line.endsWith('}')) {
+				commentLines.unshift(line.substring(1, line.length - 1).trim());
+				continue;
+			}
+
+			// Jiný obsah? Ukonči hledání
+			break;
+		}
+
+		// Parsuj XML tagy
+		let currentTag = '';
+		let currentContent = '';
+		let currentParamName = '';
+
+		for (const commentLine of commentLines) {
+			// <summary>
+			if (commentLine.includes('<summary>')) {
+				currentTag = 'summary';
+				currentContent = commentLine.replace(/<summary>/g, '').replace(/<\/summary>/g, '').trim();
+				continue;
+			}
+			// </summary>
+			if (commentLine.includes('</summary>')) {
+				result.summary = currentContent.trim();
+				currentTag = '';
+				currentContent = '';
+				continue;
+			}
+
+			// <param name="...">
+			const paramMatch = commentLine.match(/<param\s+name\s*=\s*["']([^"']+)["']\s*>/);
+			if (paramMatch) {
+				currentTag = 'param';
+				currentParamName = paramMatch[1];
+				currentContent = commentLine.replace(/<param[^>]*>/g, '').replace(/<\/param>/g, '').trim();
+				continue;
+			}
+			// </param>
+			if (commentLine.includes('</param>')) {
+				if (currentParamName) {
+					result.parameters.push({ name: currentParamName, description: currentContent.trim() });
+				}
+				currentTag = '';
+				currentContent = '';
+				currentParamName = '';
+				continue;
+			}
+
+			// <returns>
+			if (commentLine.includes('<returns>')) {
+				currentTag = 'returns';
+				currentContent = commentLine.replace(/<returns>/g, '').replace(/<\/returns>/g, '').trim();
+				continue;
+			}
+			// </returns>
+			if (commentLine.includes('</returns>')) {
+				result.returns = currentContent.trim();
+				currentTag = '';
+				currentContent = '';
+				continue;
+			}
+
+			// Pokračování obsahu předchozího tagu
+			if (currentTag) {
+				currentContent += ' ' + commentLine.trim();
+			}
+		}
+
+		// Pokud zůstal nějaký obsah, ukonči ho
+		if (currentTag === 'summary' && currentContent) {
+			result.summary = currentContent.trim();
+		} else if (currentTag === 'param' && currentParamName && currentContent) {
+			result.parameters.push({ name: currentParamName, description: currentContent.trim() });
+		} else if (currentTag === 'returns' && currentContent) {
+			result.returns = currentContent.trim();
+		}
+
+		return result;
 	}
 
 	/**

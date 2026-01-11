@@ -31,12 +31,14 @@ Panel obsahuje čtyři sekce:
 | **Vložit název údaje**       | Alt+X, Ctrl+Shift+V                          | Vloží název aktuálního údaje na kurzor (nebo nahradí označený text)      |
 | **Název údaje do clipboardu** | Shift+Alt+C / Shift+Ctrl+C* | Zkopíruje název údaje do schránky                                             |
 | **Najít údaj ve formuláři** | Shift+Alt+L | Najde údaj podle slova pod kurzorem                                              |
-| **Hledat podle akt. údaje** | Shift+Alt+F / Shift+Ctrl+F* | Otevře Find dialog s názvem aktuálního údaje z FA |
+| **Hledar podle akt. údaje** | Shift+Alt+F / Shift+Ctrl+F* | Otevře Find dialog s názvem aktuálního údaje z FA |
 | **Hledat od začátku** | Alt+L | Otevře Find dialog, přesune kurzor na začátek dokumentu a znovu otevře Find dialog |
 | **Toggle msgv**                 | Alt+F9                         | Vloží `msgv('')` před aktuální řádek nebo smaže řádek s `msgv(`     |
 | **Toggle field**                | Alt+A                          | Mění formát slova:`'slovo'` → `[:slovo:]` → `[.slovo.]` → `'slovo'` |
 | **Vložit [.udaj.]** | Shift+Ctrl+[ | Vloží údaj z FA ve formátu [.názevÚdaje.] |
 | **Vložit [:udaj:]** | Shift+Ctrl+] | Vloží údaj z FA ve formátu [:názevÚdaje:] |
+| **Otevřít FA nápovědu** | Ctrl+Alt+F1 | Otevře FA.chm z `_source` složky |
+| **Hledat v dokumentaci** | Ctrl+Shift+F1 | Otevře TextSearch.exe (i bez slova pod kurzorem) |
 | **Porovnat s předchozí verzí** | - | Porovná aktuální soubor s předchozí verzí z historie |
 | **Zobrazit historii verzí** | - | Zobrazí seznam všech verzí souboru v historii |
 
@@ -227,6 +229,57 @@ IntelliSense čerpá dokumentaci ze souborů `FScriptUtils.pas` a `FCommonUtils.
 
 **Tip:** Po použití Go To Definition se vytvoří historie navigace. Můžeš se pohybovat mezi všemi navštívenými místy pomocí šipek nebo `Ctrl + -` / `Ctrl + Shift + -`.
 
+### CodeLens - Počet referencí
+
+**Funkce:** Zobrazuje počet referencí (použití) lokálních funkcí a procedur přímo nad jejich deklarací.
+
+**Jak to funguje:**
+- Nad každou deklarací funkce/procedury se zobrazí informace o počtu jejích použití v aktuálním souboru
+- Kliknutím na počet referencí se zobrazí seznam všech míst, kde je funkce volána
+- Umožňuje rychle zjistit, kde všude je funkce použita a zda vůbec nějaké reference existují
+
+**Příklad:**
+```pascal
+function CalculateTotal(Amount: Double): Double;  // ← "3 reference" (kliknutelné)
+begin
+  Result := Amount * 1.21;
+end;
+```
+
+### Hover Tooltip pro lokální deklarace
+
+**Funkce:** Zobrazuje dokumentaci a informace při najetí myší na lokální funkce a konstanty deklarované ve stejném souboru.
+
+**Podporované formáty dokumentace:**
+
+**XML komentáře (///):**
+```pascal
+/// <summary>Vypočítá celkovou částku včetně DPH</summary>
+/// <param name="Amount">Částka bez DPH</param>
+/// <returns>Částka včetně DPH</returns>
+function CalculateTotal(Amount: Double): Double;
+```
+
+**Blokové komentáře ({ }):**
+```pascal
+{ 
+  Vypočítá celkovou částku včetně DPH
+  @param Amount Částka bez DPH
+  @returns Částka včetně DPH
+}
+function CalculateTotal(Amount: Double): Double;
+```
+
+**Konstanty:**
+```pascal
+/// <summary>Výchozí sazba DPH</summary>
+const VAT_RATE = 0.21;  // ← Hover zobrazí: "Výchozí sazba DPH. Hodnota: 0.21"
+```
+
+**Co se zobrazuje:**
+- Pro **funkce**: Popis, parametry, návratová hodnota
+- Pro **konstanty**: Popis a **hodnota konstanty**
+
 ### Statistiky
 
 Pro zobrazení statistik parsování použij příkaz: Ctrl+Shift+P → "FA Bridge: Zobrazit IntelliSense statistiky"
@@ -288,6 +341,7 @@ Extension automaticky zvýrazňuje odpovídající `begin` a `end` bloky při po
 
 - **Zvýraznění:** Aktuální `begin`/`end` pár je zvýrazněn při najetí kurzoru na klíčové slovo
 - **Navigace:** Umožňuje snadnou identifikaci začátku a konce bloků kódu
+- **Podpora try bloků:** Správně zpracovává `try...finally...end` a `try...except...end` bloky - ignoruje `end` patřící k `try` při hledání párového `begin`/`end`
 
 ## Jak to funguje
 
@@ -311,6 +365,44 @@ Extension poskytuje panel **Msg Watch**, který zobrazuje zprávy z běžícího
 - Soubor `famsgstate.json` se automaticky maže při startu extension a při uložení souboru
 
 ## Release Notes
+
+### 0.10.9
+
+- 📊 **CodeLens:** Zobrazuje počet referencí lokálních funkcí přímo nad jejich deklarací
+  - Kliknutím na počet referencí se zobrazí seznam všech použití
+  - Usnadňuje navigaci a zjišťování, kde je funkce volána
+- 💡 **Hover pro lokální deklarace:** Zobrazuje dokumentaci pro lokální funkce a konstanty
+  - Podpora XML komentářů (`///`) i blokových komentářů (`{ }`)
+  - U konstant se zobrazuje i jejich hodnota
+  - Stejná funkcionalita jako u library funkcí
+
+### 0.10.8
+
+- 📖 **Otevření FA nápovědy:** Nový příkaz `Ctrl+Alt+F1` pro otevření `FA.chm`
+- 🔍 **TextSearch bez výběru:** `Ctrl+Shift+F1` nyní otevře TextSearch.exe i když není slovo pod kurzorem
+
+### 0.10.7
+
+- 🔒 **Ochrana vnořených formulářů:** Cursor se už nebude interagovat při práci s nested formuláři v FA
+  - Zamezuje nechtěnému zavírání záložek při zavírání vnořených formulářů
+  - Kontrola změn ve skriptech funguje pouze u hlavního okna FA
+
+### 0.10.6
+
+- ⚠️ **Ochrana před přepisem:** Při aktivaci/otevření skriptu v Cursoru se nyní kontroluje, zda nebyl skript změněn
+  - Pokud je skript na disku jiný než v databázi FA, zobrazí se dotaz na přepsání
+  - Zamezuje ztrátě neuložených změn při zavření Cursoru a opětovné aktivaci z FA
+
+### 0.10.5
+
+- 🛡️ **Sjednocené dialogy:** Všechny dialogy týkající se změn skriptu mají jednotný formát a terminologii
+  - Přehlednější a konzistentnější uživatelské rozhraní
+
+### 0.10.4
+
+- 🔧 **Oprava Begin/End Matcheru:** Správné zvýrazňování `begin`/`end` bloků uvnitř `try...finally...end` a `try...except...end`
+  - Matcher nyní ignoruje `end` patřící k `try` blokům při hledání párového `begin`/`end`
+  - Přesnější navigace ve složitějších strukturách kódu
 
 ### 0.6.0
 
@@ -448,7 +540,7 @@ Extension poskytuje panel **Msg Watch**, který zobrazuje zprávy z běžícího
 
 ---
 
-**Vytvořeno:** Říjen 2025 | **Status:** Funkční ✓ | **Verze:** 0.6.0
+**Vytvořeno:** Říjen 2025 | **Status:** Funkční ✓ | **Verze:** 0.10.9
 
 ---
 
