@@ -219,22 +219,98 @@ export async function kopirovatNazevUdaje(): Promise<void> {
  * Hledá v editoru podle názvu aktuálního údaje z FA
  * Přesune caret na začátek scriptu, otevře Find dialog s předvyplněným textem a nechá focus ve vyhledávacím boxu
  * Stejná funkcionalita jako "Hledat od začátku", ale s předvyplněným názvem údaje
+ * @param facmdPath Cesta k facmd_from_fa.txt souboru pro správnou identifikaci FA instance
  */
-export async function hledatPodleAktUdaje(): Promise<void> {
+export async function hledatPodleAktUdaje(facmdPath?: string): Promise<void> {
 	try {
-		const editor = vscode.window.activeTextEditor;
-		if (!editor) {
-			vscode.window.showErrorMessage('✗ Žádný editor otevřen');
-			return;
+		// Pokud je facmdPath zadaná, použijeme ji pro identifikaci správné instance
+		let targetScriptPath = '';
+		let instanceDir = '';
+		
+		if (facmdPath) {
+			// Extrahuj instance složku přímo z facmdPath
+			instanceDir = path.dirname(facmdPath);
+			
+			// Přečti current_form.txt z instance složky - obsahuje ABSOLUTNÍ CESTU k souboru
+			const currentFormFile = path.join(instanceDir, 'current_form.txt');
+			
+			if (fs.existsSync(currentFormFile)) {
+				try {
+					let content = fs.readFileSync(currentFormFile, 'utf-8');
+					if (content.charCodeAt(0) === 0xFEFF) {
+						content = content.slice(1);
+					}
+					targetScriptPath = content.trim();
+				} catch (error) {
+					console.log(`[hledatPodleAktUdaje] Chyba při čtení current_form.txt: ${error}`);
+				}
+			}
 		}
+		
+	// Najdi správnou záložku podle cesty (pokud známe cestu)
+	let targetEditor: vscode.TextEditor | null = null;
+	let tabWasSwitched = false;
+	
+	if (targetScriptPath) {
+		// Normalizuj cílovou cestu pro porovnání (Windows: case-insensitive)
+		const normalizedTargetPath = path.normalize(targetScriptPath).toLowerCase();
+		
+		// Najdi záložku s odpovídající cestou a aktivuj ji
+		for (const tabGroup of vscode.window.tabGroups.all) {
+			for (const tab of tabGroup.tabs) {
+				if (tab.input instanceof vscode.TabInputText) {
+					const tabInput = tab.input as vscode.TabInputText;
+					const tabPath = tabInput.uri.fsPath;
+					const normalizedTabPath = path.normalize(tabPath).toLowerCase();
+					
+				// Porovnej celé cesty (case-insensitive na Windows)
+				if (normalizedTabPath === normalizedTargetPath) {
+					// Aktivuj tuto záložku
+					await vscode.window.showTextDocument(tabInput.uri, {
+						preview: false,
+						preserveFocus: false
+					});
+					targetEditor = vscode.window.activeTextEditor || null;
+					tabWasSwitched = true;
+					break;
+				}
+				}
+			}
+			if (targetEditor) break;
+		}
+	}
+	
+	// Pokud jsme nenašli správnou záložku, použij aktivní editor (fallback)
+	if (!targetEditor) {
+		targetEditor = vscode.window.activeTextEditor || null;
+	}
+	
+	if (!targetEditor) {
+		vscode.window.showErrorMessage('✗ Žádný editor otevřen');
+		return;
+	}
+	
+	// Pokud byla přepnuta záložka, počkej delší dobu než se stabilizuje
+	if (tabWasSwitched) {
+		await new Promise(resolve => setTimeout(resolve, 300));
+	}
 
-		// Přečti obsah z fafield.txt (podporuje více instancí FA)
+		// Přečti obsah z fafield.txt (z příslušné instance)
 		const workspaceRoot = getFsBridgeWorkspaceRoot();
 		if (!workspaceRoot) {
 			throw new Error('Žádný workspace otevřen nebo .fsbridge složka nenalezena');
 		}
 
-		const faFieldPath = getFafieldPath(workspaceRoot);
+		let faFieldPath: string | null = null;
+		
+		if (instanceDir) {
+			// Máme instanci, použij fafield.txt z ní
+			faFieldPath = path.join(instanceDir, 'fafield.txt');
+		} else {
+			// Fallback - použij obecnou funkci
+			faFieldPath = getFafieldPath(workspaceRoot);
+		}
+		
 		if (!faFieldPath) {
 			vscode.window.showErrorMessage(getFAInstanceNotFoundMessage(workspaceRoot));
 			return;
@@ -267,27 +343,43 @@ export async function hledatPodleAktUdaje(): Promise<void> {
 		// Malé zpoždění pro jistotu
 		await new Promise(resolve => setTimeout(resolve, 50));
 		
-		// 2. Vložit text do schránky
+		// 2. Zavřít případný otevřený Find dialog (Escape)
+		await vscode.commands.executeCommand('closeFindWidget');
+		
+		// Malé zpoždění
+		await new Promise(resolve => setTimeout(resolve, 50));
+		
+		// 3. Vložit text do schránky
 		await vscode.env.clipboard.writeText(searchText);
 		
-		// 3. Otevřít Find dialog (Ctrl+F)
-		await vscode.commands.executeCommand('actions.find');
+	// 4. Otevřít Find dialog (Ctrl+F)
+	await vscode.commands.executeCommand('actions.find');
+	
+	// Malé zpoždění pro jistotu, aby se Find dialog stihl otevřít
+	await new Promise(resolve => setTimeout(resolve, 100));
 		
-		// Malé zpoždění pro jistotu, aby se Find dialog stihl otevřít
-		await new Promise(resolve => setTimeout(resolve, 100));
+		// 5. Vyčistit existující text v Find dialogu (Ctrl+A)
+		await vscode.commands.executeCommand('editor.action.selectAll');
 		
-		// 4. Vložit text z schránky do Find dialogu (Ctrl+V)
+		// Malé zpoždění
+		await new Promise(resolve => setTimeout(resolve, 30));
+		
+		// 6. Vložit text z schránky do Find dialogu (Ctrl+V)
 		// Focus je už ve Find dialogu, takže vložení proběhne tam
 		await vscode.commands.executeCommand('editor.action.clipboardPasteAction');
 		
 		// Malé zpoždění pro jistotu, aby se text stihl vložit
 		await new Promise(resolve => setTimeout(resolve, 50));
 		
-		// 5. Spustit hledání (jako by uživatel stiskl Enter)
-		// Najde první výskyt od začátku dokumentu
-		await vscode.commands.executeCommand('editor.action.nextMatchFindAction');
-		
-		// Focus zůstane ve Find dialogu
+	// 7. Spustit hledání (jako by uživatel stiskl Enter)
+	// Najde první výskyt od začátku dokumentu
+	await vscode.commands.executeCommand('editor.action.nextMatchFindAction');
+	
+	// Prodloužené zpoždění před nastavením focus (důležité při přepnutí záložky)
+	await new Promise(resolve => setTimeout(resolve, 400));
+	
+	// 8. Zajistit focus v Find dialogu (obzvláště když byla přepnuta záložka)
+	await vscode.commands.executeCommand('actions.find');
 		
 	} catch (error) {
 		const msg = error instanceof Error ? error.message : String(error);

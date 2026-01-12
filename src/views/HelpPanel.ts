@@ -96,14 +96,14 @@ export class HelpPanelProvider implements vscode.TreeDataProvider<HelpTreeItem> 
 			]);
 		}
 
-		// Vytvoř TreeItems pro každý řádek (bez description, aby se text nezdvojoval)
-		const items: HelpTreeItem[] = lines.map((line) => {
-			return new HelpTreeItem(
-				line.trim(),
-				line.trim(),
-				vscode.TreeItemCollapsibleState.None
-			);
-		});
+	// Vytvoř TreeItems pro každý řádek (bez description, aby se text nezdvojoval)
+	const items: HelpTreeItem[] = lines.map((line) => {
+		return new HelpTreeItem(
+			line.trim(),
+			line.trim(),
+			vscode.TreeItemCollapsibleState.None
+		);
+	});
 
 		return Promise.resolve(items);
 	}

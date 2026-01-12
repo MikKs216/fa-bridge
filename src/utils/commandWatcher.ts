@@ -155,10 +155,10 @@ export class CommandWatcher implements vscode.Disposable {
 			await this.handleCheckIfOpen(facmdPath);
 			return true; // Příkaz byl zpracován
 		}
-		if (command === 'Hledat_podle_akt_udaje') {
-			await hledatPodleAktUdaje();
-			return true; // Příkaz byl zpracován
-		}
+	if (command === 'Hledat_podle_akt_udaje') {
+		await hledatPodleAktUdaje(facmdPath);
+		return true; // Příkaz byl zpracován
+	}
 		// Zde můžeme přidat další příkazy v budoucnu
 		return false; // Příkaz není pro Cursor - necháme ho pro FA
 	}
