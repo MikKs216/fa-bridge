@@ -1,4 +1,5 @@
-﻿{ 9.1.2026 12:22:52 (GMT+1:00) > [mik on WIN-48QDB6JAV23] checked in Oprava exportu EPO na disk, ve funkci OpenPortalCSSZ  }
+﻿{ 14.1.2026 10:33:47 (GMT+1:00) > [mik on WIN-48QDB6JAV23] checked in Zrychleni buildu z curosru  }
+{ 9.1.2026 12:22:52 (GMT+1:00) > [mik on WIN-48QDB6JAV23] checked in Oprava exportu EPO na disk, ve funkci OpenPortalCSSZ  }
 { 30.12.2025 20:58:06 (GMT+1:00) > [mik on WIN-48QDB6JAV23] checked in Dalsi upravy pro cursor  }
 { 17.12.2025 20:15:13 (GMT+1:00) > [mik on WIN-48QDB6JAV23] checked in Oprava  #7000  }
 { 11.12.2025 12:57:34 (GMT+1:00) > [mik on WIN-48QDB6JAV23] checked in Cistka nepouzivanych veci pro cursor  }
@@ -2240,7 +2241,7 @@ type
 
     {$IFDEF UCURSOR}
     function LoadCodeFromDB: AnsiString;
-    procedure SaveCodeToDB(const Code: AnsiString);
+    procedure AcceptFormScriptC(const Code: AnsiString);
     procedure BridgeExternalSave(const Text: AnsiString); // událost z bridge
     procedure WriteBridgeDebug(const AMessage: string); // bezpečný debug zápis
     procedure TimerPollTimer(Sender: TObject);
@@ -17313,16 +17314,6 @@ begin
  {$ENDIF FINALBUILD}
 end; {EditReportScript}
 
-procedure TfaMain.AcceptFormScript(const AScript: string);
-begin
-  if mtDef.State = dsBrowse then
-    mtDef.Edit;
-  mtDefScript.Value := '';
-  mtDefScript.Value := AScript;
-  mtDef.Post;
-  SetChangeFlag(TRUE);
-end; {AcceptFormScript}
-
 procedure TfaMain.SaveFormScript;
 var
   s: string;
@@ -27210,27 +27201,24 @@ begin
   end;
 end;
 
-procedure TfaMain.BridgeExternalSave(const Text: AnsiString);
+procedure TfaMain.BridgeExternalSave(const Text: AnsiString); 
 var
   isChangingScript, btSaveEnabled: boolean;
 begin
   if FCurrentFormId <> '' then
   begin
     FAToFront;
+
     btSaveEnabled:=dxBarButtonSave.Enabled;
     isChangingScript:=FIsChangingScript;
     FIsChangingScript:=TRUE; //aby se neprovadelo calculate
     try
       // Označ, že změna scriptu bude vyvolaná synchronizací z Cursoru
-      // (nastav flag PŘED SaveCodeToDB, aby se správně detekovala změna)
+      // (nastav flag PŘED AcceptFormScriptC, aby se správně detekovala změna)
       FScriptChangedByCursor := True;
-      
-      SaveCodeToDB(Text);
 
+      AcceptFormScriptC(Text);
       SaveFormScript;
-      
-      CheckAndLoadScript;
-      
       ReloadListBoxes;
       BringToFront;
     finally
@@ -27245,27 +27233,24 @@ begin
   Result := AnsiToUtf8(mtDefScript.Value);
 end;
 
-procedure TfaMain.SaveCodeToDB(const Code: AnsiString);
+procedure TfaMain.AcceptFormScript(const AScript: string);
 begin
-  {$IFDEF UCURSOR}
-  // WriteBridgeDebug('SaveCodeToDB: START, FStateFormWasChanged=' + BoolToStr(FStateFormWasChanged)); // ZAKOMENTOVÁNO
-  {$ENDIF UCURSOR}
-  
+  if mtDef.State = dsBrowse then
+    mtDef.Edit;
+  mtDefScript.Value := '';
+  mtDefScript.Value := AScript;
+  mtDef.Post;
+  SetChangeFlag(TRUE);
+end; {AcceptFormScript}
+
+procedure TfaMain.AcceptFormScriptC(const Code: AnsiString);
+begin
   if mtDef.State = dsBrowse then
     mtDef.Edit;
   mtDefScript.Value := '';
   mtDefScript.Value := Utf8ToAnsi(Code);
   mtDef.Post;
-  
-  {$IFDEF UCURSOR}
-  // WriteBridgeDebug('SaveCodeToDB: PŘED SaveFormScript, FStateFormWasChanged=' + BoolToStr(FStateFormWasChanged)); // ZAKOMENTOVÁNO
-  {$ENDIF UCURSOR}
-  
-  SaveFormScript;
-  
-  {$IFDEF UCURSOR}
-  // WriteBridgeDebug('SaveCodeToDB: PO SaveFormScript, FStateFormWasChanged=' + BoolToStr(FStateFormWasChanged)); // ZAKOMENTOVÁNO
-  {$ENDIF UCURSOR}
+  SetChangeFlag(TRUE);
 end;
 
 procedure TfaMain.OpenScriptInCursor;

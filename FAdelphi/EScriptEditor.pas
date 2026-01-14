@@ -1,3 +1,4 @@
+{ 10.12.2025 16:27:42 (GMT+1:00) > [mik on WIN-48QDB6JAV23] checked in Potlaceno nacitani a ukladani scriptu pro cursor  }
 { 5.10.2025 22:19:23 (GMT+2:00) > [mik on WIN-48QDB6JAV23] checked in Uprava pro pouziti editoru scriptu cursor / VS code  }
 { 4. 4. 2025 14:21:58 (GMT+2:00) > [marek on WIN-48QDB6JAV23] checked in Zmena vlastnosti soAllowSelectByWords u meScript a meScript2  }
 { 18. 11. 2024 11:12:52 (GMT+1:00) > [marek on WIN-48QDB6JAV23] checked in Klavesova zkratka Ctrl+S nyni nefunguje ve skriptu sestavy.  }
@@ -673,9 +674,9 @@ begin
   if fmScriptEditor <> nil then begin
     with fmScriptEditor do begin
       Caption := ACaption;
-      {$IFDEF UCURSOR}
-      ActiveScript.Lines.Text := AScript;
-      {$ENDIF UCURSOR}
+      //{$--IFDEF UCURSOR} nepouzito
+      //ActiveScript.Lines.Text := AScript;
+      //{$--ENDIF UCURSOR}
       SetCursorPos;
       if IsDebugMode and (PopupMenu1a.Items.Count > 0) then
         ActiveScript.PopupMenu := PopupMenu1a
@@ -1442,9 +1443,9 @@ end;
 
 procedure TfmScriptEditor.miActiveFormClick(Sender: TObject);
 begin
-  {$IFDEF UCURSOR}
-  SaveScript;
-  {$ENDIF UCURSOR}
+  //{$--IFDEF UCURSOR} nepouzito
+  //SaveScript;
+  //{$--ENDIF UCURSOR}
   GfaMain.BringToFront;
 end;
 
