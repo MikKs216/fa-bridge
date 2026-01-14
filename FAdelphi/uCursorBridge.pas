@@ -1434,9 +1434,11 @@ begin
     
     if H <> 0 then
     begin
-      // Aktivuj okno
+      // Aktivuj okno - pokud je minimalizované, obnov ho
+      // Pokud je maximalizované, nech ho maximalizované (nevoláme SW_RESTORE)
+      if IsIconic(H) then
+        ShowWindow(H, SW_RESTORE);
       SetForegroundWindow(H);
-      ShowWindow(H, SW_RESTORE);
       Sleep(100);
       
       // Aktualizuj FCursorPID

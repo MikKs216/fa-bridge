@@ -398,16 +398,11 @@ export async function najitUdaj(): Promise<void> {
 			return;
 		}
 
-		// Získej slovo pod kurzorem
-		const position = editor.selection.active;
-		const wordRange = editor.document.getWordRangeAtPosition(position);
-		
-		if (!wordRange) {
-			vscode.window.showErrorMessage('✗ Kurzor není na žádném slově');
-			return;
-		}
-
-		const word = editor.document.getText(wordRange);
+	// Získej slovo pod kurzorem (nebo prázdný řetězec pokud kurzor není na slově)
+	const position = editor.selection.active;
+	const wordRange = editor.document.getWordRangeAtPosition(position);
+	
+	const word = wordRange ? editor.document.getText(wordRange) : '';
 
 		// Přečti workspace (podporuje více instancí FA)
 		const workspaceRoot = getFsBridgeWorkspaceRoot();
@@ -437,10 +432,14 @@ export async function najitUdaj(): Promise<void> {
 		// Zapiš slovo do fafield.txt
 		fs.writeFileSync(faFieldPath, content);
 
-		// Pošli příkaz do FA
-		await writeFACommand('Najit_udaj');
+	// Pošli příkaz do FA
+	await writeFACommand('Najit_udaj');
 
+	if (word) {
 		vscode.window.showInformationMessage(`✓ Hledám údaj: "${word}"`);
+	} else {
+		vscode.window.showInformationMessage(`✓ Hledám údaj (prázdný řetězec)`);
+	}
 	} catch (error) {
 		const msg = error instanceof Error ? error.message : String(error);
 		vscode.window.showErrorMessage(`✗ Chyba: ${msg}`);

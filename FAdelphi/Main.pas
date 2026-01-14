@@ -5111,7 +5111,8 @@ begin
       end;
     end;
     
-    // KROK 2: Načti a zkompiluj script (pokud je otevřený)
+    // KROK 2: Zkontroluj script (pokud je otevřený) - POUZE kontrola, BEZ ukládání
+    // Při zavírání FA NEUKLÁDÁME automaticky - ukládání probíhá pouze na F2 z Cursoru
     if (CloseResult = ccrClosed) and Assigned(FBridge.OnExternalSave) and (FCurrentFormId <> '') then
     begin
       try
@@ -5128,7 +5129,7 @@ begin
             MsgBoxWarn(Caption, 
               'Script na disku se liší od scriptu ve FA.' + #13#10 +
               'Obsah byl změněn v Cursoru.' + #13#10 + #13#10 +
-              'Nejdříve ulož změny v Cursoru do FA' + #13#10 +
+              'Nejdříve ulož změny v Cursoru do FA (F2)' + #13#10 +
               'a pak zavři FA znovu.', 
               MB_OK);
             FBridge.ActivateCursorWindow; // Přepni na Cursor okno
@@ -5136,18 +5137,13 @@ begin
             Exit;
           end;
           
-          // Obsah na disku odpovídá obsahu v databázi - můžeme pokračovat
-          // Zavolej BridgeExternalSave, která načte změny a zkompiluje script
-          // (stejná logika jako při Alt+Q z Cursoru)
-          // Pokud je v scriptu chyba, vyvolá se výjimka (zachycena v BridgeExternalSave)
-          BridgeExternalSave(ScriptContent);
+          // Obsah na disku odpovídá obsahu v databázi - script se nezměnil
+          // Při zavírání FA NEUKLÁDÁME automaticky - ukládání probíhá pouze na F2 z Cursoru
+          // Neprovádíme ani kompilaci, protože script nebyl změněn
         end;
       except
-        // Pokud nastala chyba při kompilaci, nezavři FA
-        // (BridgeExternalSave už zobrazil chybové hlášení díky try-except v CheckAndLoadScript)
-        FBridge.ActivateCursorWindow; // Přepni na Cursor okno, aby uživatel mohl opravit chybu
-        CanClose := False;
-        Exit;
+        // Pokud nastala chyba při čtení souboru, ignoruj a pokračuj v zavírání
+        // (soubor může být zamčený nebo Cursor může být zavřený)
       end;
     end;
     
