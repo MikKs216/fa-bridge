@@ -217,8 +217,8 @@ export async function kopirovatNazevUdaje(): Promise<void> {
 
 /**
  * Hledá v editoru podle názvu aktuálního údaje z FA
- * Přesune caret na začátek scriptu, otevře Find dialog s předvyplněným textem a nechá focus ve vyhledávacím boxu
- * Stejná funkcionalita jako "Hledat od začátku", ale s předvyplněným názvem údaje
+ * Přesune caret na začátek scriptu, najde první výskyt hledaného textu a označí ho v editoru
+ * Dialog hledání se po nalezení zavře, focus zůstává v editoru
  * @param facmdPath Cesta k facmd_from_fa.txt souboru pro správnou identifikaci FA instance
  */
 export async function hledatPodleAktUdaje(facmdPath?: string): Promise<void> {
@@ -375,11 +375,11 @@ export async function hledatPodleAktUdaje(facmdPath?: string): Promise<void> {
 	// Najde první výskyt od začátku dokumentu
 	await vscode.commands.executeCommand('editor.action.nextMatchFindAction');
 	
-	// Prodloužené zpoždění před nastavením focus (důležité při přepnutí záložky)
-	await new Promise(resolve => setTimeout(resolve, 400));
+	// Krátké zpoždění pro jistotu, aby se hledání stihlo provést
+	await new Promise(resolve => setTimeout(resolve, 100));
 	
-	// 8. Zajistit focus v Find dialogu (obzvláště když byla přepnuta záložka)
-	await vscode.commands.executeCommand('actions.find');
+	// 8. Zavřít Find dialog - necháme jen označený výskyt v editoru
+	await vscode.commands.executeCommand('closeFindWidget');
 		
 	} catch (error) {
 		const msg = error instanceof Error ? error.message : String(error);
