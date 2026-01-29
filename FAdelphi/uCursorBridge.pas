@@ -1,4 +1,5 @@
-﻿unit uCursorBridge;
+﻿{ 14.1.2026 11:36:51 (GMT+1:00) > [mik on WIN-48QDB6JAV23] checked in Uprava kolem maximalizace cursoru  }
+unit uCursorBridge;
 (*
   Delphi 2007 helper for "FA ⇄ Cursor/VS Code" (file-based + polling + reuse-window)
 

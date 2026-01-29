@@ -117,7 +117,10 @@ begin
         end;
         
         try
-          CertList[i].SubjectFieldCommonName := JSONCert.Field['subjectFieldCommonName'].Value;
+          if JSONCert.Field['subjectFieldCommonName'] <> nil then
+            CertList[i].SubjectFieldCommonName := JSONCert.Field['subjectFieldCommonName'].Value
+          else
+            CertList[i].SubjectFieldCommonName := '';
         except
           CertList[i].SubjectFieldCommonName := '';
         end;
@@ -208,7 +211,7 @@ begin
     JSONRoot := TlkJSON.ParseText(JsonStr);
     if JSONRoot = nil then
     begin
-      ErrorMsg := 'Neplatný JSON response';
+      ErrorMsg := 'Neplatná JSON response';
       Exit;
     end;
     

@@ -1,4 +1,4 @@
-{ 13.10.2025 11:43:57 (GMT+2:00) > [mik on WIN-48QDB6JAV23] checked in Uprava LogStat  }
+ï»¿{ 13.10.2025 11:43:57 (GMT+2:00) > [mik on WIN-48QDB6JAV23] checked in Uprava LogStat  }
 { 12.10.2025 13:53:19 (GMT+2:00) > [mik on WIN-48QDB6JAV23] checked in Uprava LogStat  }
 { 11.10.2025 16:47:44 (GMT+2:00) > [mik on WIN-48QDB6JAV23] checked in Logovani statistik  }
 { 7. 2. 2024 14:17:22 (GMT+1:00) > [marek on WIN-48QDB6JAV23] checked in Uprava procedury ShowFillingInfo - u kontrolniho cisla doplnen Replace cCRLF (odradkovani zpusobovalo chybu v tisku)  }
@@ -217,7 +217,7 @@ implementation
 {$R *.DFM}
 
 uses
-  ComObj, IdException, mfcr_certificate, mfcr_utils, mfcr_consts,
+  ComObj, IdException, mfcr_certificate, mfcr_certificate_adapter, mfcr_utils, mfcr_consts,
   FCommonUtils, Main, RKSIni, JCLStrings, ShellApi, DataModGlobObj,
   SpolFunkce, FScriptUtils, ASSECOPZP_Library_TLB,
   EElPotvrzeni, FUtils, Variants, ERichTextEditor,
@@ -250,7 +250,7 @@ var
   sl: TStringList;
   sel: Boolean;
 const
-  eptxt = 'K - Typ písemnosti DADPIS nemùe bıt podán bez uznávaného elektronického podpisu.';
+  eptxt = 'K - Typ pÃ­semnosti DADPIS nemÅ¯Å¾e bÃ½t podÃ¡n bez uznÃ¡vanÃ©ho elektronickÃ©ho podpisu.';
 begin
   Result:=false;
   sl := TStringList.Create;
@@ -274,9 +274,9 @@ begin
           Result:=GfaMain.SendISDSOrEmail(mailadr,AFormName+comm,'',sl,TRUE,err,outfilename);
       end
       else begin
-        msg:='Byly zjištìny následující chyby:'+#13#10#13#10+
-          msg+#13#10'Chcete formuláø takto odeslat pøes datovou schránku?';
-        if EpShowResult('Kontrola formuláøe na serveru Èeské daòové správy',msg,TRUE) then begin
+        msg:='Byly zjiÅ¡tÄ›ny nÃ¡sledujÃ­cÃ­ chyby:'+#13#10#13#10+
+          msg+#13#10'Chcete formulÃ¡Å™ takto odeslat pÅ™es datovou schrÃ¡nku?';
+        if EpShowResult('Kontrola formulÃ¡Å™e na serveru ÄŒeskÃ© daÅˆovÃ© sprÃ¡vy',msg,TRUE) then begin
           if StartCounterZero then
             EXIT;
           sel := GfaMain.SelectDS(mailadr);
@@ -300,9 +300,9 @@ begin
         end
         // jinak zobrazime chyby a dovolime podat
         else begin
-          msg:='Byly zjištìny následující chyby:'+#13#10#13#10+
-            Replace(eptxt,msg,'')+#13#10'Chcete formuláø takto odeslat pøes datovou schránku?';
-          if EpShowResult('Kontrola formuláøe na serveru Èeské daòové správy',msg,TRUE) then begin
+          msg:='Byly zjiÅ¡tÄ›ny nÃ¡sledujÃ­cÃ­ chyby:'+#13#10#13#10+
+            Replace(eptxt,msg,'')+#13#10'Chcete formulÃ¡Å™ takto odeslat pÅ™es datovou schrÃ¡nku?';
+          if EpShowResult('Kontrola formulÃ¡Å™e na serveru ÄŒeskÃ© daÅˆovÃ© sprÃ¡vy',msg,TRUE) then begin
             if StartCounterZero then
               EXIT;
             sel := GfaMain.SelectEmail(mailadr);
@@ -312,9 +312,9 @@ begin
         end;
       end
       else begin
-        msg:='Byly zjištìny tyto nepropustné chyby:'+#13#10#13#10+
-          msg+#13#10'Formuláø nelze s tìmito chybami podat.';
-        EpShowResult('Kontrola formuláøe na serveru Èeské daòové správy',msg,FALSE);
+        msg:='Byly zjiÅ¡tÄ›ny tyto nepropustnÃ© chyby:'+#13#10#13#10+
+          msg+#13#10'FormulÃ¡Å™ nelze s tÄ›mito chybami podat.';
+        EpShowResult('Kontrola formulÃ¡Å™e na serveru ÄŒeskÃ© daÅˆovÃ© sprÃ¡vy',msg,FALSE);
       end;
     end;
   finally
@@ -381,18 +381,18 @@ begin
       Result:=ExpFilling(AWithoutDialog);
     end
     else begin
-      msg:='Byly zjištìny následující chyby:'+#13#10#13#10+
-        msg+#13#10'Chcete formuláø takto vyexportovat?';
-      if EpShowResult('Kontrola formuláøe na serveru Èeské daòové správy',msg,TRUE) then begin
+      msg:='Byly zjiÅ¡tÄ›ny nÃ¡sledujÃ­cÃ­ chyby:'+#13#10#13#10+
+        msg+#13#10'Chcete formulÃ¡Å™ takto vyexportovat?';
+      if EpShowResult('Kontrola formulÃ¡Å™e na serveru ÄŒeskÃ© daÅˆovÃ© sprÃ¡vy',msg,TRUE) then begin
         Result:=ExpFilling(AWithoutDialog);
       end;
     end;
   end
   else begin
     GfaMain.FScriptFillingZip:=False; // musime zrusit zipovani protoze pres DS se posila XML
-    msg:='Byly zjištìny tyto nepropustné chyby:'+#13#10#13#10+
-      msg+#13#10'Chcete formuláø takto vyexportovat?';
-    if EpShowResult('Kontrola formuláøe na serveru Èeské daòové správy',msg,TRUE) then begin
+    msg:='Byly zjiÅ¡tÄ›ny tyto nepropustnÃ© chyby:'+#13#10#13#10+
+      msg+#13#10'Chcete formulÃ¡Å™ takto vyexportovat?';
+    if EpShowResult('Kontrola formulÃ¡Å™e na serveru ÄŒeskÃ© daÅˆovÃ© sprÃ¡vy',msg,TRUE) then begin
       Result:=ExpFilling(AWithoutDialog);
     end;
   end;
@@ -426,7 +426,7 @@ end;
 
 function TfmElPodani.GetCerfificateInfo: string;
 var
-  Cert: TCertificate;
+  Cert: TCertificateWrapper;
 begin
   if CbCertificates.Properties.Items.Count < 1 then
     begin
@@ -436,7 +436,7 @@ begin
   else
     begin
       // Nacteni certifikatu z combo boxu do promenne
-      Cert := TCertificate(CbCertificates.Properties.Items.Objects[CbCertificates.ItemIndex]);
+      Cert := TCertificateWrapper(CbCertificates.Properties.Items.Objects[CbCertificates.ItemIndex]);
       Result := cEPOfilled + ': ' +
         StrTrimCharRight(StrTrimCharRight(
         Cert.SerialNumber+', '+
@@ -449,7 +449,7 @@ end;
 
 procedure TfmElPodani.CerfificateComboDisplay;
 var
-  Cert: TCertificate;
+  Cert: TCertificateWrapper;
 begin
   if CbCertificates.Properties.Items.Count < 1 then
     begin
@@ -459,10 +459,10 @@ begin
   else
     begin
       // Nacteni certifikatu z combo boxu do promenne
-      Cert := TCertificate(CbCertificates.Properties.Items.Objects[CbCertificates.ItemIndex]);
+      Cert := TCertificateWrapper(CbCertificates.Properties.Items.Objects[CbCertificates.ItemIndex]);
       // Zobrazeni nekterych hodnot
       LabelCertificate.Caption :=
-       'Sériové èíslo: ' + Cert.SerialNumber + #13#10 +
+       'Seriove cislo: ' + Cert.SerialNumber + #13#10 +
        'Subjekt: ' + Cert.SubjectFieldCommonName + #13#10 +
        'Organizace: '+ Cert.SubjectOrganization + #13#10 +
        'Vystavitel: ' + Cert.IssuerFieldCommonName + #13#10 +
@@ -476,12 +476,14 @@ end;
 procedure TfmElPodani.CertificateComboLoad;
 var
   CertCount: Integer;
-  I, nSelect: Integer;
-  org:string;
+  I, nSelect, DisplayIndex: Integer;
+  org, validToStr, displayText: string;
+  Cert: TCertificateWrapper;
 begin
   StartWait;
   try
-    nSelect:=0;
+    nSelect:=-1;
+    DisplayIndex:=0;
     // Pocet certifikatu
     CertCount := MFCRModule.Certificates.Count;
     // Smazani hodnot
@@ -490,24 +492,75 @@ begin
       begin
         // Pokud existuji nejake certifikaty, povolit combo box
         CbCertificates.Enabled := TRUE;
-        // Nacteni vsech certifikatu, obe Common Name jako text
+        // Nacteni pouze kvalifikovanych certifikatu
         for I := 0 to MFCRModule.Certificates.Count - 1 do begin
-
-          if MFCRModule.Certificates.Certificate(I).SubjectOrganization<>'' then
-            org:=' - '+ MFCRModule.Certificates.Certificate(I).SubjectOrganization
-          else
-            org:='';
-            CbCertificates.Properties.Items.AddObject(
-              MFCRModule.Certificates.Certificate(I).SubjectFieldCommonName + org +
-              ' - ' +
-              MFCRModule.Certificates.Certificate(I).IssuerFieldCommonName +
-              ' (do ' + DateToStr(MFCRModule.Certificates.Certificate(I).ValidToDate) + ')',
-              MFCRModule.Certificates.Certificate(I));
-            if MFCRModule.Certificates.Certificate(I).Thumbprint = FHash then
-             nSelect:=I;
+          Cert := MFCRModule.Certificates.Certificate(I);
+          
+          // Filtrovat jen kvalifikovane certifikaty
+          if (not GfaMain.UseFCommAPI) or Cert.IsQualified then
+          begin
+            // Platnost do ve formatu (->2.6.2026)
+            validToStr := FormatDateTime('d.m.yyyy', Cert.ValidToDate);
+            validToStr := ' (do ' + validToStr + ')';
+            
+            // Sestaveni textu pro zobrazeni
+            // Pokud je SubjectFieldCommonName stejne jako SubjectOrganization, nezobrazuj ho
+            if Trim(Cert.SubjectFieldCommonName) <> '' then
+            begin
+              // Pokud je SubjectFieldCommonName stejne jako SubjectOrganization, zobraz jen organizaci
+              if SameText(Trim(Cert.SubjectFieldCommonName), Trim(Cert.SubjectOrganization)) then
+              begin
+                // Jsou stejne - zobraz jen organizaci
+                if Trim(Cert.SubjectOrganization) <> '' then
+                  displayText := Cert.SubjectOrganization +
+                                ' - ' +
+                                Cert.IssuerFieldCommonName +
+                                validToStr
+                else
+                  displayText := Cert.SubjectFieldCommonName +
+                                ' - ' +
+                                Cert.IssuerFieldCommonName +
+                                validToStr;
+              end
+              else
+              begin
+                // Jsou ruzne - zobraz oba
+                if Cert.SubjectOrganization<>'' then
+                  org:=' - '+ Cert.SubjectOrganization
+                else
+                  org:='';
+                displayText := Cert.SubjectFieldCommonName + org +
+                              ' - ' +
+                              Cert.IssuerFieldCommonName +
+                              validToStr;
+              end;
+            end
+            else if Trim(Cert.SubjectOrganization) <> '' then
+              displayText := Cert.SubjectOrganization +
+                            ' - ' +
+                            Cert.IssuerFieldCommonName +
+                            validToStr
+            else
+              displayText := Cert.SubjectName +
+                            ' - ' +
+                            Cert.IssuerFieldCommonName +
+                            validToStr;
+            
+            CbCertificates.Properties.Items.AddObject(displayText, Cert);
+            
+            // Nastaveni vyberu podle posledniho nastaveneho
+            if Cert.Thumbprint = FHash then
+              nSelect := DisplayIndex;
+            
+            Inc(DisplayIndex);
+          end;
         end;
+        
         // Nastaveni vyberu podle posledniho nastaveneho nebo na prvni
-        CbCertificates.ItemIndex := nSelect;
+        if nSelect >= 0 then
+          CbCertificates.ItemIndex := nSelect
+        else if CbCertificates.Properties.Items.Count > 0 then
+          CbCertificates.ItemIndex := 0;
         // Zobrazeni prvniho certifikatu na formular
         //CerfificateComboDisplay;
       end
@@ -515,9 +568,9 @@ begin
       CbCertificates.Enabled := FALSE;
    //
    btShowCertificate.Enabled:=CbCertificates.Properties.Items.Count>0;
-   btSend.Enabled:=CertCount>0;
+   btSend.Enabled:=CbCertificates.Properties.Items.Count>0;
    btAskState.Enabled:= 
-   (CertCount>0) and ((edCislo.Text<>'') and (edHeslo.Text<>'')) and not cbTestovaciServer.Checked;
+   (CbCertificates.Properties.Items.Count>0) and ((edCislo.Text<>'') and (edHeslo.Text<>'')) and not cbTestovaciServer.Checked;
    finally
      btSave.Enabled:=TRUE;
      StopWait;
@@ -562,7 +615,7 @@ begin
   MFCRModule.FPotvrzeni:='';
   miSavePotvrzeni.Enabled:=FALSE;
   cxPageControl1.ActivePage:=cxTabSheetFilling;
-  mxStatusBar.Panels[0].Text := 'Probíhá vyhledávání certifikátù ...';
+  mxStatusBar.Panels[0].Text := 'ProbÃ­hÃ¡ vyhledÃ¡vÃ¡nÃ­ certifikÃ¡tÅ¯ ...';
   Invalidate;
   Refresh;
   doc:=TStringList.Create;
@@ -582,28 +635,66 @@ begin
     rvOpis.Format;}
     //
     certLoaded:=FALSE;
-    try
-      MFCRModule.CertificatesLoad;
-      certLoaded:=TRUE;
-    except
-      pth:=NormalPath(ExtractFilePath(Application.ExeName))+'capicom.dll';
-      if FileExists(pth) then begin
-        ShellExecute(Handle, nil, PChar('regsvr32'),
-          PChar('/s "'+pth+'"'), nil,SW_SHOWNORMAL);
-        Sleep(2000);
-      end
-      else begin
-        MessageErr(Caption, 'Nenalezena knihovna capicom.dll. Problém patrnì odstraníte reinstalací programu.',
-          [MBOK]);
-        EXIT;
+    
+    // Rozhodnuti podle UseFCommAPI
+    if GfaMain.UseFCommAPI then
+    begin
+      // NOVA VARIANT: fcomm API
+      // Zajistit dostupnost FComm API (synchronne - musime pockat)
+      mxStatusBar.Panels[0].Text := 'Kontrola komunikaÄnÃ­ho modulu ...';
+      Invalidate;
+      Refresh;
+      
+      // Zajistit dostupnost fcomm API (synchronni kontrola)
+      try
+        GfaMain.EnsureFCommAPIAvailable(False);  // False = sync
+      except
+        on E: Exception do
+        begin
+          MessageErr(Caption, Format('Komunikacni modul fcomm.exe nenÃ­ dostupnÃ½: %s', [E.Message]),
+            [MBOK]);
+          EXIT;
+        end;
       end;
+      
+      // API je dostupne - nacteni certifikatu
       try
         MFCRModule.CertificatesLoad;
         certLoaded:=TRUE;
       except
-        on E: EOleSysError do begin
-          MessageErr(Caption, Format('Chyba pøi ètení certifikátù: %s. Pøíèinou mùe bıt chybìjící knihovna capicom.dll. Zkuste spustit dávku comobjreg.bat v adresáøi programu, zavøít dialog elektronického podání a zkusit el. podání znovu.',
+        on E: Exception do
+        begin
+          MessageErr(Caption, Format('Chyba pÅ™i ÄtenÃ­ certifikÃ¡tÅ¯ pÅ™es API: %s. UkonÄete a znovu spusÅ¥te program.',
             [E.Message]), [MBOK]);
+        end;
+      end;
+    end
+    else
+    begin
+      // PUVODNI VARIANT: CAPICOM
+      try
+        MFCRModule.CertificatesLoad;
+        certLoaded:=TRUE;
+      except
+        pth:=NormalPath(ExtractFilePath(Application.ExeName))+'capicom.dll';
+        if FileExists(pth) then begin
+          ShellExecute(Handle, nil, PChar('regsvr32'),
+            PChar('/s "'+pth+'"'), nil,SW_SHOWNORMAL);
+          Sleep(2000);
+        end
+        else begin
+          MessageErr(Caption, 'Nenalezena knihovna capicom.dll. ProblÃ©m patrnÄ› odstranÃ­te reinstalacÃ­ programu.',
+            [MBOK]);
+          EXIT;
+        end;
+        try
+          MFCRModule.CertificatesLoad;
+          certLoaded:=TRUE;
+        except
+          on E: EOleSysError do begin
+            MessageErr(Caption, Format('Chyba pÅ™i ÄtenÃ­ certifikÃ¡tÅ¯: %s. PÅ™Ã­Äinou mÅ¯Å¾e bÃ½t chybÄ›jÃ­cÃ­ knihovna capicom.dll. Zkuste spustit dÃ¡vku comobjreg.bat v adresÃ¡Å™i programu, zavÅ™Ã­t dialog elektronickÃ©ho podÃ¡nÃ­ a zkusit el. podÃ¡nÃ­ znovu.',
+              [E.Message]), [MBOK]);
+          end;
         end;
       end;
     end;
@@ -613,9 +704,9 @@ begin
       //
       rvInfo.Clear;
       if CbCertificates.Properties.Items.Count<=0 then
-        rvInfo.AddNL('Není k dispozici ádnı kvalifikovanı certifikát pro podpis. Pro elektronické podání je potøeba mít nainstalovanı certifikát pro elektronickı podpis.',0,0)
+        rvInfo.AddNL('NenÃ­ k dispozici Å¾Ã¡dnÃ½ kvalifikovanÃ½ certifikÃ¡t pro podpis. Pro elektronickÃ© podÃ¡nÃ­ je potÅ™eba mÃ­t nainstalovanÃ½ certifikÃ¡t pro elektronickÃ½ podpis.',0,0)
       else
-        rvInfo.AddNL('Pøed odesláním dokumentu nebo zjištìním stavu podání musíte bıt pøipojeni na internet.',0,0);
+        rvInfo.AddNL('PÅ™ed odeslÃ¡nÃ­m dokumentu nebo zjiÅ¡tÄ›nÃ­m stavu podÃ¡nÃ­ musÃ­te bÃ½t pÅ™ipojeni na internet.',0,0);
       rvInfo.Format;
       //
       edCislo.Text:=GFaMain.mtTskpFillingNumber.Value;
@@ -623,7 +714,7 @@ begin
       edDatumOdeslani.Text:= GFaMain.mtTskpFillingDate.Value;
 
       if GFaMain.mtTskpFillingState.Value=cFillingStateFilled then
-        lblStavPodani.Caption:='Podáno'
+        lblStavPodani.Caption:='PodÃ¡no'
       else if GFaMain.mtTskpFillingState.Value=cFillingStateFilledOffline then begin
         lblStavPodani.Caption:='Offline';
         btAskState.Enabled:=FALSE;
@@ -632,30 +723,29 @@ begin
         lblStavPodani.Caption:='';
       if edCislo.Text<>'' then begin
         if FTypDoc<>'' then //formular na PZP, neumoznuje dotaz na stav
-          rvInfo.AddNL('Formuláø byl ji elektronicky podán '+
+          rvInfo.AddNL('FormulÃ¡Å™ byl jiÅ¾ elektronicky podÃ¡n '+
             GFaMain.mtTskpFillingDate.Value +
-            '. Podací èíslo je uvedeno v editaèním poli vpravo.',0,0)
+            '. PodacÃ­ ÄÃ­slo je uvedeno v editaÄnÃ­m poli vpravo.',0,0)
         else begin
           if GFaMain.mtTskpFillingState.Value=cFillingStateFilled then
-            rvInfo.AddNL('Formuláø byl ji elektronicky podán '+
+            rvInfo.AddNL('FormulÃ¡Å™ byl jiÅ¾ elektronicky podÃ¡n '+
               GFaMain.mtTskpFillingDate.Value +
-              '. Podací èíslo je uvedeno v editaèním poli vpravo. Tlaèítkem "Zjistit stav podání" mùete zjistit stav podání.',0,0)
+              '. PodacÃ­ ÄÃ­slo je uvedeno v editaÄnÃ­m poli vpravo. TlaÄÃ­tkem "Zjistit stav podÃ¡nÃ­" mÅ¯Å¾ete zjistit stav podÃ¡nÃ­.',0,0)
           else if GFaMain.mtTskpFillingState.Value=cFillingStateFilledOffline then
-            rvInfo.AddNL('Formuláø byl elektronicky podán v off-line reimu (nadlimitní velikost) '+
+            rvInfo.AddNL('FormulÃ¡Å™ byl elektronicky podÃ¡n v off-line reÅ¾imu (nadlimitnÃ­ velikost) '+
               GFaMain.mtTskpFillingDate.Value +
-              '. Podací èíslo je uvedeno v editaèním poli vpravo. A bude dostupná monost zjištìní stavu, ovìøíte stav podání tlaèítkem  "Zjistit stav podání".',0,0)
-//              '. Podací èíslo je uvedeno v editaèním poli vpravo. Tlaèítkem  "Zjistit stav podání" ovìøte stav podání.',0,0)
+              '. PodacÃ­ ÄÃ­slo je uvedeno v editaÄnÃ­m poli vpravo. AÅ¾ bude dostupnÃ¡ moÅ¾nost zjiÅ¡tÄ›nÃ­ stavu, ovÄ›Å™te stav podÃ¡nÃ­ tlaÄÃ­tkem  "Zjistit stav podÃ¡nÃ­".',0,0)
         end;
         rvInfo.Format;
       end
       else if GFaMain.mtValues.ReadOnly then begin
-        rvInfo.AddNL('Formuláø je zamknutı nebo pouze pro ètení, nebude do nìj moné uloit informace o podání.',0,0);
+        rvInfo.AddNL('FormulÃ¡Å™ je zamknutÃ½ nebo pouze pro ÄtenÃ­, nebude do nÄ›j moÅ¾nÃ© uloÅ¾it informace o podÃ¡nÃ­.',0,0);
         rvInfo.Format;
       end;
     end
     else begin
       rvInfo.Clear;
-      rvInfo.AddNL('Nepodaøilo se naèíst certifikát pro podpis.',0,0);
+      rvInfo.AddNL('NepodaÅ™ilo se naÄÃ­st certifikÃ¡t pro podpis.',0,0);
       rvInfo.Format;
     end;
   finally
@@ -695,25 +785,25 @@ begin
   btClose.Enabled:=FALSE;
   try
     if cbTestovaciServer.Checked then
-      MessageWarn('', 'Podání bude provedeno na testovací server MF', [MBOK]);
+      MessageWarn('', 'PodÃ¡nÃ­ bude provedeno na testovacÃ­ server MF', [MBOK]);
     if cbTestovaci.Checked then
-      MessageWarn('', 'Podání bude odesláno na server MF jako testovací, jen na kontrolu bez vlastního podání.', [MBOK]);
+      MessageWarn('', 'PodÃ¡nÃ­ bude odeslÃ¡no na server MF jako testovacÃ­, jen na kontrolu bez vlastnÃ­ho podÃ¡nÃ­.', [MBOK]);
 
     if edCislo.Text<>'' then begin
-      if MessageWarn(Caption, 'Formuláø ji byl elektronicky podán (pod èíslem '+
-        edCislo.Text+'). Chcete jej nyní odeslat na server MF znovu?',
+      if MessageWarn(Caption, 'FormulÃ¡Å™ jiÅ¾ byl elektronicky podÃ¡n (pod ÄÃ­slem '+
+        edCislo.Text+'). Chcete jej nynÃ­ odeslat na server MF znovu?',
         [MBYES, MBNO]) <> IDYES then
         EXIT;
     end;
     if GFaMain.mtValues.ReadOnly then begin
       if MessageAsk(Caption,
-      'Formuláø je zamknutı nebo pouze pro ètení, nebude do nìj moné uloit informace o podání. '+
-      'Chcete pøesto provést elektronické podání?',
+      'FormulÃ¡Å™ je zamknutÃ½ nebo pouze pro ÄtenÃ­, nebude do nÄ›j moÅ¾nÃ© uloÅ¾it informace o podÃ¡nÃ­. '+
+      'Chcete pÅ™esto provÃ©st elektronickÃ© podÃ¡nÃ­?',
       [MBYES, MBNO]) <> IDYES then
       EXIT;
     end
     else begin
-      if MessageAsk(Caption, 'Chcete nyní odeslat formuláø na server MF a tím provést elektronické podání?',
+      if MessageAsk(Caption, 'Chcete nynÃ­ odeslat formulÃ¡Å™ na server MF a tÃ­m provÃ©st elektronickÃ© podÃ¡nÃ­?',
         [MBYES, MBNO]) <> IDYES then
         EXIT;
     end;
@@ -724,17 +814,17 @@ begin
     if FileExists(workXMLFileName) then begin
       rvInfo.Clear;
 
-      rvInfo.AddNL('Probíhá kontrola dokumentu ...',0,0);
+      rvInfo.AddNL('ProbÃ­hÃ¡ kontrola dokumentu ...',0,0);
       rvInfo.Format;
 
 
       TestToMF(FDoc,msg,fn,false,cbTestovaciServer.Checked);
       if msg<>'' then begin
-        msg1:='Byly zjištìny následující chyby:'+#13#10#13#10+
-          msg+#13#10'Chcete formuláø takto podat?';
-        if not EpShowResult('Kontrola formuláøe na serveru Èeské daòové správy',msg1,TRUE) then begin
+        msg1:='Byly zjiÅ¡tÄ›ny nÃ¡sledujÃ­cÃ­ chyby:'+#13#10#13#10+
+          msg+#13#10'Chcete formulÃ¡Å™ takto podat?';
+        if not EpShowResult('Kontrola formulÃ¡Å™e na serveru ÄŒeskÃ© daÅˆovÃ© sprÃ¡vy',msg1,TRUE) then begin
           rvInfo.Clear;
-          rvInfo.AddNL('Podání bylo pøerušeno. Dokument obsahuje chyby:',0,0);
+          rvInfo.AddNL('PodÃ¡nÃ­ bylo pÅ™eruÅ¡eno. Dokument obsahuje chyby:',0,0);
           sl1:=TStringList.Create;
           sl1.Text:=msg;
           try
@@ -749,7 +839,7 @@ begin
       end;
 
       rvInfo.Clear;
-      rvInfo.AddNL('Probíhá odesílání dokumentu ...',0,0);
+      rvInfo.AddNL('ProbÃ­hÃ¡ odesÃ­lÃ¡nÃ­ dokumentu ...',0,0);
       rvInfo.Format;
 
       MFCRModule.ProxySettings.ProxyServer := EdProxyServer.Text;
@@ -761,7 +851,7 @@ begin
         ZipFile(workXMLFileName,workZIPFileName,'');
       end;
 
-      mxStatusBar.Panels[0].Text := 'Probíhá podepisování dokumentu ...';
+      mxStatusBar.Panels[0].Text := 'ProbÃ­hÃ¡ podepisovÃ¡nÃ­ dokumentu ...';
       Invalidate;
       Refresh;
       try
@@ -775,7 +865,7 @@ begin
         end;
       end;
 
-      mxStatusBar.Panels[0].Text := 'Probíhá odesílání dokumentu. Operace mùe trvat i nìkolik minut, v závislosti na odezvì serveru. Èekejte ...';
+      mxStatusBar.Panels[0].Text := 'ProbÃ­hÃ¡ odesÃ­lÃ¡nÃ­ dokumentu. Operace mÅ¯Å¾e trvat i nÄ›kolik minut, v zÃ¡vislosti na odzevÄ› serveru. ÄŒekejte ...';
 
       Invalidate;
       Refresh;
@@ -799,7 +889,7 @@ begin
         params:='?email='+edEmail.Text;
 
       StartWait;
-      fmElPodaniProgress:=EpProgressStart('Elektronické podání','Probíhá kontrola na serveru Finanèní správy, vyèkejte prosím ...');
+      fmElPodaniProgress:=EpProgressStart('ElektronickÃ© podÃ¡nÃ­','ProbÃ­hÃ¡ kontrola na serveru FinanÄnÃ­ sprÃ¡vy, vyÄkejte prosÃ­m ...');
       offline:=False;
       try try
         Errors := MFCRModule.SendDocument(workXMLPdpFileName, workXMLPtvFileName, params, cbTestovaciServer.Checked,cxOpenSSLSendMode.Checked);
@@ -829,7 +919,7 @@ begin
             RI := MFCRModule.ReceiptInformation(workXMLPtvFileName);
           except
             on E: Exception do begin
-              rvInfo.AddNL('Chyba: '+E.Message+'. Zkuste podání zopakovat a pokud chyba opìt nastane, kontaktujte technickou podporu.',0,0);
+              rvInfo.AddNL('Chyba: '+E.Message+'. Zkuste podÃ¡nÃ­ zopakovat a pokud chyba opÄ›t nastane, kontaktujte technickou podporu.',0,0);
               rvInfo.Format;
               Exit;
             end;
@@ -838,7 +928,7 @@ begin
           edHeslo.Text:=RI.ReceiptPassword;
 
           edDatumOdeslani.Text:= RI.ReceiptDate;
-          lblStavPodani.Caption:='Podáno';
+          lblStavPodani.Caption:='PodÃ¡no';
           btAskState.Enabled:=TRUE;
 
           if not GFaMain.mtValues.ReadOnly then begin
@@ -872,39 +962,39 @@ begin
             end;
           end;
 (*
-          rvInfo.AddNL('Podání bylo odesláno na spoleèné technické zaøízení správcù danì.',0,0);
+          rvInfo.AddNL('Podï¿½nï¿½ bylo odeslï¿½no na spoleï¿½nï¿½ technickï¿½ zaï¿½ï¿½zenï¿½ sprï¿½vcï¿½ danï¿½.',0,0);
           rvInfo.AddNL('',0,0);
-          rvInfo.AddNL('Opis potvrzení elektronického podání',1,0);
+          rvInfo.AddNL('Opis potvrzenï¿½ elektronickï¿½ho podï¿½nï¿½',1,0);
           rvInfo.AddNL('',0,0);
 
           str:=GetFillingSubjectInfo(self,FDoc, 'c_ufo');
           if str<>'' then
-            rvInfo.AddNL('Finanènímu úøadu: '+
+            rvInfo.AddNL('Finanï¿½nï¿½mu ï¿½ï¿½adu: '+
               VarToStr(LstLookup('FU', Date, 'CisloFU',str, 'Nazev')),3,0);
 
           str:=GetFillingSubjectInfo(self,FDoc,'dic');
           if str<>'' then
-            rvInfo.AddNL('DIÈ: CZ'+str,3,0);
+            rvInfo.AddNL('DIï¿½: CZ'+str,3,0);
           {if GetFillingSubjectInfo(self,FDoc, 'rod_c')<>'' then
-            rvInfo.AddNL('Rodné èíslo: '+GetFillingSubjectInfo(self,FDoc, 'rod_c'),3,0);}
-          rvInfo.AddNL('Název daòového subjektu: '+
+            rvInfo.AddNL('Rodnï¿½ ï¿½ï¿½slo: '+GetFillingSubjectInfo(self,FDoc, 'rod_c'),3,0);}
+          rvInfo.AddNL('Nï¿½zev daï¿½ovï¿½ho subjektu: '+
             Trim(GetFillingSubjectInfo(self,FDoc, 'titul')+' '+
             GetFillingSubjectInfo(self,FDoc, 'jmeno')+' '+
             GetFillingSubjectInfo(self,FDoc, 'prijmeni')+' '+
             GetFillingSubjectInfo(self,FDoc, 'zkrobchjm')),3,0);
-          rvInfo.AddNL('Ulice a èíslo: '+GetFillingSubjectInfo(self,FDoc, 'ulice')+' '+
+          rvInfo.AddNL('Ulice a ï¿½ï¿½slo: '+GetFillingSubjectInfo(self,FDoc, 'ulice')+' '+
             GetFillingSubjectInfo(self,FDoc, 'c_pop'),3,0);
-          rvInfo.AddNL('PSÈ, obec: '+Trim(GetFillingSubjectInfo(self,FDoc, 'psc')+' '+
+          rvInfo.AddNL('PSï¿½, obec: '+Trim(GetFillingSubjectInfo(self,FDoc, 'psc')+' '+
             GetFillingSubjectInfo(self,FDoc, 'naz_obce')),3,0);
 
           rvInfo.AddNL('',0,0);
-          rvInfo.AddNL('Písemnost: '+GetFillingSubjectInfo(self,FDoc, 'k_uladis','VetaD')+' '+
+          rvInfo.AddNL('Pï¿½semnost: '+GetFillingSubjectInfo(self,FDoc, 'k_uladis','VetaD')+' '+
             GFaMain.mtDefName.Value,3,0);
-          rvInfo.AddNL('Identifikace zaøízení: Spolecne technicke zarizeni spravcu dane',3,0);
-          rvInfo.AddNL('Datum a èas podání: '+FormatDate(RI.ReceiptDate),3,0);
-          rvInfo.AddNL('Podací èíslo, heslo: '+RI.ReceiptNumber+', '+RI.ReceiptPassword,3,0);
-          rvInfo.AddNL('Název souboru: '+RI.ReceiptFileName,3,0);
-          rvInfo.AddNL('Kontrolní èíslo: '+FormatCheck(RI.ReceiptCheck),3,0);
+          rvInfo.AddNL('Identifikace zaï¿½ï¿½zenï¿½: Spolecne technicke zarizeni spravcu dane',3,0);
+          rvInfo.AddNL('Datum a ï¿½as podï¿½nï¿½: '+FormatDate(RI.ReceiptDate),3,0);
+          rvInfo.AddNL('Podacï¿½ ï¿½ï¿½slo, heslo: '+RI.ReceiptNumber+', '+RI.ReceiptPassword,3,0);
+          rvInfo.AddNL('Nï¿½zev souboru: '+RI.ReceiptFileName,3,0);
+          rvInfo.AddNL('Kontrolnï¿½ ï¿½ï¿½slo: '+FormatCheck(RI.ReceiptCheck),3,0);
   *)
           sl:=TStringList.Create;
           try
@@ -923,7 +1013,7 @@ begin
           tmpFileName:=GetTmpFileName;
           rvInfo.SaveText(tmpFileName, 80);
           try
-            GfaMain.WritePdfToDocs('El. podání '+GFaMain.mtDefName.Value,
+            GfaMain.WritePdfToDocs('El. podï¿½nï¿½ '+GFaMain.mtDefName.Value,
               NormalPath(GFaMain.DirWorkPath) + cElPodaniWorkFileName,TRUE,
               LoadStringFromFile(tmpFileName));
           finally
@@ -941,7 +1031,7 @@ begin
               fs.Free;
             end;
             try
-              GfaMain.WritePdfToDocs('El. podání - potvrzení '+GFaMain.mtDefName.Value,
+              GfaMain.WritePdfToDocs('El. podï¿½nï¿½ - potvrzenï¿½ '+GFaMain.mtDefName.Value,
                 tmpFileName,TRUE,cMsgEPPotvrzeni);
             finally
               if FileExists(tmpFileName) then
@@ -951,7 +1041,7 @@ begin
           {$ENDIF STANDALONE}
 
           if GFaMain.mtValues.ReadOnly then begin
-            rvInfo.AddNL('Informace o podání nebyly zapsány do formuláøe, protoe je zamknutı nebo pouze pro ètení.',0,0);
+            rvInfo.AddNL('Informace o podÃ¡nÃ­ nebyly zapsÃ¡ny do formulÃ¡Å™e, protoÅ¾e je zamknutÃ½ nebo pouze pro ÄtenÃ­.',0,0);
             rvInfo.Format;
           end;
 
@@ -963,7 +1053,7 @@ begin
           lblStavPodani.Caption:='';
           btAskState.Enabled:=FALSE;
 
-          rvInfo.AddNL('Dokument nebyl pøijat. Obsahuje chyby: ',0,0);
+          rvInfo.AddNL('Dokument nebyl pÅ™ijat. Obsahuje chyby: ',0,0);
           for I := Low(Errors) to High(Errors) do
             rvInfo.AddNL(IntToStr(I+1) + '. ' + Errors[I].ErrorType +
              ' - ' + Errors[I].ErrorText,0,0);
@@ -988,11 +1078,11 @@ begin
           DoSaveForm:=True;
         end;
 
-        rvInfo.AddNL('Podání bylo odesláno na spoleèné technické zaøízení správcù danì.',0,0);
+        rvInfo.AddNL('PodÃ¡nÃ­ bylo odeslÃ¡no na spoleÄnÃ© technickÃ© zaÅ™Ã­zenÃ­ sprÃ¡vcÅ¯ danÄ›.',0,0);
         rvInfo.AddNL('',0,0);
-        rvInfo.AddNL('Podání obsahuje nadlimitní poèet záznamù a proto bylo zaøazeno do fronty ke zpracování pozdìji. '+
-          'Podací èíslo a heslo je k dispozici pro dotazování na stav. Ulote formuláø '+
-          'a pozdìji ovìøte jeho stav tlaèítkem "Zjistit stav podání".',2,0);
+        rvInfo.AddNL('PodÃ¡nÃ­ obsahuje nadlimitnÃ­ poÄet zÃ¡znamÅ¯ a proto bylo zaÅ™azeno do fronty ke zpracovÃ¡nÃ­ pozdÄ›ji. '+
+          'PodacÃ­ ÄÃ­slo a heslo je k dispozici pro dotazovÃ¡nÃ­ na stav. UloÅ¾te formulÃ¡Å™ '+
+          'a pozdÄ›ji ovÄ›Å™te jeho stav tlaÄÃ­tkem "Zjistit stav podÃ¡nÃ­".',2,0);
         rvInfo.Format;
       end;
 
@@ -1000,8 +1090,8 @@ begin
         if GfaMain.FDoLockFormAfterFilling then
           GfaMain.SetLockFlag(TRUE);
         GfaMain.SaveFormWithoutCheck;
-        //MsgBoxInfo(Caption,'Do formuláøe byly zapsány informace o podání (podací èíslo '+edCislo.Text+') a formuláø byl uloen.',MB_OK);
-        GfaMain.ShowHintSb('Byly zapsány informace o podání a formuláø byl uloen.');
+        //MsgBoxInfo(Caption,'Do formulÃ¡Å™e byly zapsÃ¡ny informace o podÃ¡nÃ­ (podacÃ­ ÄÃ­slo '+edCislo.Text+') a formulÃ¡Å™ byl uloÅ¾en.',MB_OK);
+        GfaMain.ShowHintSb('Byly zapsÃ¡ny informace o podÃ¡nÃ­ a formulÃ¡Å™ byl uloÅ¾en.');
       end;
     end;
   finally
@@ -1037,15 +1127,15 @@ var
     i: integer;
 
     function ConvertISOLatin2ToWin1250(InS:String):String;
-    const InPage  = 'ì¹èø¾ıáíéóúùäëöï»òÌ©ÈØ®İÁÍÉÓÚÙÄËÖÏ«Ò';  //ISO-8859-2 (ISO Latin 2)
-    const OutPage = 'ìšèøıáíéóúùäëöïòÌŠÈØİÁÍÉÓÚÙÄËÖÏÒ';  //Windows 1250
+    const InPage  = 'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì©ï¿½Ø®ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï«ï¿½';  //ISO-8859-2 (ISO Latin 2)
+    const OutPage = 'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÌŠï¿½Øï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ïï¿½';  //Windows 1250
     var PomI, Pozice:Integer;
-        Ch:Char;
+        Ch:WideChar;
     begin
       result:='';
       for PomI:=1 to length(InS) do
       begin
-        Ch:=InS[PomI];
+        Ch:=WideChar(InS[PomI]);
         Pozice:=Pos(Ch, InPage);
         if Pozice>0 then
           Ch:=OutPage[Pozice];
@@ -1105,28 +1195,28 @@ begin
   {$ENDIF ELPODANITEST}
   try
     if cbTestovaci.Checked then
-      MessageWarn('', 'Podání bude odesláno na server jako testovací, jen na kontrolu bez vlastního podání.', [MBOK]);
+      MessageWarn('', 'PodÃ¡nÃ­ bude odeslÃ¡no na server jako testovacÃ­, jen na kontrolu bez vlastnÃ­ho podÃ¡nÃ­.', [MBOK]);
 
     if edCislo.Text<>'' then begin
-      if MessageWarn(Caption, 'Formuláø ji byl elektronicky podán (pod èíslem '+
-        edCislo.Text+'). Chcete jej nyní odeslat na server znovu?',
+      if MessageWarn(Caption, 'FormulÃ¡Å™ jiÅ¾ byl elektronicky podÃ¡n (pod ÄÃ­slem '+
+        edCislo.Text+'). Chcete jej nynÃ­ odeslat na server znovu?',
         [MBYES, MBNO]) <> IDYES then
         EXIT;
     end;
     if GFaMain.mtValues.ReadOnly then begin
       if MessageAsk(Caption,
-      'Formuláø je zamknutı nebo pouze pro ètení, nebude do nìj moné uloit informace o podání. '+
-      'Chcete pøesto provést elektronické podání?',
+      'FormulÃ¡Å™ je zamknutÃ½ nebo pouze pro ÄtenÃ­, nebude do nÄ›j moÅ¾nÃ© uloÅ¾it informace o podÃ¡nÃ­. '+
+      'Chcete pÅ™esto provÃ©st elektronickÃ© podÃ¡nÃ­?',
       [MBYES, MBNO]) <> IDYES then
       EXIT;
     end
     else begin
-      if MessageAsk(Caption, 'Chcete nyní odeslat formuláø na server PZP a tím provést elektronické podání?',
+      if MessageAsk(Caption, 'Chcete nynÃ­ odeslat formulÃ¡Å™ na server PZP a tÃ­m provÃ©st elektronickÃ© podÃ¡nÃ­?',
         [MBYES, MBNO]) <> IDYES then
         EXIT;
     end;
     //
-    mxStatusBar.Panels[0].Text := 'Probíhá odesílání dokumentu. Operace mùe trvat i nìkolik minut, v závislosti na odezvì serveru...';
+    mxStatusBar.Panels[0].Text := 'ProbÃ­hÃ¡ odesÃ­lÃ¡nÃ­ dokumentu. Operace mÅ¯Å¾e trvat i nÄ›kolik minut, v zÃ¡vislosti na odzevÄ› serveru...';
     Invalidate;
     Refresh;
 
@@ -1144,7 +1234,7 @@ begin
     try
       PZPDLL:=TPZPDLL.Create(self);
       if PZPDLL.Init<>S_OK then begin
-        MessageErr(Caption, 'Chyba pøi inicializaci knihovny ASSECOPZP.dll. Podání nebylo provedeno. Problém odstraníte reinstalací programu.',
+        MessageErr(Caption, 'Chyba pÅ™i inicializaci knihovny ASSECOPZP.dll. PodÃ¡nÃ­ nebylo provedeno. ProblÃ©m odstranÃ­te reinstalacÃ­ programu.',
           [MBOK]);
         EXIT;
       end;
@@ -1156,13 +1246,13 @@ begin
         Sleep(2000);
       end
       else begin
-        MessageErr(Caption, 'Nenalezena knihovna ASSECOPZP.dll. Podání nebylo provedeno. Problém patrnì odstraníte reinstalací programu.',
+        MessageErr(Caption, 'Nenalezena knihovna ASSECOPZP.dll. PodÃ¡nÃ­ nebylo provedeno. ProblÃ©m patrnÄ› odstranÃ­te reinstalacÃ­ programu.',
           [MBOK]);
         EXIT;
       end;
       PZPDLL:=TPZPDLL.Create(self);
       if PZPDLL.Init<>S_OK then begin
-        MessageErr(Caption, 'Chyba pøi inicializaci knihovny ASSECOPZP.dll. Podání nebylo provedeno. Problém by mìl jít vyøešit reinstalací programu.', [MBOK]);
+        MessageErr(Caption, 'Chyba pÅ™i inicializaci knihovny ASSECOPZP.dll. PodÃ¡nÃ­ nebylo provedeno. ProblÃ©m by mÄ›l jÃ­t vyÅ™eÅ¡it reinstalacÃ­ programu.', [MBOK]);
         EXIT;
       end;
     end;
@@ -1171,7 +1261,7 @@ begin
       if Pos(',',FTypDoc)>0 then
         DataIn:=NormalPath(GFaMain.DirWorkPath) + Copy(FTypDoc,Pos(',',FTypDoc)+1,80)
       else begin
-        MessageErr(Caption, 'Nedefinovanı soubor v definici formuláøe. Aktualizujte definici formuláøe.',
+        MessageErr(Caption, 'NedefinovanÃ½ soubor v definici formulÃ¡Å™e. Aktualizujte definici formulÃ¡Å™e.',
           [MBOK]);
         EXIT;
       end;
@@ -1190,8 +1280,8 @@ begin
       ZP_Cert_SN:='';
       ZP_Cert_IDN:='';
       rvInfo.Clear;
-      rvInfo.AddNL('Probíhá odesílání dokumentu. V komunikaèním dialogu Portálu ZP vyberte certifikát, potvrïte komunikaèní dialog, poté '+
-        'bude potøeba ještì jednou vybrat certifikát pro autorizaci pøístupu k Portálu ZP. Nakonec vyèkejte na dokonèení podání.',0,0);
+      rvInfo.AddNL('ProbÃ­hÃ¡ odesÃ­lÃ¡nÃ­ dokumentu. V komunikaÄnÃ­m dialogu PortÃ¡lu ZP vyberte certifikÃ¡t, potvrÄte komunikaÄnÃ­ dialog, potÃ© '+
+        'bude potÅ™eba jeÅ¡tÄ› jednou vybrat certifikÃ¡t pro autorizaci pÅ™Ã­stupu k PortÃ¡lu ZP. Nakonec vyÄkejte na dokonÄenÃ­ podÃ¡nÃ­.',0,0);
       rvInfo.Format;
       //Volani knihovny
       PZPDLL.Run(ZP, ZP_Cert_SN, ZP_Cert_IDN, Sluzba, DataIn, Timeout, ID_Podani, Chyba, Varovani, DataOut, InternalWarning, XML_In, XML_Out);
@@ -1228,15 +1318,15 @@ begin
         DoSaveForm:=true;
       end;
 
-      rvInfo.AddNL('Podání bylo odesláno na portál zdravotních pojišoven.',0,0);
+      rvInfo.AddNL('PodÃ¡nÃ­ bylo odeslÃ¡no na portÃ¡l zdravotnÃ­ch pojiÅ¡Å¥oven.',0,0);
       rvInfo.AddNL('',0,0);
-      rvInfo.AddNL('Opis potvrzení elektronického podání',1,0);
+      rvInfo.AddNL('Opis potvrzenÃ­ elektronickÃ©ho podÃ¡nÃ­',1,0);
       rvInfo.AddNL('',0,0);
-      rvInfo.AddNL('Formuláø: '+GFaMain.mtDefName.Value,3,0);
-      rvInfo.AddNL('Zdravotní pojišovna: '+ ZP,3,0);
-      rvInfo.AddNL('Datum a èas podání: '+FDatumPodani,3,0);
-      rvInfo.AddNL('Podací èíslo: '+IntToStr(ID_Podani),3,0);
-      rvInfo.AddNL('Název souboru: '+ExtractFileName(DataIn),3,0);
+      rvInfo.AddNL('FormulÃ¡Å™: '+GFaMain.mtDefName.Value,3,0);
+      rvInfo.AddNL('ZdravotnÃ­ pojiÅ¡Å¥ovna: '+ ZP,3,0);
+      rvInfo.AddNL('Datum a Äas podÃ¡nÃ­: '+FDatumPodani,3,0);
+      rvInfo.AddNL('PodacÃ­ ÄÃ­slo: '+IntToStr(ID_Podani),3,0);
+      rvInfo.AddNL('NÃ¡zev souboru: '+ExtractFileName(DataIn),3,0);
       sl:=TStringList.Create;
       try
         sl.Text:=GfaMain.GetCharacteristics;
@@ -1259,7 +1349,7 @@ begin
         tmpXMLFileName:=NormalPath(GFaMain.DirWorkPath) + cElPodaniZPWorkFileName;
         SaveStringToFile(DataIn, tmpXMLFileName);
         try
-          GfaMain.WritePdfToDocs('El. podání '+GFaMain.mtDefName.Value,
+          GfaMain.WritePdfToDocs('El. podï¿½nï¿½ '+GFaMain.mtDefName.Value,
             tmpXMLFileName,TRUE,LoadStringFromFile(tmpFileName));
         finally
           if FileExists(tmpFileName) then
@@ -1274,7 +1364,7 @@ begin
         tmpFileName:=NormalPath(GfaMain.DirWorkPath)+'PotvrzeniZP.htm';
         SaveStringToFile(DataOut,tmpFileName);
         try
-          GfaMain.WritePdfToDocs('El. podání - potvrzení '+GFaMain.mtDefName.Value,
+          GfaMain.WritePdfToDocs('El. podï¿½nï¿½ - potvrzenï¿½ '+GFaMain.mtDefName.Value,
             tmpFileName,TRUE,cMsgEPPotvrzeni);
         finally
           if FileExists(tmpFileName) then
@@ -1284,18 +1374,18 @@ begin
       {$ENDIF STANDALONE}
 
       if GFaMain.mtValues.ReadOnly then begin
-        rvInfo.AddNL('Informace o podání nebyly zapsány do formuláøe, protoe je zamknutı nebo pouze pro ètení.',0,0);
+        rvInfo.AddNL('Informace o podÃ¡nÃ­ nebyly zapsÃ¡ny do formulÃ¡Å™e, protoÅ¾e je zamknutÃ½ nebo pouze pro ÄtenÃ­.',0,0);
         rvInfo.Format;
       end;
 
       miSavePotvrzeni.Enabled:=TRUE;
     end
     else begin
-      rvInfo.AddNL('Dokument nebyl pøijat, obsahuje chyby.',0,0);
-      rvInfo.AddNL('Èíslo chyby: '+Chyba,0,0);
+      rvInfo.AddNL('Dokument nebyl pÅ™ijat, obsahuje chyby.',0,0);
+      rvInfo.AddNL('ÄŒÃ­slo chyby: '+Chyba,0,0);
       rvInfo.AddNL('Popis chyby: '+HtmToText(DataOut),0,0);
-      rvInfo.AddNL('Upozornìní: '+Varovani,0,0);
-      rvInfo.AddNL('ID podání: '+IntToStr(ID_Podani),0,0);
+      rvInfo.AddNL('UpozornÄ›nÃ­: '+Varovani,0,0);
+      rvInfo.AddNL('ID podÃ¡nÃ­: '+IntToStr(ID_Podani),0,0);
       rvInfo.AddNL('',0,0);
       rvInfo.AddNL('XML_Out: '+XML_Out,0,0);
       rvInfo.Format;
@@ -1304,7 +1394,7 @@ begin
       if GfaMain.FDoLockFormAfterFilling then
         GfaMain.SetLockFlag(TRUE);
       GfaMain.SaveFormWithoutCheck;
-      MsgBoxInfo(Caption,'Do formuláøe byly zapsány informace o podání a formuláø byl uloen.',MB_OK);
+      MsgBoxInfo(Caption,'Do formulÃ¡Å™e byly zapsÃ¡ny informace o podÃ¡nÃ­ a formulÃ¡Å™ byl uloÅ¾en.',MB_OK);
     end;
   finally
     btPrint.Enabled:=TRUE;
@@ -1332,7 +1422,7 @@ var
   slCsv: TStringList;
 
 const
-  eptxt = 'I - V dùsledku uivatelského nastavení nebylo podání zkontrolováno.'+cCRLF;
+  eptxt = 'I - V dÅ¯sledku uÅ¾ivatelskÃ©ho nastavenÃ­ nebylo podÃ¡nÃ­ zkontrolovÃ¡no.'+cCRLF;
 begin
   fClientIDwork:=GfaMain.FClientID;
   ARes:='';
@@ -1383,8 +1473,8 @@ begin
   StartWait;
   sl := TStringList.Create;
   try try
-    GfaMain.ShowHintSb('Probíhá kontrola podání na serveru Èeské daòové správy ...'); //#3305
-    //fmElPodaniProgress:=EpProgressStart('Kontrola podání na serveru Èeské daòové správy','Probíhá komunikace, poèkejte prosím na dokonèení operace ...');
+    GfaMain.ShowHintSb('ProbÃ­hÃ¡ kontrola podÃ¡nÃ­ na serveru ÄŒeskÃ© daÅˆovÃ© sprÃ¡vy ...'); //#3305
+    //fmElPodaniProgress:=EpProgressStart('Kontrola podÃ¡nÃ­ na serveru ÄŒeskÃ© daÅˆovÃ© sprÃ¡vy','ProbÃ­hÃ¡ komunikace, poÄkejte prosÃ­m na dokonÄenÃ­ operace ...');
 
     iniFile := TRKSIniFile.Create(GfaMain.GetIniFileName);
     try
@@ -1424,8 +1514,8 @@ begin
           if Errors[i].ErrorType<>'I' then
             sl.Add(IntToStr(i+1) + '. ' + Errors[i].ErrorType +
              ' - ' + Errors[i].ErrorText)
-          else if Pos('klasifikováno jako rozsáhlé',Errors[i].ErrorText)>0 then
-            sl.Add('Jedná se o rozsáhlé podání u kterého kontrola porobìhne pozdìji, a po jeho podání. ');
+          else if Pos('klasifikovÃ¡no jako rozsÃ¡hlÃ©',Errors[i].ErrorText)>0 then
+            sl.Add('JednÃ¡ se o rozsÃ¡hlÃ© podÃ¡nÃ­ u kterÃ©ho kontrola porobÃ­hne pozdÄ›ji, aÅ¾ po jeho podÃ¡nÃ­. ');
           nepropustnaChyba:=(Errors[i].ErrorType='K')or
             {(Errors[i].ErrorType='N') or } // ta je zavazna ale propustna
             (Errors[i].ErrorType='S');
@@ -1437,7 +1527,7 @@ begin
     end;
   except
     on E: Exception do begin
-      ARes:='Chyba pøi pokusu o kontrolu: '+E.Message;
+      ARes:='Chyba pÅ™i pokusu o kontrolu: '+E.Message;
       Result:=TRUE;
     end;
   end;
@@ -1489,7 +1579,7 @@ begin
   end;
 
   StartWait;
-  mxStatusBar.Panels[0].Text := 'Probíhá dotaz na stav podání. Operace mùe trvat i nìkolik minut, v závislosti na odezvì serveru. Èekejte ...';
+  mxStatusBar.Panels[0].Text := 'ProbÃ­hÃ¡ dotaz na stav podÃ¡nÃ­. Operace mÅ¯Å¾e trvat i nÄ›kolik minut, v zÃ¡vislosti na odzevÄ› serveru. ÄŒekejte ...';
   Invalidate;
   Refresh;
   try
@@ -1501,29 +1591,29 @@ begin
         DS := MFCRModule.DeliveryState(edCislo.Text, edHeslo.Text);
         rvInfo.Clear;
         if DS.stav_podpre_text<>'' then begin
-          rvInfo.AddNL('Stav podání è. ' + edCislo.Text + ': ' +
+          rvInfo.AddNL('Stav podÃ¡nÃ­ Ä. ' + edCislo.Text + ': ' +
             DS.stav_podpre_text,0,0);
           rvInfo.AddNL('Podrobnosti:',0,0);
-          rvInfo.AddNL('  Uloeno do centrální databáze MF dne '+
+          rvInfo.AddNL('  UloÅ¾eno do centrÃ¡lnÃ­ databÃ¡ze MF dne '+
             Copy(DS.d_podani,9,2)+'.'+Copy(DS.d_podani,6,2)+'.'+
             Copy(DS.d_podani,1,4) + ' v '+ DS.cas_podani,0,0);
-          rvInfo.AddNL('  Urèeno pro FÚ è. ' + DS.c_ufo_prij,0,0);
+          rvInfo.AddNL('  UrÄeno pro FÃš Ä. ' + DS.c_ufo_prij,0,0);
           posZav:=Pos('(',DS.stav_podapl_text);
           if posZav>0 then
-            rvInfo.AddNL('  Stav podání na FÚ: ' +
+            rvInfo.AddNL('  Stav podÃ¡nÃ­ na FÃš: ' +
               Copy(DS.stav_podapl_text,1,posZav-1),0,0)
           else
-            rvInfo.AddNL('  Stav podání na FÚ: ' + DS.stav_podapl_text,0,0);
+            rvInfo.AddNL('  Stav podÃ¡nÃ­ na FÃš: ' + DS.stav_podapl_text,0,0);
           if DS.d_pripodapl<>'' then
-            rvInfo.AddNL('  Datum zpracování na FÚ: ' +
+            rvInfo.AddNL('  Datum zpracovÃ¡nÃ­ na FÃš: ' +
             Copy(DS.d_pripodapl,9,2)+'.'+Copy(DS.d_pripodapl,6,2)+'.'+
             Copy(DS.d_pripodapl,1,4),0,0);
           if DS.pozn_pripodapl<>'' then
-            rvInfo.AddNL('  Poznámka (odùvodnìní odmítnutí): ' +
+            rvInfo.AddNL('  PoznÃ¡mka (odÅ¯vodnÄ›nÃ­ odmÃ­tnutÃ­): ' +
             DS.pozn_pripodapl,0,0);
         end
         else
-          rvInfo.AddNL('Podání ' + edCislo.Text + ' nebylo nalezeno.',0,0);
+          rvInfo.AddNL('PodÃ¡nÃ­ ' + edCislo.Text + ' nebylo nalezeno.',0,0);
         rvInfo.Format;
       except
         on E: Exception do begin
@@ -1538,15 +1628,15 @@ begin
         odp:= MFCRModule.QueryOfflineState(offlineID,offlinePwd, edProxyServer.Text, StrToIntSafe(EdProxyPort.Text),seServerTimeOut.Value,
            offlineOdp, cxOpenSSLSendMode.Checked, cbTestovaciServer.Checked);
         if odp=1 then begin
-          //predano ke zpracovani - jsme stále ve stavu èekání
+          //predano ke zpracovani - jsme stÃ¡le ve stavu ÄekÃ¡nÃ­
           //nic nedelat, nic se nezmenilo
-          rvInfo.AddNL('Stav podání: Pøedáno ke zpracování',0,0);
+          rvInfo.AddNL('Stav podÃ¡nÃ­: PÅ™edÃ¡no ke zpracovÃ¡nÃ­',0,0);
         end
         else if odp=3 then begin
-          //neprijato jsou tam chyby musíme rozparsovat chyby
+          //neprijato jsou tam chyby musÃ­me rozparsovat chyby
           //zrusit stav priznani offline
-          rvInfo.AddNL('Stav podání: Nepøijato',0,0);
-          rvInfo.AddNL('Podání obsahuje chyby:',0,0);
+          rvInfo.AddNL('Stav podÃ¡nÃ­: NepÅ™ijato',0,0);
+          rvInfo.AddNL('PodÃ¡nÃ­ obsahuje chyby:',0,0);
 
           seznamChyb:=MFCRModule.GetChybyOffline(offlineOdp);
           for i := Low(seznamChyb) to High(seznamChyb) do begin
@@ -1563,7 +1653,7 @@ begin
            edHeslo.Text:=RI.ReceiptPassword;
 
            edDatumOdeslani.Text:= RI.ReceiptDate;
-           lblStavPodani.Caption:='Podáno';
+           lblStavPodani.Caption:='PodÃ¡no';
 
            if not GFaMain.mtValues.ReadOnly then begin
              GFaMain.mtTskp.Edit;
@@ -1577,8 +1667,8 @@ begin
              if GfaMain.FDoLockFormAfterFilling then
                GfaMain.SetLockFlag(TRUE);
              GfaMain.SaveFormWithoutCheck;
-             //MsgBoxInfo(Caption,'Do formuláøe byly zapsány informace o podání a formuláø byl uloen.',MB_OK);
-             GfaMain.ShowHintSb('Byly zapsány informace o podání a formuláø byl uloen.');
+             //MsgBoxInfo(Caption,'Do formulÃ¡Å™e byly zapsÃ¡ny informace o podÃ¡nÃ­ a formulÃ¡Å™ byl uloÅ¾en.',MB_OK);
+             GfaMain.ShowHintSb('Byly zapsÃ¡ny informace o podÃ¡nÃ­ a formulÃ¡Å™ byl uloÅ¾en.');
            end;
         end;
       except
@@ -1673,24 +1763,24 @@ begin
 
     if Pos(cDSfilled,fillingTimeStampSignature)>0 then begin
       Result:=False;
-      AResult:='Formuláø byl podán pøes datovou schránku dne '+fillingDate+#13#10+
-        'ID zprávy: '+Replace(cDSfilled+':',fillingTimeStampSignature,'')+#13#10+
-        'Pøi tomto zpùsobu podání nelze zjistit více.'+cCRLF;
+      AResult:='FormulÃ¡Å™ byl podÃ¡n pÅ™es datovou schrÃ¡nku dne '+fillingDate+#13#10+
+        'ID zprÃ¡vy: '+Replace(cDSfilled+':',fillingTimeStampSignature,'')+#13#10+
+        'PÅ™i tomto zpÅ¯sobu podÃ¡nÃ­ nelze zjistit vÃ­ce.'+cCRLF;
       Exit;
     end
     else if (fillingNumber='')and(fillingPassword='')  then begin
       Result:=False;
-      AResult:='Formuláø nebyl elektronicky podán.'+cCRLF;
+      AResult:='FormulÃ¡Å™ nebyl elektronicky podÃ¡n.'+cCRLF;
       Exit;
     end
     else if (fillingNumber=fillingPassword)  then begin //PZP
       Result:=False;
-      AResult:='U tohoto typu formuláøe nelze zjistit stav. Není to formuláø Ministerstva financí.'+cCRLF;
+      AResult:='U tohoto typu formulÃ¡Å™e nelze zjistit stav. NenÃ­ to formulÃ¡Å™ Ministerstva financÃ­.'+cCRLF;
       Exit;
     end
     else if (fillingNumber='')and(fillingPassword<>'') then begin // CSSZ
       Result:=False;
-      AResult:='U tohoto typu formuláøe nelze zjistit stav. Není to formuláø Ministerstva financí.'+cCRLF;
+      AResult:='U tohoto typu formulÃ¡Å™e nelze zjistit stav. NenÃ­ to formulÃ¡Å™ Ministerstva financÃ­.'+cCRLF;
       Exit;
     end;
 
@@ -1708,27 +1798,27 @@ begin
       try
         DS := MFCRModule.DeliveryState(fillingNumber, fillingPassword);
         if DS.stav_podpre_text<>'' then begin
-          AResult:=AResult+'Stav podání è. ' + fillingNumber + ': ' + DS.stav_podpre_text+cCRLF;
+          AResult:=AResult+'Stav podÃ¡nÃ­ Ä. ' + fillingNumber + ': ' + DS.stav_podpre_text+cCRLF;
           AResult:=AResult+'Podrobnosti:'+cCRLF;
-          AResult:=AResult+'  Uloeno do centrální databáze MF dne '+
+          AResult:=AResult+'  UloÅ¾eno do centrÃ¡lnÃ­ databÃ¡ze MF dne '+
             Copy(DS.d_podani,9,2)+'.'+Copy(DS.d_podani,6,2)+'.'+
             Copy(DS.d_podani,1,4) + ' v '+ DS.cas_podani+cCRLF;
-          AResult:=AResult+'  Urèeno pro FÚ è. ' + DS.c_ufo_prij+cCRLF;
+          AResult:=AResult+'  UrÄeno pro FÃš Ä. ' + DS.c_ufo_prij+cCRLF;
           posZav:=Pos('(',DS.stav_podapl_text);
           if posZav>0 then
-            AResult:=AResult+'  Stav podání na FÚ: ' + Copy(DS.stav_podapl_text,1,posZav-1)+cCRLF
+            AResult:=AResult+'  Stav podÃ¡nÃ­ na FÃš: ' + Copy(DS.stav_podapl_text,1,posZav-1)+cCRLF
           else
-            AResult:=AResult+'  Stav podání na FÚ: ' + DS.stav_podapl_text+cCRLF;
+            AResult:=AResult+'  Stav podÃ¡nÃ­ na FÃš: ' + DS.stav_podapl_text+cCRLF;
           if DS.d_pripodapl<>'' then
-            AResult:=AResult+'  Datum zpracování na FÚ: ' +
+            AResult:=AResult+'  Datum zpracovÃ¡nÃ­ na FÃš: ' +
             Copy(DS.d_pripodapl,9,2)+'.'+Copy(DS.d_pripodapl,6,2)+'.'+
             Copy(DS.d_pripodapl,1,4)+cCRLF;
           if DS.pozn_pripodapl<>'' then
-            AResult:=AResult+'  Poznámka (odùvodnìní odmítnutí): ' +
+            AResult:=AResult+'  PoznÃ¡mka (odÅ¯vodnÄ›nÃ­ odmÃ­tnutÃ­): ' +
             DS.pozn_pripodapl+cCRLF;
         end
         else
-          AResult:='Podání ' + fillingNumber + ' nebylo nalezeno.'+cCRLF;
+          AResult:='PodÃ¡nÃ­ ' + fillingNumber + ' nebylo nalezeno.'+cCRLF;
       except
         on E: Exception do begin
           AResult:=E.Message;
@@ -1741,15 +1831,15 @@ begin
         odp:= MFCRModule.QueryOfflineState(offlineID,offlinePwd, proxyServer, proxyPort,
           serverTimeOut, offlineOdp, openSSLSendMode, False);
         if odp=1 then begin
-          //predano ke zpracovani - jsme stále ve stavu èekání
+          //predano ke zpracovani - jsme stÃ¡le ve stavu ÄekÃ¡nÃ­
           //nic nedelat, nic se nezmenilo
-          AResult:=AResult+'Stav podání è. ' + fillingNumber + ': Off-line - pøedáno ke zpracování'+cCRLF;
+          AResult:=AResult+'Stav podÃ¡nÃ­ Ä. ' + fillingNumber + ': Off-line - pÅ™edÃ¡no ke zpracovÃ¡nÃ­'+cCRLF;
         end
         else if odp=3 then begin
-          //neprijato jsou tam chyby musíme rozparsovat chyby
+          //neprijato jsou tam chyby musÃ­me rozparsovat chyby
           //zrusit stav priznani offline
-          AResult:=AResult+'Stav podání è. ' + fillingNumber + ': Off-line - nepøijato'+cCRLF;
-          AResult:=AResult+'Podání obsahuje chyby:'+cCRLF;
+          AResult:=AResult+'Stav podÃ¡nÃ­ Ä. ' + fillingNumber + ': Off-line - nepÅ™ijato'+cCRLF;
+          AResult:=AResult+'PodÃ¡nÃ­ obsahuje chyby:'+cCRLF;
 
           seznamChyb:=MFCRModule.GetChybyOffline(offlineOdp);
           for i := Low(seznamChyb) to High(seznamChyb) do begin
@@ -1761,9 +1851,9 @@ begin
           //zrusit stav priznani offline
            RI:=MFCRModule.GetRIFromString(OfflineOdp);
 
-           AResult:=AResult+'Stav podání è. ' + fillingNumber +
-             ': Off-line - podání bylo pøijato, byl zmìnìn stav na "podáno".'+cCRLF;
-           AResult:=AResult+'Pro podrobnìjší informace o podání proveïte znovu zjištìní stavu.'+cCRLF;
+           AResult:=AResult+'Stav podÃ¡nÃ­ Ä. ' + fillingNumber +
+             ': Off-line - podÃ¡nÃ­ bylo pÅ™ijato, byl zmÄ›nÄ›n stav na "podÃ¡no".'+cCRLF;
+           AResult:=AResult+'Pro podrobnÄ›jÅ¡Ã­ informace o podÃ¡nÃ­ proveÄte znovu zjiÅ¡tÄ›nÃ­ stavu.'+cCRLF;
 
            data:=TStringList.Create;
            dataSec:=TStringList.Create;
@@ -1872,7 +1962,7 @@ begin
 
     fn:=SaveInfoToPDF;
     OpenPDFFile(fn);
-    //ViewPdfFile(fn,rs,'Informace o podání',true);
+    //ViewPdfFile(fn,rs,'Informace o podï¿½nï¿½',true);
   finally
     StopWait;
   end;
@@ -1890,7 +1980,7 @@ begin
     with SaveDialog1 do begin
       FileName := ExtractFileName(filName);
       DefaultExt := '00';
-      Filter := 'Všechny soubory|*.*';
+      Filter := 'VÅ¡echny soubory|*.*';
         if Execute then
           if not FileExists(FileName) or
             (MessageAsk(Caption,
@@ -1915,7 +2005,7 @@ begin
         end;
     end
     else
-      MessageErr(Caption, 'Soubor elektronického podání '+
+      MessageErr(Caption, 'Soubor elektronickÃ©ho podÃ¡nÃ­ '+
        NormalPath(GFaMain.DirWorkPath) + cElPodaniWorkFileName+
        ' neexistuje',[MBOK]);
   end;
@@ -1936,7 +2026,7 @@ var iniFile: TRKSIniFile;
 
     function EscapeValue(const value: string): string;
     begin
-      // Pokud øetìzec obsahuje èárku, teèku nebo dvojteèku, dej do uvozovek
+      // Pokud Å™etÄ›zec obsahuje ÄÃ¡rku, teÄku nebo dvojteÄku, dej do uvozovek
       if (Pos(',', value) > 0) or (Pos('.', value) > 0) or (Pos(':', value) > 0) then
         Result := '"' + value + '"'
       else
@@ -1948,7 +2038,7 @@ var iniFile: TRKSIniFile;
     i: Integer;
   begin
     try
-      // Vytvoø pole hodnot v poøadí deklarace
+      // VytvoÅ™ pole hodnot v poÅ™adÃ­ deklarace
       values[1] := BoolToStr(edProxyServer.Text <> '');
       values[2] := BoolToStr(edProxyPort.Text <> '');
       values[3] := BoolToStr(edEmail.Text <> '');
@@ -1956,7 +2046,7 @@ var iniFile: TRKSIniFile;
       values[5] := BoolToStr(cxOpenSSLSendMode.Checked);
       values[6] := IntToStr(seServerTimeOut.Value);
 
-      // Vytvoø vıslednı øetìzec ve formátu 2xx:nn.hodnota,nn.hodnota,...
+      // VytvoÅ™ vÃ½slednÃ½ Å™etÄ›zec ve formÃ¡tu 2xx:nn.hodnota,nn.hodnota,...
       Result := '';
       for i := 1 to 6 do
       begin
@@ -2047,6 +2137,9 @@ end;
 
 procedure TfmElPodani.FormDestroy(Sender: TObject);
 begin
+  // FCommLifecycle je spravovan globalne v Main.pas
+  // Neni potreba ho zde ukoncovat
+  
   MFCRModule.Free;
   MFCRModule:=nil;
 end;
@@ -2067,7 +2160,7 @@ var
 begin
   if FTypDoc='' then begin
     if MFCRModule.FPotvrzeni='' then begin
-      MessageErr(Caption,'Soubor s potvrzením není dostupnı. Nelze jej uloit.',[MBOK]);
+      MessageErr(Caption,'Soubor s potvrzenÃ­m nenÃ­ dostupnÃ½. Nelze jej uloÅ¾it.',[MBOK]);
       EXIT;
     end;
     with SaveDialog2 do begin
@@ -2084,7 +2177,7 @@ begin
         {$ENDIF STANDALONE}
         FileName := SetValidFileName(GFaMain.mtDefName.Value + ', ' +
         GetListItem(GFaMain.GetPeriod, 3) + ' ' +
-        GFaMain.GetSysComment + clientName + ', EP potvrzení');
+        GFaMain.GetSysComment + clientName + ', EP potvrzenï¿½');
         if Execute then begin
           if not FileExists(FileName) or (MessageAsk(Caption,
             Format(sMsgFileNotExistsAsk, [FileName]),
@@ -2102,7 +2195,7 @@ begin
   end
   else begin
     if FPotvrzeniZP='' then begin
-      MessageErr(Caption,'Soubor s potvrzením není dostupnı. Nelze jej uloit.',[MBOK]);
+      MessageErr(Caption,'Soubor s potvrzenÃ­m nenÃ­ dostupnÃ½. Nelze jej uloÅ¾it.',[MBOK]);
       EXIT;
     end;
     with SaveDialog2 do begin
@@ -2118,10 +2211,10 @@ begin
         clientName:=' ('+SetValidFileName(clientName)+')';
         {$ENDIF STANDALONE}
         DefaultExt:='.htm';
-        Filter:='Html soubory (*.htm)|*.htm|Všechny soubory (*.*)|*.*';
+        Filter:='Html soubory (*.htm)|*.htm|VÅ¡echny soubory (*.*)|*.*';
         FileName := SetValidFileName(GFaMain.mtDefName.Value + ', ' +
         GetListItem(GFaMain.GetPeriod, 3) + ' ' +
-        GFaMain.GetSysComment + clientName + ', EP potvrzení');
+        GFaMain.GetSysComment + clientName + ', EP potvrzenï¿½');
         if Execute then begin
           if not FileExists(FileName) or (MessageAsk(Caption,
             Format(sMsgFileNotExistsAsk, [FileName]),
@@ -2184,49 +2277,49 @@ begin
   if GFaMain.mtTskpFillingState.Value = cFillingStateFilled then begin
     if FTypDoc='' then begin
       rvInfo.Clear;
-      rvInfo.AddNL('Opis potvrzení elektronického podání',1,0);
+      rvInfo.AddNL('Opis potvrzenÃ­ elektronickÃ©ho podÃ¡nÃ­',1,0);
       rvInfo.AddNL('',0,0);
-      {rvInfo.AddNL('podle §21 odstavce 7 zákona è.337/1992 Sb., ve znìní pozdìjších pøedpisù, '+
-        'pro podání uèinìné prostøednictvím datové zprávy opatøené zaruèenım elektronickım podpisem '+
-        'a odeslané na spoleèné technické zaøízení správcù danì.',2,0);
+      {rvInfo.AddNL('podle Â§21 odstavce 7 zÃ¡kona Ä.337/1992 Sb., ve znÄ›nÃ­ pozdÄ›jÅ¡Ã­ch pÅ™edpisÅ¯, '+
+        'pro podÃ¡nÃ­ uÄinÄ›nÃ¡ prostÅ™ednictvÃ­m datovÃ© zprÃ¡vy opatÅ™enÃ© zaruÄenÃ½m elektronickÃ½m podpisem '+
+        'a odeslanÃ© na spoleÄnÃ© technickÃ© zaÅ™Ã­zenÃ­ sprÃ¡vcÅ¯ danÄ›.',2,0);
       rvInfo.AddNL('',0,0);}
 
       str:=GetFillingSubjectInfo(self,FDoc, 'c_ufo');
       if str<>'' then
-        rvInfo.AddNL('Finanènímu úøadu: '+
+        rvInfo.AddNL('FinanÄnÃ­mu ÃºÅ™adu: '+
           VarToStr(LstLookup('FU', Date, 'CisloFU',str,'Nazev')),3,0);
       str:=GetFillingSubjectInfo(self,FDoc,'dic');
       if str<>'' then
-        rvInfo.AddNL('DIÈ: CZ'+str,3,0);
+        rvInfo.AddNL('DIÄŒ: CZ'+str,3,0);
       if GetFillingSubjectInfo(self,FDoc, 'rod_c')<>'' then
-        rvInfo.AddNL('Rodné èíslo: '+GetFillingSubjectInfo(self,FDoc, 'rod_c'),3,0);
-      rvInfo.AddNL('Jméno, název: '+
+        rvInfo.AddNL('RodnÃ© ÄÃ­slo: '+GetFillingSubjectInfo(self,FDoc, 'rod_c'),3,0);
+      rvInfo.AddNL('JmÃ©no, nÃ¡zev: '+
         Trim(GetFillingSubjectInfo(self,FDoc, 'titul')+' '+
         GetFillingSubjectInfo(self,FDoc, 'jmeno')+' '+
         GetFillingSubjectInfo(self,FDoc, 'prijmeni')+' '+
         GetFillingSubjectInfo(self,FDoc, 'zkrobchjm')),3,0);
-      rvInfo.AddNL('Ulice a èíslo: '+GetFillingSubjectInfo(self,FDoc, 'ulice')+' '+
+      rvInfo.AddNL('Ulice a ÄÃ­slo: '+GetFillingSubjectInfo(self,FDoc, 'ulice')+' '+
         GetFillingSubjectInfo(self,FDoc, 'c_pop'),3,0);
-      rvInfo.AddNL('PSÈ, obec: '+Trim(GetFillingSubjectInfo(self,FDoc, 'psc')+' '+
+      rvInfo.AddNL('PSÄŒ, obec: '+Trim(GetFillingSubjectInfo(self,FDoc, 'psc')+' '+
         GetFillingSubjectInfo(self,FDoc, 'naz_obce')),3,0);
 
       rvInfo.AddNL('',0,0);
-      rvInfo.AddNL('Písemnost: '+GetFillingSubjectInfo(self,FDoc, 'k_uladis','VetaD')+' '+
+      rvInfo.AddNL('PÃ­semnost: '+GetFillingSubjectInfo(self,FDoc, 'k_uladis','VetaD')+' '+
           GFaMain.mtDefName.Value,3,0);
-      rvInfo.AddNL('Identifikace zaøízení: Spolecne technicke zarizeni spravcu dane',3,0);
-      rvInfo.AddNL('Datum a èas podání: '+GFaMain.mtTskpFillingDate.Value,3,0);
-      rvInfo.AddNL('Podací èíslo, heslo: '+GFaMain.mtTskpFillingNumber.Value+', '+
+      rvInfo.AddNL('Identifikace zaÅ™Ã­zenÃ­: Spolecne technicke zarizeni spravcu dane',3,0);
+      rvInfo.AddNL('Datum a Äas podÃ¡nÃ­: '+GFaMain.mtTskpFillingDate.Value,3,0);
+      rvInfo.AddNL('PodacÃ­ ÄÃ­slo, heslo: '+GFaMain.mtTskpFillingNumber.Value+', '+
         GFaMain.mtTskpFillingPassword.Value,3,0);
       p:=Pos(cCRLF,Replace(cCRLFAlternate,
         GFaMain.mtTskpFillingTimeStampSignature.Value,cCRLF));
       if p>0 then begin
-        rvInfo.AddNL('Název souboru: '+
+        rvInfo.AddNL('NÃ¡zev souboru: '+
           Copy(GFaMain.mtTskpFillingTimeStampSignature.Value,1,p-1),3,0);
-        rvInfo.AddNL('Kontrolní èíslo: '+
+        rvInfo.AddNL('KontrolnÃ­ ÄÃ­slo: '+
           Replace(cCRLF, Copy(GFaMain.mtTskpFillingTimeStampSignature.Value,p+2,maxint), ', '),3,0);
       end
       else
-        rvInfo.AddNL('Název souboru, kontrolní èíslo: '+
+        rvInfo.AddNL('NÃ¡zev souboru, kontrolnÃ­ ÄÃ­slo: '+
           GFaMain.mtTskpFillingTimeStampSignature.Value,3,0);
       sl:=TStringList.Create;
       try
@@ -2245,14 +2338,14 @@ begin
       p:=Pos(cCRLF,Replace(cCRLFAlternate,
         GFaMain.mtTskpFillingTimeStampSignature.Value,cCRLF));
       rvInfo.Clear;
-      rvInfo.AddNL('Opis potvrzení elektronického podání',1,0);
+      rvInfo.AddNL('Opis potvrzenÃ­ elektronickÃ©ho podÃ¡nÃ­',1,0);
       rvInfo.AddNL('',0,0);
-      rvInfo.AddNL('Formuláø: '+GFaMain.mtDefName.Value,3,0);
+      rvInfo.AddNL('FormulÃ¡Å™: '+GFaMain.mtDefName.Value,3,0);
       if p>0 then
-        rvInfo.AddNL('Zdravotní pojišovna: '+
+        rvInfo.AddNL('ZdravotnÃ­ pojiÅ¡Å¥ovna: '+
           Copy(GFaMain.mtTskpFillingTimeStampSignature.Value,1,p-1),3,0);
-      rvInfo.AddNL('Datum a èas podání: '+GFaMain.mtTskpFillingDate.Value,3,0);
-      rvInfo.AddNL('Podací èíslo: '+GFaMain.mtTskpFillingNumber.Value,3,0);
+      rvInfo.AddNL('Datum a Äas podÃ¡nÃ­: '+GFaMain.mtTskpFillingDate.Value,3,0);
+      rvInfo.AddNL('PodacÃ­ ÄÃ­slo: '+GFaMain.mtTskpFillingNumber.Value,3,0);
       if p>0 then
         rvInfo.AddNL('Soubor: '+
           Copy(GFaMain.mtTskpFillingTimeStampSignature.Value,p+2,maxint),3,0);
@@ -2271,9 +2364,9 @@ begin
     end;
   end
   else if GFaMain.mtTskpFillingState.Value = cFillingStateFilledOffline then
-    MessageInfo(Caption,'Formuláø byl podán v reimu off-line, je potøeba dodateènì zjistit stav.',[MBOK])
+    MessageInfo(Caption,'FormulÃ¡Å™ byl podÃ¡n v reÅ¾imu off-line, je potÅ™eba dodateÄnÄ› zjistit stav.',[MBOK])
   else
-    MessageInfo(Caption,'Formuláø nebyl dosud podán',[MBOK]);
+    MessageInfo(Caption,'FormulÃ¡Å™ nebyl dosud podÃ¡n',[MBOK]);
 end;
 
 procedure TfmElPodani.btFunctionClick(Sender: TObject);
@@ -2313,7 +2406,7 @@ var
   doc: TStringList;
   i: integer;
 begin
-  if MessageAsk(Caption, 'Chcete naèíst soubor s datovou zprávou pro el. podání ze souboru?' ,[MBYES, MBNO])=IDNO then
+  if MessageAsk(Caption, 'Chcete naÄÃ­st soubor s datovou zprÃ¡vou pro el. podÃ¡nÃ­ ze souboru?' ,[MBYES, MBNO])=IDNO then
     EXIT;
   workfilename := NormalPath(GFaMain.DirWorkPath) + cElPodaniWorkFileName;
   if OpenFileDialog.Execute then begin
@@ -2325,7 +2418,7 @@ begin
       {for i:=0 to doc.Count-1 do
         rvOpis.AddNL(doc[i],0,0);
       rvOpis.Format;}
-      MessageInfo(Caption, 'Soubor s datovou zprávou byl naèten. Mùete jej zkontrolovat funkcí Zobrazit obsah podání v XML.' ,[MBOK]);
+      MessageInfo(Caption, 'Soubor s datovou zprÃ¡vou byl naÄten. MÅ¯Å¾ete jej zkontrolovat funkcÃ­ Zobrazit obsah podÃ¡nÃ­ v XML.' ,[MBOK]);
     finally
       doc.Free;
     end;
@@ -2346,15 +2439,15 @@ begin
         filename:=NormalPath(GFaMain.DirWorkPath) + cElPodaniWorkFileName;
         if FileExists(filename) then begin
           sl.Add(filename);
-          GfaMain.SendIsdsOrEmail(mailadr, 'El. podání '+GFaMain.mtDefName.Value,
+          GfaMain.SendIsdsOrEmail(mailadr, 'El. podï¿½nï¿½ '+GFaMain.mtDefName.Value,
             '', sl, TRUE, msg, outfilename);
           {$IFNDEF STANDALONE}
-          GfaMain.WritePdfToDocs('El. podání '+GFaMain.mtDefName.Value,
+          GfaMain.WritePdfToDocs('El. podï¿½nï¿½ '+GFaMain.mtDefName.Value,
             NormalPath(GFaMain.DirWorkPath) + cElPodaniWorkFileName,TRUE,'',TRUE);
           {$ENDIF STANDALONE}
         end
         else
-          MessageErr(Caption, 'Soubor elektronického podání '+
+          MessageErr(Caption, 'Soubor elektronickÃ©ho podÃ¡nÃ­ '+
            NormalPath(GFaMain.DirWorkPath) + cElPodaniWorkFileName+
            ' neexistuje',[MBOK]);
       end;

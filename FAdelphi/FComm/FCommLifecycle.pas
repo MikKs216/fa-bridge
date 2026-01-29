@@ -1,9 +1,9 @@
-﻿unit FCommLifecycle;
+unit FCommLifecycle;
 
 interface
 
 uses
-  Windows, Classes, SysUtils, FCommHttpClient, FCommJsonHelper, FCommPlatform;
+  Windows, Classes, SysUtils, FCommHttpClient, FCommJsonHelper;
 
 type
   /// <summary>
@@ -39,6 +39,7 @@ type
   private
     FHttpClient: TFCommHttpClient;
     FProcessHandle: THandle;
+    FUsingExternalServer: Boolean; // True = pouzivame externi server
     FServerVersion: TFCommVersion;
     FVersionChecked: Boolean;
     
@@ -46,6 +47,16 @@ type
     /// Stažení verze ze serveru
     /// </summary>
     function GetServerVersion: TFCommVersion;
+    
+    /// <summary>
+    /// Detekce remote URL (non-localhost)
+    /// </summary>
+    function IsRemoteBaseUrl(const BaseUrl: string): Boolean;
+    
+    /// <summary>
+    /// Vrati cestu k fcomm.exe (ve stejne slozce jako FA.exe)
+    /// </summary>
+    function GetFCommExePath: string;
     
   public
     constructor Create;
@@ -137,6 +148,7 @@ begin
   inherited Create;
   FHttpClient := TFCommHttpClient.Create;
   FProcessHandle := 0;
+  FUsingExternalServer := False;
   FVersionChecked := False;
 end;
 
@@ -153,74 +165,132 @@ var
   PI: TProcessInformation;
   Attempts: Integer;
   DetectedPath: string;
+  IsRemoteUrl: Boolean;
 begin
-  // Pokud není zadána cesta, použij automatickou detekci podle OS
+  // NOVA LOGIKA: Nejprve zkontrolovat, zda jiz server bezi
+  if IsRunning then
+  begin
+    // Server uz bezi (bud lokalne nebo remote) - neni treba spoustet
+    FUsingExternalServer := True; // Indikator ze pouzivame externi server
+    
+    // Zkontrolovat verzi
+    FVersionChecked := False;
+    GetServerVersion;
+    Exit; // Uspech - server je dostupny
+  end;
+  
+  // Server nebezi - rozhodnout, zda spustit lokalne nebo vyhodit chybu
+  IsRemoteUrl := IsRemoteBaseUrl(FHttpClient.BaseUrl);
+  
+  if IsRemoteUrl then
+  begin
+    // Remote URL ale server neodpovida - chyba
+    raise Exception.Create(
+      'fcomm server na adrese ' + FHttpClient.BaseUrl + 
+      ' není dostupný. Ujistěte se, že server běží na vzdáleném počítači.'
+    );
+  end;
+  
+  // Lokální URL a server neběží - spustit ho
   if FCommExePath = '' then
-    DetectedPath := GetFCommExePath  // Automatická detekce (Win7 vs Win10)
+    DetectedPath := GetFCommExePath  // Cesta k fcomm.exe ve slozce s FA.exe
   else
     DetectedPath := FCommExePath;
-    
-  // Zkontroluj verzi po startu
-  FVersionChecked := False;
-  GetServerVersion;
-  
-  // Pokud už běží, nic nedělat
-  if IsRunning then
-    Exit;
   
   // Kontrola existence souboru
   if not FileExists(DetectedPath) then
-    raise Exception.Create('Komunikační modul fcomm.exe nebyl nalezen: ' + DetectedPath);
+    raise Exception.Create('Komunikacni modul fcomm.exe nebyl nalezen: ' + DetectedPath);
   
   // Spustit fcomm.exe
   FillChar(SI, SizeOf(SI), 0);
   SI.cb := SizeOf(SI);
   SI.dwFlags := STARTF_USESHOWWINDOW;
-  SI.wShowWindow := SW_HIDE; // Skrytý process
+  SI.wShowWindow := SW_HIDE; // Skryty process
   
   if CreateProcess(nil, PChar(DetectedPath), nil, nil, False, 0, nil, nil, SI, PI) then
   begin
     CloseHandle(PI.hThread);
     FProcessHandle := PI.hProcess;
     
-    // Počkat až se spustí (max 5 sekund)
+    // Pockat az se spusti (max 5 sekund)
     for Attempts := 1 to 50 do
     begin
       Sleep(100);
       if IsRunning then
+      begin
+        // Zkontrolovat verzi po startu
+        FVersionChecked := False;
+        GetServerVersion;
         Exit;
+      end;
     end;
     
-    // Timeout - ukončit proces a vyhodit chybu
+    // Timeout - ukoncit proces a vyhodit chybu
     Stop;
-    raise Exception.Create('Komunikační modul fcomm.exe se nespustil včas (timeout 5s).');
+    raise Exception.Create('Komunikacni modul fcomm.exe se nespustil vcas (timeout 5s).');
   end
   else
-    raise Exception.Create('Nepodařilo se spustit fcomm.exe. Error: ' + IntToStr(GetLastError));
+    raise Exception.Create('Nepodarilo se spustit fcomm.exe. Error: ' + IntToStr(GetLastError));
 end;
 
 procedure TFCommLifecycle.Stop;
 begin
-  if FProcessHandle <> 0 then
+  // Pouze ukoncit, pokud jsme spustili lokalni proces
+  // Pokud FUsingExternalServer = True, neukoncujeme externi server
+  if (FProcessHandle <> 0) and (not FUsingExternalServer) then
   begin
-    // Nejprve zkusit graceful shutdown přes API
+    // Nejprve zkusit graceful shutdown pres API
     try
       if IsRunning then
         FHttpClient.Post('/admin/shutdown', '{}');
     except
-      // Ignorovat chyby - pokud API nefunguje, použijeme TerminateProcess
+      // Ignorovat chyby - pokud API nefunguje, pouzijeme TerminateProcess
     end;
     
-    // Počkat krátce na graceful shutdown
+    // Pockat kratce na graceful shutdown
     if WaitForSingleObject(FProcessHandle, 1000) <> WAIT_OBJECT_0 then
     begin
-      // Pokud se neukončil, forcovat
+      // Pokud se neukoncil, forcovat
       TerminateProcess(FProcessHandle, 0);
     end;
     
     CloseHandle(FProcessHandle);
-    FProcessHandle := 0;
   end;
+  
+  // Reset
+  FProcessHandle := 0;
+  FUsingExternalServer := False;
+end;
+
+function TFCommLifecycle.GetFCommExePath: string;
+var
+  BasePath: string;
+  FCommPath: string;
+begin
+  // fcomm.exe musi byt ve stejne slozce jako FA.exe
+  BasePath := ExtractFilePath(ParamStr(0));
+  FCommPath := BasePath + 'fcomm.exe';
+  
+  if FileExists(FCommPath) then
+    Result := FCommPath
+  else
+    raise Exception.Create('fcomm.exe nebyl nalezen. Ocekavana cesta: ' + FCommPath);
+end;
+
+function TFCommLifecycle.IsRemoteBaseUrl(const BaseUrl: string): Boolean;
+var
+  LowerUrl: string;
+begin
+  LowerUrl := LowerCase(BaseUrl);
+  
+  // Detekce lokalnich adres
+  Result := not (
+    (Pos('localhost', LowerUrl) > 0) or
+    (Pos('127.0.0.1', LowerUrl) > 0) or
+    (Pos('::1', LowerUrl) > 0) or  // IPv6 localhost
+    (LowerUrl = '') or
+    (LowerUrl = 'http://localhost:54321')  // Default
+  );
 end;
 
 function TFCommLifecycle.IsRunning: Boolean;
@@ -248,7 +318,7 @@ begin
     FVersionChecked := True;
     Result := FServerVersion;
   except
-    // Pokud verze není dostupná, je to OK - server je staré verze
+    // Pokud verze není dostupná, je to OK - server je starší verze
     FServerVersion.Major := 1;
     FServerVersion.Minor := 0;
     FServerVersion.Patch := 0;

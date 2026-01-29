@@ -1,0 +1,193 @@
+================================================================================
+ZMENY: FComm Shared Process - Sdileny API server
+================================================================================
+Datum: 2026-01-21
+Autor: AI Assistant (Claude Sonnet 4.5)
+
+POPIS ZMENY:
+------------
+Refaktorizace z vlastneneho procesu (kazda instance FA ma svuj FCommLifecycle)
+na SDILENY PROCES (jeden FComm server bezi stale a vsechny aplikace ho sdileji).
+
+HLAVNI VYHODY:
+--------------
+1. Zadne objekty v pameti - pouze funkce
+2. Sdileny proces - multiple instance FA bez problemu
+3. Automaticka kontrola verze - restart pokud je stara
+4. Flexibilni ukonceni - volitelne (zakomentovane v FormDestroy)
+5. Pouzitelne i jinde - jine aplikace mohou volat stejnou funkci
+6. Async start - FA se nezdrzuje pri startu (~50ms overhead)
+7. Sync before use - pred pouzitim se pocka na ready (typicky ~50ms)
+8. Inteligentni cekani - max 10s, ale exit jakmile je ready
+
+HLAVNI ZMENY:
+-------------
+
+1. NOVY SOUBOR: FComm/FCommStarter.pas
+   -----------------------------------
+   Samostatny unit s funkcemi pro spravu FComm API serveru:
+   
+   - TFCommVersion record (Semantic Versioning)
+   - TFCommStartMode enum (smAsync / smSync)
+   - TFCommStartResult record (vysledek operace)
+   
+   Hlavni funkce:
+   - EnsureFCommAPI() - zajisti dostupnost serveru
+   - IsFCommAPIRunning() - kontrola behu
+   - GetFCommAPIVersion() - zjisteni verze
+   - ShutdownFCommAPI() - ukonceni serveru
+   - GetFCommExePath() - auto-detekce cesty
+   - IsRemoteUrl() - detekce remote URL
+   
+   INTELIGENTNI CEKANI:
+   - Maximum: 10 sekund (100 iteraci x 100ms)
+   - Testovani: Kazdych 100ms zavola /health
+   - Okamzity exit: Jakmile je server ready, pokracuje dal
+   
+   Typicke casy:
+   - Server uz bezi: ~50ms (jeden health check)
+   - Server se spousti: ~1-2s (cas na start + health check)
+   - Restart serveru: ~2-3s (shutdown + start + health check)
+
+2. Main.pas
+   --------
+   PRIDANO:
+   - uses FCommStarter (misto FCommLifecycle)
+   - Konstanty FCOMM_MIN_VERSION_* (1.0.0)
+   - Funkce EnsureFCommAPIAvailable(ASyncMode: Boolean)
+   - Volani v FormCreate: EnsureFCommAPIAvailable(True) - async
+   - Zakomentovany kod v FormDestroy pro volitelne ukonceni
+   
+   ODSTRANENO:
+   - FCommLifecycle: TFCommLifecycle field
+   - function GetFCommLifecycle: TFCommLifecycle
+   - Implementace GetFCommLifecycle
+   - Uvolnovani FCommLifecycle v FormDestroy
+   
+   NOVE KONSTANTY:
+   const
+     FCOMM_MIN_VERSION_MAJOR = 1;
+     FCOMM_MIN_VERSION_MINOR = 0;
+     FCOMM_MIN_VERSION_PATCH = 0;
+
+3. EElPodani.pas
+   -------------
+   ZMENENO:
+   - Odstranena promenna Lifecycle: TFCommLifecycle z Init
+   - Nahrazeno volanim GfaMain.EnsureFCommAPIAvailable(False) - sync
+   - Odstraneno FCommLifecycle z uses
+   
+   PRED:
+   Lifecycle := GfaMain.GetFCommLifecycle;
+   if not Lifecycle.IsRunning then ...
+   
+   PO:
+   if not GfaMain.EnsureFCommAPIAvailable(False) then ...
+
+4. FormStudio.ini
+   --------------
+   PRIDANO:
+   ; Cesta k fcomm.exe (volitelne, jinak auto-detect v adresari programu)
+   ; FCommExePath=C:\Custom\Path\fcomm.exe
+
+5. NOVA DOKUMENTACE: FCOMM_SHARED_PROCESS.md
+   ------------------------------------------
+   Kompletni dokumentace s:
+   - Prehled architektury
+   - Flowchart zivotniho cyklu
+   - Scenare pouziti
+   - Priklady kodu
+   - Konfigurace
+   - Troubleshooting
+
+ZIVOTNI CYKLUS:
+---------------
+
+1. Start FA (FormCreate):
+   - Zavola EnsureFCommAPIAvailable(True) - ASYNC
+   - Pokud server nebezi -> spusti fcomm.exe
+   - Vrati Success=True ihned (async)
+   - FA pokracuje v nacteni (~50ms overhead)
+
+2. Otevreni el. podani (EElPodani.Init):
+   - Zavola EnsureFCommAPIAvailable(False) - SYNC
+   - Pokud server bezi -> zkontroluje verzi
+   - Pokud verze OK -> vrati Success=True (~50ms)
+   - Pokud verze nizka -> restart serveru (~2-3s)
+   - Nacte certifikaty pres API
+
+3. Zavreni FA (FormDestroy):
+   - VYCHOZI: Nechava server bezet (zakomentovano)
+   - VOLITELNE: Muze ukoncit server (odkomentovat)
+
+4. Dalsi instance FA:
+   - Zavola EnsureFCommAPIAvailable(True) - ASYNC
+   - Server uz bezi -> zkontroluje verzi
+   - Verze OK -> vrati Success=True ihned (~50ms)
+   - FA pokracuje v nacteni
+
+SCENARE:
+--------
+
+1. PRVNI SPUSTENI FA (server nebezi):
+   FormCreate -> EnsureFCommAPI(async) -> Spusti fcomm.exe -> Success
+   EElPodani.Init -> EnsureFCommAPI(sync) -> Ceka ~1-2s -> Success
+
+2. DRUHA INSTANCE FA (server uz bezi):
+   FormCreate -> EnsureFCommAPI(async) -> Verze OK -> Success (~50ms)
+   EElPodani.Init -> EnsureFCommAPI(sync) -> Verze OK -> Success (~50ms)
+
+3. UPGRADE VERZE (stara verze bezi):
+   EElPodani.Init -> EnsureFCommAPI(sync) -> Verze nizka -> Shutdown
+   -> Ceka max 10s (test kazdych 100ms) -> Spusti novy -> Ceka max 10s
+   -> Success (~2-3s)
+
+4. REMOTE TESTING Z VM:
+   FCommBaseUrl = http://192.168.0.28:54321
+   EnsureFCommAPI -> Detekuje remote URL -> Nespousti lokalni proces
+   -> Testuje /health na remote -> Success (pokud bezi)
+
+TESTOVANI:
+----------
+
+1. Lokalni test:
+   - Spustit FA -> fcomm.exe se spusti
+   - Otevrit el. podani -> okamzite ready (~50ms)
+   - Zavrit FA -> fcomm.exe zustava bezet
+   - Spustit druhou instanci FA -> okamzite ready (~50ms)
+
+2. Remote test z VM:
+   - Na fyzickem stroji: start-development.bat
+   - V FA na VM: FCommBaseUrl=http://192.168.0.28:54321
+   - Spustit FA -> pripoji se na remote server
+   - Otevrit el. podani -> nacte certifikaty z remote
+
+3. Test upgrade verze:
+   - Spustit starou verzi fcomm.exe (0.9.0)
+   - Zmenit FCOMM_MIN_VERSION_* na 1.0.0
+   - Otevrit el. podani -> automaticky restart na 1.0.0
+
+POZNAMKY:
+---------
+- FComm API server bezi stale (az do restartu pocitace)
+- Zadne objekty v pameti FA - pouze funkce
+- Inteligentni cekani - max 10s, ale exit jakmile je ready
+- Remote URL se nespousti lokalne
+- Volitelne ukonceni v FormDestroy (zakomentovane)
+
+SOUBORY:
+--------
+NOVE:
++ FComm/FCommStarter.pas
++ FCOMM_SHARED_PROCESS.md
++ ZMENY_FCOMM_SHARED_2026-01-21.txt
+
+ZMENENE:
+* Main.pas
+* EElPodani.pas
+* FormStudio.ini
+
+DEPRECATED (lze smazat):
+- FCommLifecycle.pas (uz se nepouziva, ale lze ponechat pro backward compat)
+
+================================================================================

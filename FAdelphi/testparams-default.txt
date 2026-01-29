@@ -1,0 +1,117 @@
+﻿fillall clr
+
+//========== DOKUMENTACE ==========
+
+//PŘÍKAZY (pořadí zpracování):
+//  1. calculate=off/on          - vypne/zapne výpočty
+//  2. disabling=off/on          - vypne/zapne disabling
+//  3. clr                       - smaže všechny údaje
+//  4. fillall                   - vyplní všechny nevyplněné údaje (kromě checkboxů)
+//  5. fill výčet_údajů          - vyplní jen zadané údaje (podporuje ?, *)
+
+//PARAMETRY pro fillall a fill:
+//  clr                          - smazat údaje před vyplněním
+
+// pro texty: 
+//  text="..."                   - text pro string pole (může obsahovat značky - viz níže)
+//  words=2                      - 2 slova ze slovníku (test-words.txt)
+//  #,words=3                    - pořadí + slova (např. "1 první druhé")
+//  words=3,#                    - slova + pořadí (např. "první druhé 1")
+
+// pro čísla:
+//  start=100                    - počáteční hodnota pro čísla (celá i desetinná čísla)
+//  step=5 nebo step=0.1         - krok pro čísla (celá i desetinná čísla)
+//                                 start=5.2 step=0.1 → 5.2, 5.3, 5.4, 5.5, ...
+//  decimal=2                    - počet des. míst (např. 1.50, 2.60)
+//                                 pokud není zadán, použije se automaticky počet
+//                                 desetinných míst z definice pole
+//  decimalstart=0.26            - počáteční hodnota pro desetinnou část (výchozí: 0.0)
+//                                 pro ODDĚLENÉ zvyšování celé a desetinné části
+//                                 start=5 decimalstart=0.2 → celá část 5, des. část 0.2
+//  decimalstep=0.1              - krok pro desetinnou část (výchozí: 0.0 = konstantní)
+//                                 pro ODDĚLENÉ zvyšování desetinné části
+//                                 start=5 decimalstart=0.2 decimalstep=0.1 → 5.2, 5.3, 5.4, ...
+
+// pro checkboxy:
+//  checkbox=true                - checkboxy zaškrtnout
+//  checkbox=false               - checkboxy odškrtnout
+
+//SPECIÁLNÍ ZNAČKY V PARAMETRU text="...":
+//  #  - pořadové číslo        (text="Položka #" → "Položka 1", "Položka 2", ...)
+//  @  - slovo ze slovníku     (text="@ text" → "auto text", "pes text", ...) - sekvenčně
+//  $  - náhodné slovo         (text="$ text" → "pes text", "auto text", ...) - náhodně
+//  příklad: text="#. @ nebo $" → "1. auto nebo pes", "2. pes nebo dům", ...
+//  bez značek: text="něco" → "něco1", "něco2", ... (číslo na konci - zpětná kompatibilita)
+
+//POZNÁMKA: 
+//  - standardně fillall a fill vyplňují JEN prázdné údaje
+//  - pro přepsání existujících hodnot použij parametr clr (použije se jen na vyjmenované údaje)
+//  - clr MAŽE všechny údaje včetně checkboxů (nastaví na false)
+//  - fillall NENASTAVUJE checkboxy (ponechá je beze změny)
+//  - fill s parametrem checkbox=true/false checkboxy nastaví vždy (ignorují prázdnost)
+//  - dvě lomítka (//) - vše za nimi je komentář
+
+//========== PŘÍKLADY ZADÁNÍ ==========
+
+//ZÁKLADNÍ PŘÍKAZY:
+//  clr                              - smaže vše (včetně checkboxů na false)
+//  fillall                          - vyplní vše výchozími hodnotami (jen prázdné! checkboxy nenastavuje!)
+//  fillall clr                      - smaže vše (včetně checkboxů) a pak vyplní
+//  fill R*                          - jen pole začínající R (jen prázdné!)
+//  fill R4? clr                     - smaže R40-R49 (včetně checkboxů) a pak vyplní
+//  fill CH* checkbox=true           - zaškrtne všechny checkboxy CH* (vždy!)
+//  calculate=off                    - vypne výpočty (provádí se vždy první)
+//  calculate=on                     - zapne výpočty (provádí se vždy první)
+//  disabling=off                    - vypne disabling (provádí se vždy první)
+//  disabling=on                     - zapne disabling (provádí se vždy první)
+
+//1. Přesný název pole:
+//  fill R02z
+//  fill CheckBox1
+
+//2. Wildcard s hvězdičkou (*) - libovolný počet znaků:
+//  fill R*                  - všechna pole začínající na R
+//  fill *z                  - všechna pole končící na z
+//  fill R*z                 - pole začínající R a končící z
+
+//3. Wildcard s otazníkem (?) - právě jeden znak:
+//  fill R0?                 - R01, R02, R03... (ne R001)
+//  fill R??z                - R02z, R03z, R10z...
+
+//4. Seznam oddělený čárkami:
+//  fill R02z,R03z,R05z      - jen tyto tři konkrétní
+//  fill CH1,CH2,CH5         - jen vybrané checkboxy
+//  fill R40,R41,R42,R43     - konkrétní výčet
+
+//5. Kombinace:
+//  fill R0?,CH*             - wildcard R0? + všechny CH*
+//  fill R4?,R9?             - více wildcardů
+//  fill R*,ck*              - více wildcardů
+
+//POZNÁMKA K ČÍSLOVÁNÍ:
+//  Když je více vzorců na jednom řádku (např. R05,R09,R11), pole se číslují
+//  v jedné souvislé sekvenci podle jejich pořadí v design.json (Order).
+//  Na samostatných řádcích má každý fill vlastní číslování od 1.
+
+//PŘÍKLADY S PARAMETRY:
+//  clr                              // smaže vše (včetně checkboxů)
+//  fillall text="TEST" clr          // smaže vše, pak vyplní textem "TEST1", "TEST2", ...
+//  fillall start=1000 step=10       // fillall nenastavuje checkboxy
+//  fill R4? start=100               // vyplní jen prázdné v R40-R49
+//  fill R4? clr start=100           // smaže R40-R49, pak vyplní od 100
+//  fill R0? start=5.2 step=0.1 clr  // 5.2, 5.3, 5.4, 5.5, 5.6...
+//  fill R0? start=5 step=0.5 clr    // 5.0, 5.5, 6.0, 6.5, 7.0...
+//  fill R0? start=5 decimalstart=0.2 decimalstep=0.1 clr // oddělené: 5.2, 5.3, 5.4, 5.5, 5.6...
+//  fill R4? start=100 step=5 decimal=2 decimalstart=0.5 decimalstep=0.1
+//  fill R* words=3 #                // do textových údajů nastaví 3 slova 
+//  fill CH* checkbox=true           // checkboxy se nastaví vždy
+//  fill CH* checkbox=false          // checkboxy se odškrtnou vždy
+
+//PŘÍKLADY SE ZNAČKAMI V TEXT:
+//  fill R0? text="Položka #"              // "Položka 1", "Položka 2", ...
+//  fill R0? text="#. @"                   // "1. auto", "2. pes", "3. dům", ...
+//  fill R0? text="ID_#_@"                 // "ID_1_auto", "ID_2_pes", ...
+//  fill R0? text="Náhodné: $"             // "Náhodné: pes", "Náhodné: auto", ...
+//  fill R0? text="@ # $"                  // "auto 1 dům", "pes 2 okno", ...
+
+//=====================================

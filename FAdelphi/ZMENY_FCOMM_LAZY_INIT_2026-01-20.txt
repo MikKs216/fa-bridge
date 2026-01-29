@@ -1,0 +1,94 @@
+================================================================================
+ZMENY: Lazy Initialization fcomm.exe s asynchronnim startem
+================================================================================
+Datum: 2026-01-20
+Autor: AI Assistant (Claude Sonnet 4.5)
+
+POPIS ZMENY:
+------------
+Implementovano lazy initialization pro fcomm.exe s asynchronnim startem,
+aby se FA nezdrzovalo pri spousteni.
+
+HLAVNI ZMENY:
+-------------
+
+1. Main.pas
+   ---------
+   - Pridana globalni promenna FCommLifecycle: TFCommLifecycle
+   - Pridana funkce GetFCommLifecycle: TFCommLifecycle (lazy initialization)
+   - Upraveno FormDestroy pro uvolneni FCommLifecycle
+   - FCommLifecycle do uses
+
+   Funkce GetFCommLifecycle:
+   - Vytvori FCommLifecycle pouze pri prvnim pouziti
+   - Nastavi BaseUrl z konfigurace (FCommBaseUrl)
+   - Detekuje, zda je BaseUrl remote (pro VM testovani)
+   - Pokud je LOKALNI: Spusti fcomm.exe asynchronne (bez cekani)
+   - Pokud je REMOTE: Preskoci start (ocekava ze server uz bezi)
+   - Ignoruje chyby pri startu (zkusi to pozdeji)
+
+2. EElPodani.pas
+   --------------
+   - Odstranen privatni FLifecycle
+   - Upraveno FormCreate (odstranen FLifecycle := nil)
+   - Upraveno FormDestroy (odstranen kod pro FLifecycle)
+   - Upraveno Init:
+     * Pouziva GfaMain.GetFCommLifecycle (lazy init)
+     * Ceka max 5s na pripraveni API (pokud jeste neni ready)
+     * Zobrazuje status "Cekani na spusteni komunikacniho modulu ..."
+     * Zjednodusena logika (bez try/except pro start)
+
+VYHODY:
+-------
+1. Rychlejsi start FA - nezdrzuje se spoustenim fcomm.exe
+2. Jeden globalni FCommLifecycle - zadny memory leak
+3. Proces fcomm.exe bezi po celou dobu behu FA
+4. Pri prvnim otevreni el. podani se ceka max 5s na pripraveni
+5. Pri dalsich otevrenich je fcomm.exe uz pripraveny (bez cekani)
+6. Bezpecne opakované volani - Start() kontroluje IsRunning()
+
+TESTOVANI:
+----------
+### Lokalni testovani (Windows 11):
+1. Spustit FA s UseFCommAPI=1, FCommBaseUrl=http://localhost:54321
+   - FA by se melo spustit rychle (bez cekani na fcomm.exe)
+   
+2. Otevrit dialog el. podani
+   - Pri prvnim otevreni se zobrazi "Cekani na spusteni komunikacniho modulu ..."
+   - Po max 5s by se mely nacist certifikaty
+   
+3. Zavrit a znovu otevrit dialog el. podani
+   - Druhe otevreni by melo byt okamzite (fcomm.exe uz bezi)
+   
+4. Zavrit FA
+   - fcomm.exe by se mel ukoncit (FormDestroy v Main.pas)
+
+### Remote testovani z VM (Windows 7 VM -> Windows 11 fyzicky stroj):
+1. Na fyzickem stroji spustit fcomm.exe:
+   cd D:\Projekty\fcomm-FAkomunikace\fcomm
+   start-development.bat
+   
+2. V FA na VM nastavit v FormStudio.ini:
+   FCommBaseUrl=http://192.168.0.28:54321  (IP fyzickeho stroje)
+   
+3. Spustit FA na VM
+   - FA se spusti rychle (bez pokusu o start lokalniho fcomm.exe)
+   - GetFCommLifecycle() detekuje remote URL a preskoci start
+   
+4. Otevrit dialog el. podani
+   - Ceka max 5s na pripraveni remote API
+   - Nacte certifikaty z fyzickeho stroje
+   
+5. Zavrit FA na VM
+   - fcomm.exe na fyzickem stroji zustane bezet (nesmi se ukoncit)
+
+POZNAMKY:
+---------
+- fcomm.exe se spusti pouze pri prvnim pouziti (lazy initialization)
+- LOKALNI URL (localhost, 127.0.0.1): Start() spusti fcomm.exe automaticky
+- REMOTE URL (jine IP): Start() se preskakuje, ocekava se ze server uz bezi
+- Pokud fcomm.exe jiz bezi (lokalne nebo remote), Start() ho znovu nespusti
+- Pri zavreni FA se fcomm.exe ukoncuje POUZE pokud byl spusten lokalne
+- Pokud fcomm.exe neni dostupny, zobrazi se chyba v EElPodani.Init
+
+================================================================================

@@ -28,7 +28,7 @@ import { registerIntelliSenseProvider, getIntelliSenseProvider } from './provide
 import { CommandWatcher } from './utils/commandWatcher';
 import { registerBeginEndMatcher } from './providers/BeginEndMatcher';
 import { registerCodeLensProvider } from './providers/PascalCodeLensProvider';
-import { compareWithPreviousVersion, showHistoryVersions, setHistoryRefreshCallback } from './utils/fileHistory';
+import { compareWithPreviousVersion, showHistoryVersions, setHistoryRefreshCallback, saveFileHistory } from './utils/fileHistory';
 import { HistoryPanel } from './historyPanel';
 import { HistoryProvider, HistoryItem } from './historyProvider';
 
@@ -479,8 +479,13 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(...commands);
 
 	// Sleduj uložení souborů a maž famsgstate.json při uložení
-	const saveListener = vscode.workspace.onDidSaveTextDocument(() => {
+	const saveListener = vscode.workspace.onDidSaveTextDocument(async (document) => {
 		deleteFamsgState(outputChannel);
+		
+		// Ulož historii pro všechny .pas soubory při jakémkoliv uložení (F2, Ctrl+S, autosave, atd.)
+		if (document.fileName.endsWith('.pas')) {
+			await saveFileHistory(document.fileName);
+		}
 	});
 	context.subscriptions.push(saveListener);
 

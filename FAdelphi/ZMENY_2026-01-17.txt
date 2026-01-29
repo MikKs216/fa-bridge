@@ -1,0 +1,65 @@
+===============================================================================
+ZMĚNY V PROJEKTU FormAsistent - 2026-01-17
+===============================================================================
+
+✅ 1. PŘIDÁNA SLOŽKA EPMF
+   Zdroj: FADelphiComm\EPMF
+   Cíl:   FAdelphi\EPMF
+   
+   Obsahuje API pro práci s certifikáty a PKCS#7 podepisování:
+   - mfcr_certificate_api.pas
+   - mfcr_certificate_api_example.pas
+   - mfcr_certificate.pas
+   - mfcr_consts.pas
+   - mfcr_utils.pas
+   - mfcr_resources.pas
+   - + DLL knihovny v lib/
+
+✅ 2. UPRAVENY EXISTUJÍCÍ MODULY
+   - FCommHttpClient.pas - přidán komentář pro VM testování
+     BaseUrl lze změnit: FCommManager.HttpClient.BaseUrl := 'http://192.168.0.28:54321';
+
+✅ 3. PŘIDÁNA DOKUMENTACE
+   - README_INTEGRACE_CERTIFIKATY.md - kompletní návod na použití
+
+===============================================================================
+JAK POUŽÍVAT
+===============================================================================
+
+1. V Delphi IDE:
+   Project → Add to Project... → vybrat:
+   - EPMF\mfcr_certificate_api.pas
+   - EPMF\mfcr_certificate.pas
+   - EPMF\mfcr_consts.pas
+   - EPMF\mfcr_utils.pas
+
+2. V kódu:
+   uses FCommLifecycle, EPMF.mfcr_certificate_api;
+   
+   var FCommManager: TFCommLifecycle;
+   begin
+     FCommManager := TFCommLifecycle.Create;
+     try
+       // Pro VM testování:
+       // FCommManager.HttpClient.BaseUrl := 'http://192.168.0.28:54321';
+       
+       FCommManager.Start;
+       // ... práce s certifikáty ...
+     finally
+       FCommManager.Free;
+     end;
+   end;
+
+3. Kompilace:
+   Compile → Build FormAsistentFull
+
+===============================================================================
+VM TESTOVÁNÍ (Windows 7)
+===============================================================================
+
+- fcomm.exe běží na Win11 fyzickém stroji (192.168.0.28:54321)
+- FA projekt v Delphi 2007 na Win7 VM
+- Nastav: FCommManager.HttpClient.BaseUrl := 'http://192.168.0.28:54321';
+- Firewall na Win11: port 54321 musí být otevřený
+
+===============================================================================

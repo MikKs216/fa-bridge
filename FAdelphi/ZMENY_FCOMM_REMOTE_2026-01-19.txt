@@ -1,0 +1,115 @@
+===============================================================================
+ZMENY: fcomm Remote Testing Support
+Datum: 2026-01-19
+===============================================================================
+
+PROBLEM
+-------
+Pri testovani z VM (Windows 7) na fyzicky stroj (Windows 11) bylo potreba
+vzdy rucne spoustet fcomm server na fyzickem stroji a FA se pokousal spustit
+vlastni lokalni instanci, ktera pak selhala.
+
+RESENI
+------
+Implementovana inteligentni detekce existujiciho serveru. FA nejprve
+zkontroluje HealthCheck a:
+- Pokud server uz bezi → pouzije ho (remote i lokalni)
+- Pokud nebezi a je remote URL → chyba (spustte server na remote)
+- Pokud nebezi a je lokalni URL → spusti lokalni fcomm.exe
+
+UPRAVENE SOUBORY
+----------------
+
+1. FCommLifecycle.pas
+
+   a) Nova private metoda:
+      + function IsRemoteBaseUrl(const BaseUrl: string): Boolean;
+        - Detekuje, zda URL je remote (non-localhost)
+        - localhost, 127.0.0.1, ::1, prazdny string = lokalni
+        - jakakoliv jina IP = remote
+
+   b) Upravena metoda Start:
+      + Nejprve zkontroluje IsRunning() (HealthCheck)
+      + Pokud server bezi → nastavi FProcessHandle := -1 (externi server)
+      + Pokud nebezi:
+        - Remote URL → Exception (server neni dostupny)
+        - Lokalni URL → spusti fcomm.exe
+      + Chytrejsi chybove hlasky
+
+   c) Upravena metoda Stop:
+      + Pouze ukonci proces, pokud FProcessHandle > 0 (lokalni proces)
+      + FProcessHandle = -1 (externi server) → NIC neukoncuje
+      + Bezpecne pro remote servery
+
+NOVE SOUBORY
+------------
++ FCOMM_REMOTE_TESTING.md - Detailni dokumentace s priklady
+
+INDIKATOR TYPU SERVERU
+-----------------------
+FProcessHandle:
+  > 0  = Lokalni proces spusteny FA (ukoncit pri Stop)
+  = -1 = Externi server (VM → fyzicky stroj) (NEUKONCOVAT)
+  = 0  = Zadny server
+
+TESTOVACI SCENARE
+-----------------
+
+1. VM → Fyzicky stroj (hlavni use-case)
+   Fyzicky stroj: dotnet run
+   VM FormStudio.ini: FCommBaseUrl=http://192.168.0.28:54321
+   Vysledek: ✅ Pouzije remote server, lokalni se NESPUSTI
+
+2. Lokalni testovani
+   FormStudio.ini: FCommBaseUrl= (prazdne)
+   Vysledek: ✅ Spusti lokalni fcomm.exe, pokud nebezi
+
+3. Lokalni s rucne spustenym serverem
+   Terminal: dotnet run
+   FormStudio.ini: FCommBaseUrl= (prazdne)
+   Vysledek: ✅ Pouzije existujici server, NESPUSTI novy
+
+4. Remote server nedostupny
+   FormStudio.ini: FCommBaseUrl=http://192.168.0.28:54321
+   Server nebezi
+   Vysledek: ❌ Exception s jasnou chybovou zpravou
+
+KONFIGURACE
+-----------
+
+Development (Windows 11):
+[Certificates]
+UseFCommAPI=1
+FCommBaseUrl=
+
+VM Testing (Windows 7 → Windows 11):
+[Certificates]
+UseFCommAPI=1
+FCommBaseUrl=http://192.168.0.28:54321
+
+Production (zatim):
+[Certificates]
+UseFCommAPI=0
+; FCommBaseUrl=  (nepouziva se)
+
+VYHODY
+------
+✅ Zadne rucni spousteni/zastavovani - automaticka detekce
+✅ Bezpecne pro remote - nepokousi se ukoncit cizi server
+✅ Flexibilni - funguje pro lokalni i remote scenare
+✅ Chytra detekce - podle URL pozna, co ma delat
+✅ Debug friendly - lze manualne spustit server a FA ho pouzije
+
+KOMPATIBILITA
+-------------
+✅ Zpetne kompatibilni - stare chovani zachovano pro lokalni URL
+✅ Novy feature - remote testing support
+✅ Zadne zmeny v ostatnich souborech
+
+TESTOVANI
+---------
+1. Otestovat lokalni spusteni (bez konfigurace remote URL)
+2. Otestovat remote pripojeni z VM na fyzicky stroj
+3. Overit, ze se lokalni proces neukoncuje pri remote URL
+
+===============================================================================

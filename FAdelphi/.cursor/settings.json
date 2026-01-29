@@ -1,0 +1,18 @@
+{
+  "files.encoding": "utf8bom",
+  "files.autoGuessEncoding": false,
+  "[pascal]": {
+    "files.encoding": "utf8bom"
+  },
+  "[delphi]": {
+    "files.encoding": "utf8bom"
+  },
+  "files.associations": {
+    "*.pas": "pascal"
+  },
+  "files.eol": "\r\n",
+  "[*.pas]": {
+    "files.encoding": "utf8bom",
+    "files.eol": "\r\n"
+  }
+}

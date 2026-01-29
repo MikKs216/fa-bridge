@@ -1,4 +1,4 @@
-{ 19.7.2025 23:47:23 (GMT+2:00) > [martin on VIRTUALFS] checked in uprava cesty pro STEREONX direktiva ve switches.inc  }
+﻿{ 19.7.2025 23:47:23 (GMT+2:00) > [martin on VIRTUALFS] checked in uprava cesty pro STEREONX direktiva ve switches.inc  }
 { 15.7.2025 13:46:00 (GMT+2:00) > [martin on VIRTUALFS] checked in opravy cest STEREONX  }
 { 27.11.2023 12:24:06 (GMT+1:00) > [mik on WIN-48QDB6JAV23] checked in #5311  }
 { 18. 4. 2023 13:51:14 (GMT+2:00) > [marek on WIN-48QDB6JAV23] checked in Uprava funkce GetFormCount, nyni vraci pocet vytvorenych formularu i ve Stereu  }
@@ -767,6 +767,9 @@ var
   fld: TField;
 begin
   with GfaMain do begin
+    if dxBarButtonEnableFieldEditAll.Down then
+      ACond:=true; // Pouze pro testování                    
+
     if mtFields.FindKey([UpperCase(AFieldName)])
       {mtFields.Locate(mtFieldsName.FieldName, //opt
       AFieldName, [loCaseInsensitive])} and

@@ -49,11 +49,11 @@ export async function saveFileHistory(filePath: string): Promise<string | null> 
 			return null;
 		}
 
-		// Zkontroluj, jestli je to FA script soubor
-		const fileName = path.basename(filePath);
-		if (!fileName.match(/^(script_|u_)[a-zA-Z0-9_]+\.pas$/)) {
-			return null; // Není FA script, neukládat historii
-		}
+	// Zkontroluj, jestli je to Pascal soubor
+	const fileName = path.basename(filePath);
+	if (!fileName.endsWith('.pas')) {
+		return null; // Není Pascal soubor, neukládat historii
+	}
 
 		// DŮLEŽITÉ: Zkontroluj, jestli je soubor ve workspace
 		// Pokud je soubor mimo workspace (např. v worktrees), neukládat historii
@@ -91,15 +91,34 @@ export async function saveFileHistory(filePath: string): Promise<string | null> 
 			fs.mkdirSync(historyDir, { recursive: true });
 		}
 
-		// Vytvoř název souboru s timestampem
-		const timestamp = formatTimestamp(new Date());
-		const historyFileName = createHistoryFileName(fileName, timestamp);
-		const historyFilePath = path.join(historyDir, historyFileName);
+	// Vytvoř název souboru s timestampem
+	const timestamp = formatTimestamp(new Date());
+	const historyFileName = createHistoryFileName(fileName, timestamp);
+	const historyFilePath = path.join(historyDir, historyFileName);
 
-		// Zkopíruj soubor
-		fs.copyFileSync(filePath, historyFilePath);
+	// KONTROLA 1: Existuje soubor se stejným timestampem?
+	if (fs.existsSync(historyFilePath)) {
+		console.log(`[FA Bridge] Soubor se stejným timestampem už existuje, přeskakuji: ${historyFilePath}`);
+		return historyFilePath;
+	}
 
-		console.log(`[FA Bridge] Historie uložena: ${historyFilePath}`);
+	// KONTROLA 2: Je obsah stejný jako poslední verze?
+	const versions = getFileHistoryVersions(filePath);
+	if (versions.length > 0) {
+		const lastVersion = versions[0]; // Nejnovější verze
+		const currentContent = fs.readFileSync(filePath);
+		const lastContent = fs.readFileSync(lastVersion);
+		
+		if (currentContent.equals(lastContent)) {
+			console.log(`[FA Bridge] Obsah je stejný jako poslední verze, neukládám: ${filePath}`);
+			return lastVersion;
+		}
+	}
+
+	// Obsah je jiný → zkopíruj soubor
+	fs.copyFileSync(filePath, historyFilePath);
+
+	console.log(`[FA Bridge] Historie uložena: ${historyFilePath}`);
 		
 		// Refresh panelu historie pokud je callback nastaven
 		if (refreshHistoryPanelCallback) {

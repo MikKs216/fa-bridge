@@ -1,0 +1,40 @@
+[
+  uuid(B2036E86-9742-45D8-BEF7-DFF0264B3608), 
+  version(1.1), 
+  helpstring("PVTPZP Library version 1.1")
+    
+]
+library PVTPZP_Library
+{
+
+  importlib("stdole2.tlb");
+
+  [
+    uuid(FECB6B1F-302E-4E9D-A472-11091DB69A9E), 
+    version(1.0), 
+    helpstring("Interface for PZPDLL Object version 1.0"), 
+    oleautomation
+  ]
+   interface IPZPDLL: IUnknown
+  {
+    [
+    id(0x00000070)
+    ]
+    HRESULT _stdcall Run([in] BSTR ZP, [in, out] BSTR * ZP_Cert_SN, [in, out] BSTR * ZP_Cert_IDN, [in] BSTR Sluzba, [in] BSTR DataIn, [in] short TimeOut, [in, out] __int64 * ID_Podani, [in, out] BSTR * Chyba, [in, out] BSTR * Varovani, [in, out] BSTR * DataOut, [in, out] BSTR * Debug_internal_warning, [in, out] BSTR * Debug_XML_vyzva, [in, out] BSTR * Debug_XML_odpoved );
+    [
+    id(0x00000065)
+    ]
+    HRESULT _stdcall Init( void );
+  };
+
+  [
+    uuid(1C5A5C35-1409-40C5-8EDF-40AC6913E794), 
+    version(1.0), 
+    helpstring("PZPDLL version 1.0")
+  ]
+  coclass PZPDLL
+  {
+    [default] interface IPZPDLL;
+  };
+
+}; 

@@ -21,8 +21,8 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  mfcr_certificate, xmldom, XMLIntf, msxmldom, XMLDoc, JclShell, JclSysUtils, WinInet,
-  httpsend, ssl_openssl,synautil;
+  mfcr_certificate, mfcr_certificate_adapter, xmldom, XMLIntf, msxmldom, XMLDoc, 
+  JclShell, JclSysUtils, WinInet, httpsend, ssl_openssl, synautil;
 
 type
 
@@ -118,8 +118,8 @@ type
     // Nastaveni proxy serveru
     ProxySettings: TProxySettings;
 
-    // Platne certifikaty pro podpis
-    Certificates: TCertificates;
+    // Platne certifikaty pro podpis (wrapper, ktery podporuje oba zpusoby)
+    Certificates: TCertificatesWrapper;
 
     // Nacteni certifikatu pro podpis
     procedure CertificatesLoad;
@@ -145,7 +145,7 @@ type
 
     // Stav podani
     function DeliveryState(const ReceiptNumber, ReceiptPassword: string;AOpenSSLMode:Boolean = TRUE): TDeliveryState;
-    //Dotaz na stav Offline pod·nÌ
+    //Dotaz na stav Offline podani
     function QueryOfflineState(Id: string; Heslo:string; proxyServer:string; proxyPort:Integer; serverTimeout:Integer; out Vystup:string; AOpenSSLMode:Boolean=TRUE; ATest:Boolean=FALSE ):integer;
     //Vrati seznam chyb
     function GetChybyOffline(Data: string):TReceiptErrors;
@@ -162,7 +162,7 @@ implementation
 
 uses
   ComObj, IdException, Variants, synachar, mfcr_consts, mfcr_utils,
-  mfcr_resources, FCommonUtils;
+  mfcr_resources, FCommonUtils, Main;
 
 function TMFCRModule.GetNodeValue(ANode: IXMLNode; AChildNodeName: string): string;
 var
@@ -193,7 +193,10 @@ begin
   StartWait;
   try
     CertificatesFree;
-    Certificates := TCertificates.Create;
+    
+    // Wrapper automaticky pouzije spravnou implementaci podle nastaveni
+    // Konfigurace se nacita v Main.pas v LoadParamsFromIni
+    Certificates := TCertificatesWrapper.Create(GfaMain.UseFCommAPI, GfaMain.FCommBaseUrl);
   finally
     StopWait;
   end;
@@ -211,6 +214,8 @@ begin
     StopWait;
   end;
 end;
+
+// === POMOCN√â FUNKCE PRO PR√ÅCI S CERTIFIK√ÅTY (funguj√≠ s obƒõma typy) ===
 
 function TMFCRModule.SendDocument(const SignatureFileName,
   ReceiptFileName: string; const AParams: string;
@@ -280,7 +285,7 @@ begin
         ExeName := '"' + ExtractFilePath(Application.ExeName) + 'SSL\sendssl.exe"';
 
         if ANaTestovaciServer then begin
-          {MessageWarn('', 'NynÌ dojde k odesl·nÌ pod·nÌ na testovacÌ server MF', [MBOK]);}
+          {MessageWarn('', 'NynÔøΩ dojde k odeslÔøΩnÔøΩ podÔøΩnÔøΩ na testovacÔøΩ server MF', [MBOK]);}
 
           Command := '"POST" "' + sMFCREPOSendURLtest + AParams + '" "' + FilenameSrc + '" "' + FileNameResult + '" "' +
             iff(ProxySettings.ProxyServer = '', ' ', ProxySettings.ProxyServer) +
@@ -611,7 +616,7 @@ end; {DeliveryStateE}
 
 {-------------------------------------------------------------------------------
   Procedure: GetErrorMessage
-  Author:    Martin Radvansk˝
+  Author:    Martin RadvanskÔøΩ
   DateTime:  2008.01.27
   Arguments: ErrNo: Cardinal; var ErrMsg: string
   Result:    None
@@ -659,7 +664,7 @@ end; {GetErrorMessage}
 
 {-------------------------------------------------------------------------------
   Procedure: TMFCRModule.ShowLastError
-  Author:    Martin Radvansk˝
+  Author:    Martin RadvanskÔøΩ
   DateTime:  2008.01.27
   Arguments: errCode: DWORD
   Result:    None
@@ -670,13 +675,13 @@ var
   sApiError: string;
 begin
   sApiError := GetErrorMessage(errCode);
-  sApiError := 'Chybov˝ kÛd Wininet Api: '+IntToStr(errCode)+#13#10+sApiError;
-  MessageBox(0, PChar(sApiError), 'Chyba p¯i komunikaci s https serverem', MB_OK);
+  sApiError := 'ChybovÔøΩ kÔøΩd Wininet Api: '+IntToStr(errCode)+#13#10+sApiError;
+  MessageBox(0, PChar(sApiError), 'Chyba pÔøΩi komunikaci s https serverem', MB_OK);
 end; {ShowError}
 
 {-------------------------------------------------------------------------------
   Procedure: TMFCRModule.PostToURLQuery
-  Author:    Martin Radvansk˝
+  Author:    Martin RadvanskÔøΩ
   DateTime:  2008.01.27
   Arguments: strURL, strParams: string; streamTelo: TMemoryStream; strHeader: string; var answerPOST: string
   Result:    integer
@@ -855,7 +860,7 @@ end; {PostToURLQuery}
 
 {-------------------------------------------------------------------------------
   Procedure: TMFCRModule.DeliveryStateE2
-  Author:    Martin Radvansk˝
+  Author:    Martin RadvanskÔøΩ
   DateTime:  2008.01.27
   Arguments: const ReceiptNumber, ReceiptPassword: string
   Result:    TDeliveryState
@@ -945,7 +950,7 @@ end; {DeliveryStateE2}
 
 {-------------------------------------------------------------------------------
   Procedure: TMFCRModule.SendDocumentE2
-  Author:    Martin Radvansk˝
+  Author:    Martin RadvanskÔøΩ
   DateTime:  2008.01.27
   Arguments: const SignatureFileName, ReceiptFileName: string; const AParams: string; ANaTestovaciServer: boolean = FALSE
   Result:    TReceiptErrors
@@ -982,7 +987,7 @@ begin
       streamSignature.LoadFromFile(SignatureFileName);
         //ReadTimeout := ServerTimeOut * 1000;
       if ANaTestovaciServer then begin
-        {MessageInfo('', 'NynÌ dojde k ovÏ¯enÌ spr·vnosti pod·nÌ na testovacÌm serveru MF', [MBOK]);}
+        {MessageInfo('', 'NynÔøΩ dojde k ovÔøΩÔøΩenÔøΩ sprÔøΩvnosti podÔøΩnÔøΩ na testovacÔøΩm serveru MF', [MBOK]);}
 
         state_Params := sMFCREPOSendURLtestParams_2 + AParams;
         ResponseCode := PostToURLQuery(sMFCREPOSendURLtest_2, state_Params, streamSignature, '', odpoved);
@@ -1110,11 +1115,11 @@ begin
 
         //ReadTimeout := ServerTimeOut * 1000;
       if ANaTestovaciServer then begin
-        {MessageWarn('', 'NynÌ dojde k odesl·nÌ pod·nÌ na testovacÌ server MF', [MBOK]);}
+        {MessageWarn('', 'NynÔøΩ dojde k odeslÔøΩnÔøΩ podÔøΩnÔøΩ na testovacÔøΩ server MF', [MBOK]);}
 
         odpb:=http.HTTPMethod('POST',sMFCREPOSendURLtest + AParams);
         if not odpb then
-          Exception.Create('Chyba p¯i komunikaci se serverem https')
+          Exception.Create('Chyba pÔøΩi komunikaci se serverem https')
         else
           odpoved := ReadStrFromStream(http.Document,http.Document.Size);
         ResponseCode:=http.ResultCode;
@@ -1126,7 +1131,7 @@ begin
 
         odpb := http.HTTPMethod('POST',sMFCREPOSendURL + AParams);
         if not odpb then
-          Exception.Create('Chyba p¯i komunikaci se serverem https')
+          Exception.Create('Chyba pÔøΩi komunikaci se serverem https')
         else
           odpoved := ReadStrFromStream(http.Document,http.Document.Size);
         ResponseCode:=http.ResultCode;
@@ -1222,7 +1227,7 @@ function TMFCRModule.QueryOfflineState(Id: string; Heslo:string; proxyServer:str
   begin
     if ResponseCode <> 200 then
        raise Exception.CreateFmt(errWSGetRC, [ResponseCode]);
-    //Test toho co p¯iölo
+    //Test toho co pÔøΩiÔøΩlo
     if (Pos('<Pisemnost',odpoved)>0) then begin
       Result:=4; // 4 - uz je prijato   cFillingStateFilled
       Vystup:=odpoved;
@@ -1294,7 +1299,7 @@ function TMFCRModule.QueryOfflineState(Id: string; Heslo:string; proxyServer:str
         else
           odpb:=http.HTTPMethod('POST',Format(sMFCREPOStateOfflineURL, [id, Heslo]));
         if not odpb then
-          Exception.Create('Chyba p¯i komunikaci se serverem https')
+          Exception.Create('Chyba pÔøΩi komunikaci se serverem https')
         else
           odpoved := ReadStrFromStream(http.Document,http.Document.Size);
         ResponseCode:=http.ResultCode;
@@ -1369,7 +1374,7 @@ begin
       ResponseCode := -1;
       odpb:=http.HTTPMethod('POST',Format(sMFCREPOStateURL, [ReceiptNumber, ReceiptPassword]));
       if not odpb then
-        Exception.Create('Chyba p¯i komunikaci se serverem https')
+        Exception.Create('Chyba pÔøΩi komunikaci se serverem https')
       else
         odpoved := ReadStrFromStream(http.Document,http.Document.Size);
       ResponseCode:=http.ResultCode;

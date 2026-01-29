@@ -1,0 +1,123 @@
+===============================================================================
+ZMĚNY - PŘEPÍNÁNÍ MEZI STARÝM A NOVÝM ZPŮSOBEM NAČÍTÁNÍ CERTIFIKÁTŮ
+2026-01-17
+===============================================================================
+
+✅ IMPLEMENTOVÁNO
+
+1. KONFIGURACE PŘES FormStudio.ini
+   - Nová sekce [Certificates]
+   - UseFCommAPI=1/0  (1=nový fcomm API, 0=starý CAPICOM)
+   - FCommBaseUrl=     (pro VM testování)
+
+2. UPRAVENÉ SOUBORY
+
+   a) FormStudio.ini
+      + Přidána sekce [Certificates]
+      + Výchozí: UseFCommAPI=1 (nový způsob)
+
+   b) EElPodDM.pas
+      + uses: přidáno IniFiles, EPMF.mfcr_certificate_api
+      + Certificates: změněno z TCertificates na TObject
+      + CertificatesLoad: čte INI a vytváří správný typ
+      + Přidány pomocné funkce:
+        - GetCertificatesCount()
+        - GetCertificate(Index)
+        - SignDocumentByIndex(Index, ...)
+        - GetCertificateThumbprint(Index)
+
+   c) EPMF\mfcr_certificate_api.pas
+      + Konstruktor TCertificatesAPI.Create(ABaseUrl: string = '')
+      + Podpora pro nastavení BaseUrl pro VM testování
+
+   d) Main.pas
+      + Globální proměnné (zakomentované, používá se INI):
+        - UseFCommAPI: Boolean
+        - FCommBaseUrl: string
+
+3. NOVÁ DOKUMENTACE
+   - KONFIGURACE_CERTIFIKATY.md - kompletní návod
+   - ZMENY_CERTIFIKATY_2026-01-17.txt - tento soubor
+
+===============================================================================
+JAK POUŽÍVAT
+===============================================================================
+
+1. PRODUKČNÍ PROSTŘEDÍ (Windows 10/11 - localhost)
+   
+   FormStudio.ini:
+   [Certificates]
+   UseFCommAPI=1
+   FCommBaseUrl=
+
+2. VM TESTOVÁNÍ (Win7 VM → Win11 fyzický stroj)
+   
+   FormStudio.ini na Win7 VM:
+   [Certificates]
+   UseFCommAPI=1
+   FCommBaseUrl=http://192.168.0.28:54321
+   
+   (Nahraďte IP adresou vašeho fyzického stroje)
+
+3. STARÝ ZPŮSOB (Windows 7 bez fcomm)
+   
+   FormStudio.ini:
+   [Certificates]
+   UseFCommAPI=0
+   FCommBaseUrl=
+
+===============================================================================
+VÝHODY ŘEŠENÍ
+===============================================================================
+
+✅ Jednoduché přepínání - stačí změnit INI soubor
+✅ Není třeba překompilovat aplikaci
+✅ Kompatibilita - oba způsoby mají stejné API
+✅ Automatická detekce - pokud INI neexistuje, použije se nový způsob
+✅ Flexibilní - BaseUrl lze snadno změnit pro VM testování
+
+===============================================================================
+KOMPATIBILITA
+===============================================================================
+
+NOVÝ ZPŮSOB (UseFCommAPI=1):
+- Windows 10/11: fcomm.exe (.NET 9, 64-bit)
+- Windows 7: fcomm-win7.exe (.NET 6, 32-bit)
+- Automatická detekce OS a výběr správné verze
+
+STARÝ ZPŮSOB (UseFCommAPI=0):
+- Windows 7/10/11
+- Vyžaduje CAPICOM.dll
+
+===============================================================================
+TESTOVÁNÍ
+===============================================================================
+
+1. Test nového způsobu (localhost):
+   - Nastavit UseFCommAPI=1, FCommBaseUrl=
+   - Spustit FA
+   - Otevřít elektronické podání
+   - Zkontrolovat načtení certifikátů
+
+2. Test VM (Win7 → Win11):
+   - Na Win11: spustit fcomm server (start-development.bat)
+   - Na Win11: otevřít firewall port 54321
+   - Na Win7 VM: nastavit FCommBaseUrl=http://192.168.0.28:54321
+   - Na Win7 VM: spustit FA a otestovat certifikáty
+
+3. Test starého způsobu:
+   - Nastavit UseFCommAPI=0
+   - Spustit FA
+   - Otevřít elektronické podání
+   - Zkontrolovat načtení certifikátů (CAPICOM)
+
+===============================================================================
+POZNÁMKY PRO VÝVOJÁŘE
+===============================================================================
+
+- Kód v EElPodani.pas NENÍ třeba měnit - používá MFCRModule.Certificates
+- Pomocné funkce v TMFCRModule zajišťují kompatibilitu s oběma typy
+- TCertificatesAPI a TCertificates mají kompatibilní rozhraní
+- Properties certifikátů (SubjectFieldCommonName, ValidToDate, atd.) jsou stejné
+
+===============================================================================

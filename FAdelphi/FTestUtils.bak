@@ -1,0 +1,896 @@
+unit FTestUtils;
+
+interface
+
+uses
+  Classes, SysUtils, DateUtils, Main, FUtils, FCommonUtils, uLkJSON, kbmMemTable, DB;
+
+type
+  /// <summary>
+  /// Informace o prvku formuláře pro generování testovacích dat
+  /// </summary>
+  TFormFieldInfo = record
+    Name: string;           // Název pole
+    FldType: string;        // 'String', 'Number', 'Date', 'Boolean', 'Memo'
+    Left: Integer;          // X souřadnice
+    Top: Integer;           // Y souřadnice
+    PageKey: Integer;       // Číslo stránky formuláře
+  end;
+  
+  TFormFieldInfoArray = array of TFormFieldInfo;
+
+/// <summary>
+/// Hlavní funkce pro generování testovacích dat formuláře.
+/// Načte design ze ZIP archivu, seřadí pole podle pozice a vygeneruje .frm soubor.
+/// </summary>
+/// <param name="AStartNumber">Počáteční hodnota pro číselná pole</param>
+/// <param name="AStartDate">Počáteční datum pro datumová pole</param>
+/// <param name="ACheckBoxValue">Hodnota pro všechny checkboxy (True/False)</param>
+/// <param name="AOutputFileName">Název výstupního .frm souboru (prázdný = automatický)</param>
+/// <returns>True při úspěchu, False při chybě</returns>
+{function GenerateTestFormData(
+  AStartNumber: Integer;
+  AStartDate: TDateTime;
+  ACheckBoxValue: Boolean;
+  const AOutputFileName: string = ''
+): Boolean;}
+
+/// <summary>
+/// Vyplní testovací hodnoty přímo do mtValues s respektováním formátů dat z mtFields.
+/// Podobně jako FillTestValues v Main.pas, ale využívá informace z design.json pro řazení polí.
+/// </summary>
+/// <param name="AStartNumber">Počáteční hodnota pro číselná pole</param>
+/// <param name="AStartDate">Počáteční datum pro datumová pole</param>
+/// <param name="ACheckBoxValue">Hodnota pro všechny checkboxy (True/False)</param>
+/// <param name="AOnlyEmptyFields">Vyplnit pouze prázdná pole (True) nebo všechna pole (False)</param>
+/// <returns>True při úspěchu, False při chybě</returns>
+function FillTestValuesToMtValues-ERR(
+  AStartNumber: Integer;
+  AStartDate: TDateTime;
+  ACheckBoxValue: Boolean;
+  AOnlyEmptyFields: Boolean = False
+): Boolean;
+
+implementation
+
+uses
+  Dialogs, Controls, SPolFunkce;
+
+const
+  ROW_TOLERANCE = 5; // Tolerance v pixelech pro určení, že pole jsou "ve stejném řádku"
+
+/// <summary>
+/// Extrahuje design.json ze ZIP archivu do temp složky a načte jeho obsah
+/// </summary>
+function ExtractDesignJsonFromZip(const ADefID: string; 
+  out AJsonContent: string): Boolean;
+var
+  zipPath: string;
+  tempDir: string;
+  jsonFile: string;
+  sl: TStringList;
+begin
+  Result := False;
+  AJsonContent := '';
+  
+  try
+    // Sestavit cestu k ZIP souboru
+    zipPath := NormalPath(GetExePath) + 'Export\' + ADefID + '.fdx.zip';
+    
+    ShowMessage('DEBUG: Hledám ZIP soubor:' + #13#10 + 
+                'DefID: ' + ADefID + #13#10 +
+                'Cesta: ' + zipPath);
+    
+    if not FileExists(zipPath) then
+    begin
+      ShowMessage('CHYBA: ZIP soubor nenalezen!' + #13#10 + zipPath);
+      Exit;
+    end;
+    
+    ShowMessage('DEBUG: ZIP soubor nalezen!' + #13#10 + zipPath);
+    
+    // Vytvořit temp adresář
+    tempDir := NormalPath(GetExePath) + 'Temp\';
+    if not DirectoryExists(tempDir) then
+      ForceDirectories(tempDir);
+    
+    // Rozbalit ZIP
+    ShowMessage('DEBUG: Rozbaluji ZIP do: ' + tempDir);
+    if not UnzipFile(zipPath, tempDir, '') then
+    begin
+      ShowMessage('CHYBA: Chyba při rozbalování ZIP souboru!');
+      Exit;
+    end;
+    
+    ShowMessage('DEBUG: ZIP rozbalen úspěšně');
+    
+    // Načíst design.json
+    jsonFile := tempDir + ADefID + '.design.json';
+    ShowMessage('DEBUG: Hledám design.json:' + #13#10 + jsonFile);
+    
+    if not FileExists(jsonFile) then
+    begin
+      ShowMessage('CHYBA: Soubor design.json nenalezen v archivu!' + #13#10 + jsonFile);
+      Exit;
+    end;
+    
+    ShowMessage('DEBUG: design.json nalezen!' + #13#10 + jsonFile);
+    
+    sl := TStringList.Create;
+    try
+      sl.LoadFromFile(jsonFile);
+      AJsonContent := sl.Text;
+      ShowMessage('DEBUG: design.json načten, délka: ' + IntToStr(Length(AJsonContent)) + ' znaků');
+      Result := True;
+    finally
+      sl.Free;
+    end;
+    
+    // Smazat temp soubor
+    try
+      DeleteFile(jsonFile);
+    except
+      // Ignorovat chyby při mazání temp souborů
+    end;
+    
+  except
+    on E: Exception do
+    begin
+      ShowMessage('Chyba při extrakci design.json: ' + E.Message);
+      Result := False;
+    end;
+  end;
+end;
+
+/// <summary>
+/// Parsuje JSON a sbírá informace o prvcích formuláře
+/// </summary>
+function ParseDesignJsonAndCollectFields(const AJsonContent: string;
+  var AFields: TFormFieldInfoArray): Boolean;
+var
+  JSONRoot: TlkJSONbase;
+  JSONArray: TlkJSONlist;
+  JSONPage: TlkJSONobject;
+  JSONSection: TlkJSONbase;
+  JSONList: TlkJSONlist;
+  JSONField: TlkJSONobject;
+  i, j, k: Integer;
+  pageKey: Integer;
+  fieldInfo: TFormFieldInfo;
+  sectionName: string;
+  fieldCount: Integer;
+  idx: Integer;
+  debugMsg: string;
+begin
+  Result := False;
+  SetLength(AFields, 0);
+  fieldCount := 0;
+  
+  try
+    // Parsovat JSON
+    JSONRoot := TlkJSON.ParseText(AJsonContent);
+    if JSONRoot = nil then
+    begin
+      ShowMessage('Chyba při parsování JSON');
+      Exit;
+    end;
+    
+    try
+      // Root je pole stránek
+      JSONArray := JSONRoot as TlkJSONlist;
+      
+      // Procházet jednotlivé stránky
+      for i := 0 to JSONArray.Count - 1 do
+      begin
+        JSONPage := JSONArray.Child[i] as TlkJSONobject;
+        if JSONPage = nil then Continue;
+        
+        // Získat PageKey
+        try
+          pageKey := (JSONPage.Field['PageKey'] as TlkJSONnumber).Value;
+        except
+          pageKey := 0;
+        end;
+        
+        // Procházet sekce: TextEditBox, CheckBox, TextMemoBox
+        for j := 0 to JSONPage.Count - 1 do
+        begin
+          sectionName := JSONPage.NameOf[j];
+          
+          // Zpracovat pouze relevantní sekce
+          if (sectionName <> 'TextEditBox') and 
+             (sectionName <> 'CheckBox') and 
+             (sectionName <> 'TextMemoBox') then
+            Continue;
+          
+          JSONSection := JSONPage.Field[sectionName];
+          if JSONSection = nil then Continue;
+          
+          JSONList := JSONSection as TlkJSONlist;
+          if JSONList = nil then Continue;
+          
+          // Procházet prvky v sekci
+          for k := 0 to JSONList.Count - 1 do
+          begin
+            JSONField := JSONList.Child[k] as TlkJSONobject;
+            if JSONField = nil then Continue;
+            
+            // Inicializovat strukturu
+            FillChar(fieldInfo, SizeOf(fieldInfo), 0);
+            fieldInfo.PageKey := pageKey;
+            
+            // Získat Name
+            try
+              fieldInfo.Name := JSONField.Field['Name'].Value;
+            except
+              Continue; // Bez jména pole nelze použít
+            end;
+            
+            // Získat Left
+            try
+              fieldInfo.Left := Trunc((JSONField.Field['Left'] as TlkJSONnumber).Value);
+            except
+              fieldInfo.Left := 0;
+            end;
+            
+            // Získat Top
+            try
+              fieldInfo.Top := Trunc((JSONField.Field['Top'] as TlkJSONnumber).Value);
+            except
+              fieldInfo.Top := 0;
+            end;
+            
+            // Určit typ pole
+            if sectionName = 'CheckBox' then
+              fieldInfo.FldType := 'Boolean'
+            else if sectionName = 'TextMemoBox' then
+              fieldInfo.FldType := 'Memo'
+            else if sectionName = 'TextEditBox' then
+            begin
+              // U TextEditBox zjistit FldType
+              try
+                fieldInfo.FldType := JSONField.Field['FldType'].Value;
+              except
+                fieldInfo.FldType := 'String'; // Výchozí
+              end;
+            end
+            else
+              fieldInfo.FldType := 'String';
+            
+            // Přidat do pole
+            Inc(fieldCount);
+            SetLength(AFields, fieldCount);
+            AFields[fieldCount - 1] := fieldInfo;
+          end;
+        end;
+      end;
+      
+      Result := fieldCount > 0;
+      
+      if not Result then
+      begin
+        ShowMessage('VAROVÁNÍ: V design.json nebyly nalezeny žádné prvky!');
+      end
+      else
+      begin
+        // Zobrazit prvních 10 názvů polí pro kontrolu
+        debugMsg := 'DEBUG: Z design.json načteno polí: ' + IntToStr(fieldCount) + #13#10#13#10 +
+                    'První pole:' + #13#10;
+        if fieldCount > 10 then
+          idx := 10
+        else
+          idx := fieldCount;
+        for i := 0 to idx - 1 do
+          debugMsg := debugMsg + IntToStr(i + 1) + '. "' + AFields[i].Name + '"' + #13#10;
+        ShowMessage(debugMsg);
+      end;
+      
+    finally
+      JSONRoot.Free;
+    end;
+    
+  except
+    on E: Exception do
+    begin
+      ShowMessage('Chyba při parsování JSON: ' + E.Message);
+      Result := False;
+    end;
+  end;
+end;
+
+/// <summary>
+/// Porovnávací funkce pro řazení prvků podle pozice
+/// </summary>
+function CompareFieldsByPosition(const F1, F2: TFormFieldInfo): Integer;
+begin
+  // Primárně podle PageKey
+  Result := F1.PageKey - F2.PageKey;
+  if Result <> 0 then Exit;
+  
+  // Sekundárně podle Top (Y souřadnice)
+  Result := F1.Top - F2.Top;
+  
+  // Pokud jsou přibližně ve stejném řádku (tolerance), seřadit podle Left (X)
+  if Abs(Result) <= ROW_TOLERANCE then
+    Result := F1.Left - F2.Left;
+end;
+
+/// <summary>
+/// Seřadí pole prvků podle jejich pozice na formuláři
+/// (shora dolů, zleva doprava v řádcích)
+/// </summary>
+procedure SortFieldsByPosition(var AFields: TFormFieldInfoArray);
+var
+  i, j: Integer;
+  temp: TFormFieldInfo;
+  swapped: Boolean;
+begin
+  // Bubble sort - jednoduché a dostatečné pro menší počet prvků
+  for i := 0 to High(AFields) - 1 do
+  begin
+    swapped := False;
+    for j := 0 to High(AFields) - i - 1 do
+    begin
+      if CompareFieldsByPosition(AFields[j], AFields[j + 1]) > 0 then
+      begin
+        temp := AFields[j];
+        AFields[j] := AFields[j + 1];
+        AFields[j + 1] := temp;
+        swapped := True;
+      end;
+    end;
+    if not swapped then Break;
+  end;
+end;
+
+/// <summary>
+/// Generuje hodnotu pro pole podle jeho typu
+/// </summary>
+function GenerateFieldValue(const AFieldType: string;
+  var ANumberCounter: Integer;
+  var ADateCounter: TDateTime;
+  ACheckBoxValue: Boolean): string;
+begin
+  if AFieldType = 'Number' then
+  begin
+    Result := IntToStr(ANumberCounter);
+    Inc(ANumberCounter);
+  end
+  else if AFieldType = 'Date' then
+  begin
+    Result := DateToStr(ADateCounter);
+    ADateCounter := IncDay(ADateCounter, 1);
+  end
+  else if AFieldType = 'Boolean' then
+  begin
+    if ACheckBoxValue then
+      Result := 'True'
+    else
+      Result := 'False';
+  end
+  else if AFieldType = 'Memo' then
+  begin
+    Result := 'Memo text ' + IntToStr(ANumberCounter);
+    Inc(ANumberCounter);
+  end
+  else // String a ostatní
+  begin
+    Result := 'Text' + IntToStr(ANumberCounter);
+    Inc(ANumberCounter);
+  end;
+end;
+
+/// <summary>
+/// Vytvoří sekci [FormHead] pro FRM soubor
+/// </summary>
+function CreateTestFormHead(const ADefID: string): string;
+var
+  sl: TStringList;
+  newGUID: string;
+begin
+  sl := TStringList.Create;
+  try
+    // Vygenerovat nový GUID
+    newGUID := CreateGUIDString;
+    
+    sl.Add('[FormHead]');
+    sl.Values['ID'] := newGUID;
+    sl.Values['GUID'] := newGUID;
+    sl.Values['MasterGuid'] := '';
+    sl.Values['DefID'] := ADefID;
+    sl.Values['DefVersion'] := '1.0';
+    sl.Values['Period'] := FormatDateTime('yyyy', Now);
+    sl.Values['Group'] := '';
+    sl.Values['SubGroup'] := '';
+    sl.Values['CreateDate'] := DateToStr(Now);
+    sl.Values['ModifiedDate'] := DateToStr(Now);
+    sl.Values['ModifiedTime'] := TimeToStr(Now);
+    sl.Values['Autor'] := 'TEST_GENERATOR';
+    sl.Values['Locked'] := 'False';
+    sl.Values['WorkState'] := '0';
+    sl.Add('');
+    
+    Result := sl.Text;
+  finally
+    sl.Free;
+  end;
+end;
+
+/// <summary>
+/// Hlavní funkce pro generování testovacích dat
+/// </summary>
+{function GenerateTestFormData(
+  AStartNumber: Integer;
+  AStartDate: TDateTime;
+  ACheckBoxValue: Boolean;
+  const AOutputFileName: string
+): Boolean;
+var
+  defID: string;
+  jsonContent: string;
+  fields: TFormFieldInfoArray;
+  i: Integer;
+  numberCounter: Integer;
+  dateCounter: TDateTime;
+  outputFile: string;
+  frmContent: string;
+  sl: TStringList;
+begin
+  Result := False;
+  
+  try
+    // Získat DefID z GfaMain
+    if GfaMain = nil then
+    begin
+      ShowMessage('GfaMain není inicializován');
+      Exit;
+    end;
+    
+    if not GfaMain.mtDef.Active then
+    begin
+      ShowMessage('Definice formuláře není načtena');
+      Exit;
+    end;
+    
+    defID := GfaMain.mtDefID.AsString;
+    if defID = '' then
+    begin
+      ShowMessage('DefID není definováno');
+      Exit;
+    end;
+    
+    // Extrahovat design.json ze ZIP
+    if not ExtractDesignJsonFromZip(defID, jsonContent) then
+      Exit;
+    
+    // Parsovat JSON a sbírat prvky
+    if not ParseDesignJsonAndCollectFields(jsonContent, fields) then
+      Exit;
+    
+    // Seřadit prvky podle pozice
+    SortFieldsByPosition(fields);
+    
+    // Inicializovat čítače
+    numberCounter := AStartNumber;
+    dateCounter := AStartDate;
+    
+    // Vytvořit FRM strukturu
+    sl := TStringList.Create;
+    try
+      // Hlavička [FormHead]
+      frmContent := CreateTestFormHead(defID);
+      
+      // Sekce [Values]
+      sl.Add('[Values]');
+      for i := 0 to Length(fields) - 1 do
+      begin
+        sl.Values[fields[i].Name] := GenerateFieldValue(
+          fields[i].FldType,
+          numberCounter,
+          dateCounter,
+          ACheckBoxValue
+        );
+      end;
+      sl.Add('');
+      
+      frmContent := frmContent + sl.Text;
+      
+      // Určit název výstupního souboru
+      if AOutputFileName <> '' then
+        outputFile := AOutputFileName
+      else
+        outputFile := NormalPath(GetExePath) + 'Export\' + defID + '_test.frm';
+      
+      // Uložit do souboru
+      SaveStringToFile(frmContent, outputFile);
+      
+      ShowMessage('Testovací data vygenerována do: ' + outputFile + #13#10 +
+                  'Počet polí: ' + IntToStr(Length(fields)));
+      
+      Result := True;
+      
+    finally
+      sl.Free;
+    end;
+    
+  except
+    on E: Exception do
+    begin
+      ShowMessage('Chyba při generování testovacích dat: ' + E.Message);
+      Result := False;
+    end;
+  end;
+end;
+}
+/// <summary>
+/// Generuje náhodný text o zadané délce
+/// </summary>
+function GenerateRandomText(ALength: Integer; AGenNumber: boolean = False): string;
+const
+  Chars = 'abcdefghijklmnopqrstuvwxyz';
+  CharsN = '0123456789';
+var
+  i: Integer;
+  str: string;
+begin
+  str := Chars;
+  if AGenNumber then
+    str := CharsN;
+  //
+  Randomize;
+  Result := '';
+  for i := 1 to ALength do
+    Result := Result + str[Random(Length(str)) + 1];
+end;
+
+/// <summary>
+/// Vyplní testovací hodnoty přímo do mtValues s respektováním formátů dat z mtFields
+/// </summary>
+function FillTestValuesToMtValues-ERR(
+  AStartNumber: Integer;
+  AStartDate: TDateTime;
+  ACheckBoxValue: Boolean;
+  AOnlyEmptyFields: Boolean
+): Boolean;
+var
+  defID: string;
+  jsonContent: string;
+  fields: TFormFieldInfoArray;
+  i: Integer;
+  j: Double;
+  numberCounter: Integer;
+  dateCounter: TDateTime;
+  field: TField;
+  prec: Integer;
+  strIsInt: Boolean;
+  dat: TDateTime;
+  y: Integer;
+  fieldsCount: Integer;
+  processedCount: Integer;
+  debugMsg: string;
+begin
+  Result := False;
+  
+  try
+    // Získat DefID z GfaMain
+    if GfaMain = nil then
+    begin
+      ShowMessage('GfaMain není inicializován');
+      Exit;
+    end;
+    
+    if not GfaMain.mtDef.Active then
+    begin
+      ShowMessage('Definice formuláře není načtena');
+      Exit;
+    end;
+    
+    if not GfaMain.mtValues.Active then
+    begin
+      ShowMessage('mtValues není aktivní');
+      Exit;
+    end;
+    
+    if not GfaMain.mtFields.Active then
+    begin
+      ShowMessage('mtFields není aktivní');
+      Exit;
+    end;
+    
+    defID := GfaMain.mtDefID.AsString;
+    if defID = '' then
+    begin
+      ShowMessage('DefID není definováno');
+      Exit;
+    end;
+    
+    // Extrahovat design.json ze ZIP
+    if not ExtractDesignJsonFromZip(defID, jsonContent) then
+    begin
+      ShowMessage('CHYBA: Nelze načíst design.json!' + #13#10 +
+                  'DefID: ' + defID + #13#10 +
+                  'Očekávaná cesta: Export\' + defID + '.fdx.zip' + #13#10#13#10 +
+                  'Generování testovacích dat zrušeno.' + #13#10 +
+                  'Zkontrolujte, zda máte správné DefID a ZIP soubor existuje.');
+      Exit;
+    end;
+    
+    // Parsovat JSON a sbírat prvky
+    if not ParseDesignJsonAndCollectFields(jsonContent, fields) then
+    begin
+      ShowMessage('CHYBA: Nelze parsovat design.json!' + #13#10 +
+                  'DefID: ' + defID + #13#10#13#10 +
+                  'Generování testovacích dat zrušeno.' + #13#10 +
+                  'Soubor design.json může být poškozen.');
+      Exit;
+    end;
+    
+    // Seřadit prvky podle pozice
+    SortFieldsByPosition(fields);
+    
+    // Zkontrolovat, zda design.json obsahuje všechna pole
+    fieldsCount := Length(fields);
+    
+    ShowMessage('DEBUG: Kontrola polí:' + #13#10 +
+                'DefID: ' + defID + #13#10 +
+                'Pole v mtValues: ' + IntToStr(GfaMain.mtValues.Fields.Count) + #13#10 +
+                'Pole v design.json: ' + IntToStr(fieldsCount));
+    
+    if fieldsCount = 0 then
+    begin
+      ShowMessage('VAROVÁNÍ: design.json neobsahuje žádná pole!' + #13#10 +
+                  'DefID: ' + defID + #13#10 +
+                  'ZIP: Export\' + defID + '.fdx.zip' + #13#10#13#10 +
+                  'Pole budou naplněna v pořadí z mtValues (bez řazení podle pozice).');
+    end
+    else
+    begin
+      // Zjistit počet polí v mtValues a porovnat
+      if GfaMain.mtValues.Active and (GfaMain.mtValues.Fields.Count > fieldsCount) then
+      begin
+        ShowMessage('VAROVÁNÍ: design.json neobsahuje všechna pole!' + #13#10 +
+                    'Pole v mtValues: ' + IntToStr(GfaMain.mtValues.Fields.Count) + #13#10 +
+                    'Pole v design.json: ' + IntToStr(fieldsCount) + #13#10 +
+                    'DefID: ' + defID + #13#10#13#10 +
+                    'Některá pole mohou být naplněna v nesprávném pořadí.');
+      end
+      else if GfaMain.mtValues.Active and (GfaMain.mtValues.Fields.Count = fieldsCount) then
+      begin
+        ShowMessage('DEBUG: Počet polí souhlasí! Začínám generování...');
+      end;
+    end;
+    
+    // Inicializovat čítače
+    numberCounter := AStartNumber;
+    dateCounter := AStartDate;
+    j := 0.11;
+    
+    // DEBUG: Zobrazit prvních 5 polí, která budeme zpracovávat
+    // (MUSÍ být před with blokem, protože mtValues.Fields stíní naši proměnnou fields)
+    if fieldsCount > 0 then
+    begin
+      debugMsg := 'DEBUG: Začínám zpracovávat pole:' + #13#10;
+      y := fieldsCount - 1;
+      if y > 4 then
+        y := 4;
+      for i := 0 to y do
+        debugMsg := debugMsg + IntToStr(i + 1) + '. "' + fields[i].Name + '" (Type: ' + fields[i].FldType + ')' + #13#10;
+      ShowMessage(debugMsg);
+    end;
+    
+    // Zajistit, že máme záznam v mtValues
+    with GfaMain.mtValues do
+    begin
+      if not Active then
+        Open;
+        
+      if RecordCount = 0 then
+        Append
+      else
+        Edit;
+      
+      // Procházet pole v pořadí podle design.json (seřazená pole)
+      processedCount := 0;
+      
+      for i := 0 to fieldsCount - 1 do
+      begin
+        // Najít pole v mtValues podle jména
+        field := FindField(fields[i].Name);
+        if field = nil then
+        begin
+          ShowMessage('DEBUG: Pole "' + fields[i].Name + '" neexistuje v mtValues');
+          Continue; // Pole neexistuje v mtValues
+        end;
+        
+        // Pokud máme nastaveno vyplňovat pouze prázdná pole, přeskočit neprázdná
+        if AOnlyEmptyFields and (field.AsString <> '') then
+        begin
+          ShowMessage('DEBUG: Přeskakuji neprázdné pole "' + field.FieldName + '"');
+          Continue;
+        end;
+        
+        // Počítat zpracovaná pole
+        Inc(processedCount);
+        
+        // Zkusit najít informace o poli v mtFields
+        if GfaMain.mtFields.FindKey([UpperCase(field.FieldName)]) then
+        begin
+          // Pole bylo nalezeno v mtFields - použít informace o formátu
+          
+          // String pole
+          if field is TStringField then
+          begin
+            if GfaMain.mtFieldsDataType.Value = cStringTypeValue then
+            begin
+              strIsInt := (Pos('#', GfaMain.mtFieldsDisplayFormat.AsString) > 0);
+              prec := GfaMain.mtFieldsDataTypeLength.Value;
+              if prec = 0 then
+                prec := 5;
+              
+              if strIsInt then
+              begin
+                // Číselný formát - generovat číslo s případným paddingem
+                field.Value := IntToStr(numberCounter);
+                ShowMessage('DEBUG: Pole "' + field.FieldName + '" nastaveno na: "' + IntToStr(numberCounter) + '"');
+              end
+              else
+              begin
+                // Textový formát - generovat text s pořadovým číslem
+                if Pos('^', GfaMain.mtFieldsDisplayFormat.AsString) > 0 then
+                begin
+                  field.Value := 'TEXT' + IntToStr(numberCounter);
+                  ShowMessage('DEBUG: Pole "' + field.FieldName + '" nastaveno na: "TEXT' + IntToStr(numberCounter) + '"');
+                end
+                else
+                begin
+                  field.Value := 'Text' + IntToStr(numberCounter);
+                  ShowMessage('DEBUG: Pole "' + field.FieldName + '" nastaveno na: "Text' + IntToStr(numberCounter) + '"');
+                end;
+              end;
+            end
+            else
+              field.Value := IntToStr(numberCounter);
+            Inc(numberCounter);
+          end
+          // Memo pole
+          else if field is TMemoField then
+          begin
+            // Pokusit se naplnit memo pole (ignorovat chyby u ListBoxů)
+            try
+              field.Value := IntToStr(numberCounter) + #13#10 + 'memo';
+              Inc(numberCounter);
+            except
+              // Ignorovat chyby (např. u ListBoxů)
+            end;
+          end
+          // Číselná pole (Float)
+          else if field is TFloatField then
+          begin
+            if (GfaMain.mtFieldsDataType.Value = cNumericTypeValue) or
+               (GfaMain.mtFieldsDataType.Value = cCurrencyTypeValue) then
+            begin
+              prec := GfaMain.mtFieldsDataTypeLength.Value;
+              if prec = 0 then
+                prec := 15;
+              field.Value := RoundAri(numberCounter + j, -1 * prec);
+            end
+            else
+              field.Value := RoundAri(numberCounter + j, -2);
+            j := j + 0.01;
+            Inc(numberCounter);
+          end
+          // Celá čísla
+          else if field is TIntegerField then
+          begin
+            field.Value := numberCounter;
+            Inc(numberCounter);
+          end
+          // Datum
+          else if field is TDateField then
+          begin
+            if GfaMain.mtFieldsDataType.Value = cDateTypeValue then
+            begin
+              dat := dateCounter;
+              field.Value := dat;
+              dateCounter := IncDay(dateCounter, 1);
+            end
+            else
+            begin
+              dat := Date;
+              field.Value := dat + numberCounter;
+            end;
+            Inc(numberCounter);
+          end
+          // Boolean
+          else if field is TBooleanField then
+          begin
+            if GfaMain.mtFieldsDataType.Value = cBooleanTypeValue then
+              field.Value := ACheckBoxValue
+            else
+              field.Value := False;
+            // Boolean nepoužívá čítač
+          end;
+        end
+        else
+        begin
+          // Pole nebylo nalezeno v mtFields - použít výchozí generování podle typu pole
+          if field is TStringField then
+          begin
+            field.Value := IntToStr(numberCounter);
+            Inc(numberCounter);
+          end
+          else if field is TMemoField then
+          begin
+            try
+              field.Value := IntToStr(numberCounter) + #13#10 + 'memo';
+              Inc(numberCounter);
+            except
+              // Ignorovat chyby (např. u ListBoxů)
+            end;
+          end
+          else if field is TFloatField then
+          begin
+            field.Value := RoundAri(numberCounter + j, -2);
+            j := j + 0.01;
+            Inc(numberCounter);
+          end
+          else if field is TIntegerField then
+          begin
+            field.Value := numberCounter;
+            Inc(numberCounter);
+          end
+          else if field is TDateField then
+          begin
+            dat := Date;
+            field.Value := dat + numberCounter;
+            Inc(numberCounter);
+          end
+          else if field is TBooleanField then
+            field.Value := ACheckBoxValue;
+        end;
+      end;
+      
+      // Poznámka: Druhý průchod (pro pole mimo design.json) byl odstraněn,
+      // protože způsoboval problémy s pořadím - pole byla číslována s mezerami.
+      // Všechna pole MUSÍ být v design.json, jinak nebudou naplněna.
+      // Pokud design.json chybí nebo je neúplný, zobrazí se varování výše.
+      
+      ShowMessage('DEBUG: Před Post:' + #13#10 +
+                  'Zpracováno polí: ' + IntToStr(processedCount) + ' z ' + IntToStr(fieldsCount) + #13#10 +
+                  'Celkem polí v mtValues: ' + IntToStr(Fields.Count) + #13#10 +
+                  'Stav mtValues: ' + IntToStr(Ord(State)));
+    end;
+    
+    // DŮLEŽITÉ: Použít TryPostMtValues místo obyčejného Post
+    // (automaticky volá SetChangeFlag a kontroluje stav)
+    try
+      ShowMessage('DEBUG: Volám TryPostMtValues...');
+      GfaMain.TryPostMtValues;
+      ShowMessage('DEBUG: TryPostMtValues dokončen' + #13#10 +
+                  'Stav: ' + IntToStr(Ord(GfaMain.mtValues.State)));
+    except
+      on E: Exception do
+      begin
+        ShowMessage('CHYBA při TryPostMtValues: ' + E.Message);
+        raise;
+      end;
+    end;
+    
+    // DŮLEŽITÉ: Po změnách v mtValues je potřeba refreshnout data
+    // (stejně jako v Main.pas po SetAddedValuesData)
+    ShowMessage('DEBUG: Volám Refresh...');
+    GfaMain.mtValues.Refresh;
+    ShowMessage('DEBUG: Refresh dokončen');
+    
+    Result := True;
+    
+  except
+    on E: Exception do
+    begin
+      ShowMessage('Chyba při vyplňování testovacích hodnot: ' + E.Message);
+      Result := False;
+    end;
+  end;
+end;
+
+end.

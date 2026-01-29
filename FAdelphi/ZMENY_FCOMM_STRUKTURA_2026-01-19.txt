@@ -1,0 +1,155 @@
+===============================================================================
+ZMENY: Reorganizace FComm unity do samostatne slozky
+Datum: 2026-01-19
+===============================================================================
+
+DUVOD
+-----
+FComm utility by mely byt zcela nezavisle na projektu FA, podobne jako EPMF
+slozka. Umoznuje to pouziti v jakemkoliv Delphi projektu a lepsi separaci
+zodpovednosti.
+
+PROVEDENO
+---------
+
+1. VYTVORENA SLOZKA FComm/
+   - Nova samostatna slozka pro FComm infrastrukturu
+   - Stejny princip jako EPMF/ slozka
+
+2. PRESUNUTY SOUBORY:
+   FAdelphi/FCommHttpClient.pas   → FAdelphi/FComm/FCommHttpClient.pas
+   FAdelphi/FCommLifecycle.pas    → FAdelphi/FComm/FCommLifecycle.pas
+   FAdelphi/FCommJsonHelper.pas   → FAdelphi/FComm/FCommJsonHelper.pas
+
+3. SMAZAN FCommPlatform.pas
+   - Zbytecny overhead po odstraneni Windows 7 podpory
+   - Funkce GetFCommExePath() presunuta jako private do FCommLifecycle.pas
+
+4. UPRAVENY USES:
+   
+   EPMF\mfcr_certificate_api.pas:
+   - Pridano do uses: FCommHttpClient, FCommJsonHelper, FCommLifecycle
+   - Nutne pridat FComm\ do Search Path v Delphi IDE
+   
+   FComm\FCommLifecycle.pas:
+   - ODSTRANENO: uses FCommPlatform
+   - PRIDANO: private function GetFCommExePath: string;
+
+5. NOVA DOKUMENTACE:
+   + FComm/README_FCOMM.md - Kompletni dokumentace FComm infrastruktury
+
+STRUKTURA PO ZMENACH
+---------------------
+
+FAdelphi/
+├── EPMF/                          # MFCR specificke moduly
+│   ├── mfcr_certificate.pas       (stary CAPICOM)
+│   ├── mfcr_certificate_api.pas   (novy fcomm API)
+│   └── mfcr_certificate_adapter.pas
+│
+├── FComm/                         # Obecna FComm infrastruktura
+│   ├── FCommHttpClient.pas        (HTTP klient)
+│   ├── FCommJsonHelper.pas        (JSON parsing)
+│   ├── FCommLifecycle.pas         (lifecycle management)
+│   └── README_FCOMM.md
+│
+├── Main.pas
+├── EElPodDM.pas
+└── ... (ostatni FA unify)
+
+ZAVISLOSTI
+----------
+
+FComm/ unity:
+- ✅ Zadne zavislosti na FA projektu
+- ✅ Pouze standardni Delphi RTL + Indy
+- ✅ Lze pouzit v jakemkoliv projektu
+
+EPMF/ unity:
+- ✅ Zavislost na FComm/ (uses FComm.*)
+- ✅ Zavislost na spolecnych FA unitech (mfcr_utils, FCommonUtils)
+
+FA hlavni projekt:
+- ✅ Zavislost na EPMF/ (uses EPMF.mfcr_certificate_adapter)
+- ✅ Indirektni zavislost na FComm/ (pres EPMF)
+
+VYHODY NOVE STRUKTURY
+----------------------
+
+1. ✅ MODULARITA
+   - FComm/ lze pouzit samostatne v jinych projektech
+   - Jasna separace: FComm (infrastruktura) vs EPMF (business logika)
+
+2. ✅ NEZAVISLOST
+   - FComm/ nema zadne zavislosti na FA
+   - Lze predat tretim stranam bez celeho FA projektu
+
+3. ✅ CITELNOST
+   - Jasna hierarchie: FComm → EPMF → FA
+   - Podobna struktura jako jine moduly (EPMF)
+
+4. ✅ UDRZBA
+   - Zmeny v FComm/ neovlivnuji FA (pokud je zachovano API)
+   - Jednodussi testovani (mozne otestovat FComm/ samostatne)
+
+5. ✅ ZJEDNODUSENI
+   - FCommPlatform.pas uz neni potreba
+   - GetFCommExePath() primo v FCommLifecycle.pas
+
+POUZITI V JINYCH PROJEKTECH
+----------------------------
+
+Pro pouziti FComm/ v jinem Delphi projektu:
+
+1. Zkopirovat slozku FComm/ do projektu
+2. Pridat do Search Path:
+   Project → Options → Directories/Conditionals → Search path
+   Pridat: FComm\
+
+3. Uses:
+   uses
+     FCommHttpClient,
+     FCommJsonHelper,
+     FCommLifecycle;
+
+4. Pouzit:
+   var Lifecycle: TFCommLifecycle;
+   begin
+     Lifecycle := TFCommLifecycle.Create;
+     try
+       Lifecycle.Start(''); // Najde fcomm.exe automaticky
+       // ... prace s API
+     finally
+       Lifecycle.Free;
+     end;
+   end;
+
+KOMPATIBILITA
+-------------
+
+✅ Zpetne kompatibilni - uses sekce zustava stejna
+✅ Nutne pridat FComm\ do Search Path v Delphi IDE
+✅ Zadne zmeny v FA hlavnim projektu (jen EPMF aktualizovano)
+
+NASTAVENI SEARCH PATH V DELPHI
+-------------------------------
+
+V Delphi IDE:
+  Project → Options → Directories/Conditionals → Search path
+  Pridat: FComm\  (relativni cesta k FComm slozce)
+
+USES SEKCE
+----------
+
+Uses sekce zustava stejna - bez prefixu FComm.:
+
+  uses FCommHttpClient, FCommLifecycle, FCommJsonHelper;
+
+TESTOVANI
+---------
+
+1. Zkompilovat FA projekt
+2. Overit, ze vse funguje beze zmen
+3. Test certifikatu (UseFCommAPI=1)
+
+===============================================================================

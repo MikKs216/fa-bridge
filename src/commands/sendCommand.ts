@@ -3,7 +3,6 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as child_process from 'child_process';
 import { writeFACommand, getFafieldPath, getFacmdPath, getFsBridgeWorkspaceRoot, getFAInstanceNotFoundMessage } from '../utils/fsBridge';
-import { saveFileHistory } from '../utils/fileHistory';
 import { getIntelliSenseProvider } from '../providers/PascalIntelliSenseProvider';
 
 /**
@@ -74,10 +73,8 @@ export async function ulozitSoubor(): Promise<void> {
 		// Pokud soubor obsahuje změny, ulož ho
 		if (document.isDirty) {
 			// Použij VS Code WorkspaceEdit API pro uložení - vyvolá standardní save flow včetně onDidSaveTextDocument eventu
-			// Local History extension reaguje na tento event
+			// onDidSaveTextDocument listener se automaticky postará o uložení historie pro .pas soubory
 			await document.save();
-			// Ulož historii PO úspěšném uložení
-			await saveFileHistory(document.fileName);
 			
 			// Aktivuj FA pouze pokud soubor odpovídá FA instanci
 			if (hasFAInstance) {

@@ -18,20 +18,20 @@ type
     constructor Create;
     destructor Destroy; override;
     
-    /// <summary>
-    /// Zkontroluje, zda fcomm API server běží
-    /// </summary>
-    function HealthCheck: Boolean;
+  /// <summary>
+  /// Zkontroluje, zda fcomm API server běží
+  /// </summary>
+  function HealthCheck: Boolean;
     
     /// <summary>
     /// Provede HTTP GET request
     /// </summary>
     function Get(const Endpoint: string): string;
     
-    /// <summary>
-    /// Provede HTTP POST request s JSON tělem
-    /// </summary>
-    function Post(const Endpoint, JsonBody: string): string;
+  /// <summary>
+  /// Provede HTTP POST request s JSON tělem
+  /// </summary>
+  function Post(const Endpoint, JsonBody: string): string;
     
     property BaseUrl: string read FBaseUrl write FBaseUrl;
     property Timeout: Integer read FTimeout write FTimeout;
@@ -44,6 +44,8 @@ implementation
 constructor TFCommHttpClient.Create;
 begin
   inherited Create;
+  // Výchozí localhost pro produkční prostředí
+  // Pro VM testování z Win7 použij: SetBaseUrl('http://192.168.0.28:54321')
   FBaseUrl := 'http://127.0.0.1:54321';
   FTimeout := 5000; // 5 sekund default
   
@@ -86,7 +88,7 @@ begin
   Response := TStringStream.Create('');
   try
     FHTTP.Get(FBaseUrl + Endpoint, Response);
-    Result := UTF8Decode(Response.DataString);
+    Result := Response.DataString;
   finally
     Response.Free;
   end;
@@ -106,7 +108,7 @@ begin
   Response := TStringStream.Create('');
   try
     FHTTP.Post(FBaseUrl + Endpoint, Request, Response);
-    Result := UTF8Decode(Response.DataString);
+    Result := Response.DataString;
   finally
     Request.Free;
     Response.Free;

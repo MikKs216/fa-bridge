@@ -1,4 +1,7 @@
-﻿{ 14.1.2026 10:33:47 (GMT+1:00) > [mik on WIN-48QDB6JAV23] checked in Zrychleni buildu z curosru  }
+﻿{ 27.1.2026 17:17:53 (GMT+1:00) > [mik on WIN-48QDB6JAV23] checked in Oprava F2 do cursoru  }
+{ 26.1.2026 20:23:50 (GMT+1:00) > [mik on WIN-48QDB6JAV23] checked in Oprava pro build FS  }
+{ 26.1.2026 20:20:15 (GMT+1:00) > [mik on WIN-48QDB6JAV23] checked in Generovani testovacich hodnot  }
+{ 14.1.2026 10:33:47 (GMT+1:00) > [mik on WIN-48QDB6JAV23] checked in Zrychleni buildu z curosru  }
 { 9.1.2026 12:22:52 (GMT+1:00) > [mik on WIN-48QDB6JAV23] checked in Oprava exportu EPO na disk, ve funkci OpenPortalCSSZ  }
 { 30.12.2025 20:58:06 (GMT+1:00) > [mik on WIN-48QDB6JAV23] checked in Dalsi upravy pro cursor  }
 { 17.12.2025 20:15:13 (GMT+1:00) > [mik on WIN-48QDB6JAV23] checked in Oprava  #7000  }
@@ -56,7 +59,7 @@
 { 15.6.2021 11:20:42 (GMT+2:00) > [marek on WIN-48QDB6JAV23] checked in Doplneny+upraveny funkce pro prevod do TMS  }
 { 8.2.2021 14:57:10 (GMT+1:00) > [mik on WIN-48QDB6JAV23] checked in Zmena hlaseni neopravnene chyby #4132  }
 { 19.1.2021 23:45:00 (GMT+1:00) > [marek on WIN-48QDB6JAV23] checked in V procedure EmptyMemTable se nyni rusi filter a nastavuje DefaultFormat.  }
-{ 29.12.2020 16:17:22 (GMT+1:00) > [marek on WIN-48QDB6JAV23] checked in Zmena porad� vkladani knihovny TatFCommonUtilsLibrary do TMS skripteru (musi nasledovat az za TatJclStringsLibrary)  }
+{ 29.12.2020 16:17:22 (GMT+1:00) > [marek on WIN-48QDB6JAV23] checked in Zmena poradi vkladani knihovny TatFCommonUtilsLibrary do TMS skripteru (musi nasledovat az za TatJclStringsLibrary)  }
 { 15.12.2020 16:09:29 (GMT+1:00) > [mik on WIN-48QDB6JAV23] checked in Pri spousteni s parametrem pro tisk se neakceptovala pripona frmx #4029  }
 { 8.12.2020 17:32:44 (GMT+1:00) > [marek on WIN-48QDB6JAV23] checked in Oprava nazvu konstanty ve funkci GetPredmetForDSEPO pro stary skripter  }
 { 7.12.2020 19:09:42 (GMT+1:00) > [mik on WIN-48QDB6JAV23] checked in Doplneny funkce PrilohyForDSEPO a PredmetForDSEPO  }
@@ -86,7 +89,7 @@
 { 12.8.2020 11:05:37 (GMT+2:00) > [mik on WIN-48QDB6JAV23] checked in Prace na permanentnim okne FA  }
 { 24.7.2020 12:14:38 (GMT+2:00) > [mik on WIN-48QDB6JAV23] checked in Oprava preklepu  }
 { 24.7.2020 12:11:29 (GMT+2:00) > [mik on WIN-48QDB6JAV23] checked in Rozpracovane permanentni okna FA  }
-{ 12.3.2020 14:41:02 (GMT+1:00) > [marek on WIN-48QDB6JAV23] checked in do funkce SendISDSOrEmail doplnena inicializace SaveDialogu.InitialDir.\\Oprava funkce EvaluateByMethodNameParam, u nov�ho TMS skriptru nesmi byt otocene poradi parametru, jako u stareho skriptru + doplneno VaroToStr  }
+{ 12.3.2020 14:41:02 (GMT+1:00) > [marek on WIN-48QDB6JAV23] checked in do funkce SendISDSOrEmail doplnena inicializace SaveDialogu.InitialDir.\\Oprava funkce EvaluateByMethodNameParam, u nového TMS skriptru nesmi byt otocene poradi parametru, jako u stareho skriptru + doplneno VaroToStr  }
 { 6.1.2020 15:47:25 (GMT+1:00) > [marek on WIN-48QDB6JAV23] checked in Ve funkci na prevedeni designu do noveho tms formatu se odpojuje udalost OnActivate hlavniho formulare.  }
 { 16.12.2019 13:29:18 (GMT+1:00) > [mik on WIN-48QDB6JAV23] checked in #3561  }
 { 12.12.2019 14:47:07 (GMT+1:00) > [marek on WIN-48QDB6JAV23] checked in v procedure tms_kbMTGetFieldValueProc doplnena podminka na float a currency  }
@@ -259,7 +262,7 @@
 { 2.10.2012 8:33:49 (GMT+2:00) > [mik] checked in   }
 { 2.10.2012 8:29:30 (GMT+2:00) > [mik] checked in   }
 { 26.9.2012 15:22:59 (GMT+2:00) > [pinkava on PINKAVA-XP1] checked in    }
-{ 26.9.2012 14:29:25 (GMT+2:00) > [mipi on MIK-VIRTUAL2007] checked in Zm�na MessageInfo  }
+{ 26.9.2012 14:29:25 (GMT+2:00) > [mipi on MIK-VIRTUAL2007] checked in Změna MessageInfo  }
 { 14.9.2012 15:48:21 (GMT+2:00) > [mik] checked in   }
 { 31.8.2012 16:09:49 (GMT+2:00) > [mik] checked in   }
 { 3.8.2012 15:55:31 (GMT+2:00) > [mik] checked in   }
@@ -282,7 +285,7 @@
 { 3.8.2011 10:11:50 (GMT+2:00) > [mik] checked in Doplneno EP do menu pro formulare registrace  }
 { 23.6.2011 15:30:08 (GMT+2:00) > [mik] checked in Dynamicke menu FileFunction1 az 3  }
 { 9. 3. 2011 14:00:04 (GMT+1:00) > [mik] checked in Oprava DateFormat  }
-{ 18.2.2011 14:09:45 (GMT+1:00) > [mik] checked in Dopln�na funkce na vyber certifikatu  }
+{ 18.2.2011 14:09:45 (GMT+1:00) > [mik] checked in Doplněna funkce na vyber certifikatu  }
 { 14.2.2011 9:50:34 (GMT+1:00) > [mik] checked in Oprava v doplnovani textu  }
 { 27.1.2011 12:29:38 (GMT+1:00) > [mik] checked in OpravaTakeFormFields pro Stereo  }
 { 1.12.2010 10:20:56 (GMT+1:00) > [mik] checked in Ukladani verze definice do dat formulare.  }
@@ -364,7 +367,7 @@
 // namety
 //----------------------------
 //FA
-//-když se tiskne prázdný formulář, tak tisknout vždy všechny stránky
+//-kdyz se tiskne prazdny formular, tak tisknout vzdy vsechny stranky
 
 {$I Switches.inc}
 
@@ -444,7 +447,7 @@
     ModifiedDate       (dt) datum posledni upravy
     ModifiedTime       (i) doba uprav ve vterinach
     Autor              (m) autor
-    Comment            (m) poznamka (kratší pro identifikaci)
+    Comment            (m) poznamka (kratsí pro identifikaci)
     UserSettings       (m) udaje s vypnutymi vypocty a dalsi uzavetlska nastaveni
     Notes              (m) poznamky
     Appendix           (m) priloha
@@ -505,7 +508,7 @@
  bankucet/kodbanky nazevbanky; misto
 
  ------------------------------------------------------------------------------
- Parametrický řádek:
+ Parametricky radek:
  - Otevreni formulare
    1. parametr - soubor pro otevreni (frm, xml)
    2. parametr - prepinac pro vyvolani vypoctu
@@ -566,7 +569,7 @@ uses
   faEdit, RVStyle, RVScroll, RichView, RVEdit, DBRV,
   cxLookAndFeelPainters, cxButtons, xmldom, XMLIntf, msxmldom, XMLDoc,
   cxMemo, cxLookAndFeels, StdActns, ActnList, RichViewActions, PtblRV,
-  FScriptUtils, Res_FA, FUtils,
+  FScriptUtils, Res_FA, FUtils, FCommStarter,
   {$IFDEF FA_PACKAGE}
    OInspectReg,
   {$ENDIF}
@@ -647,6 +650,9 @@ const
   cUserTextsFileName = 'UsrTxs.dat';
   {$ENDIF STANDALONE}
   //------------------------------------------
+  // === FCOMM API VERZE ===
+  FCOMM_MIN_VERSION_BASIC_SIGNING = '1.0.0'; // Minimalni verze pro zakladni podepisovani
+  // =======================
 
   cFormAsistentExeName = 'FormAsistent';
   cIniRepSetSection = 'ReportSettings';
@@ -666,7 +672,7 @@ const
   cDefaultDisableFldColor = $00E8E8E8; //svetle seda
 
   cPrgParamShowThousandSeparator = TRUE; //zobrazovat oddelovac tisicu
-  cPrgParamClearFldAtDisable = TRUE; //vyprázdnit udaje pri jejich disable
+  cPrgParamClearFldAtDisable = TRUE; //vyprazdnit udaje pri jejich disable
   cPrgParamDisableCalcFieldEnabled = TRUE;
     //umoznit vypnout vypocty jednotlivych udaju
   cPrgParamSavePrintParamsForDefinitions = FALSE;
@@ -1568,6 +1574,8 @@ type
     dxBarButtonExportFdex: TdxBarButton;
     faOpenCursor: TAction;
     dxBarButtonUseCursorEditor: TdxBarButton;
+    dxBarButtonFilllTestValueS: TdxBarButton;
+    dxBarButtonEnableFieldEditAll: TdxBarButton;
     {$IFDEF UCURSOR}
     TimerPoll: TTimer;
     {$ENDIF UCURSOR}
@@ -1807,6 +1815,7 @@ type
     procedure dxBarButtonExportFdexClick(Sender: TObject);
     procedure faOpenCursorExecute(Sender: TObject);
     procedure dxBarButtonUseCursorEditorClick(Sender: TObject);
+    procedure dxBarButtonFilllTestValueSClick(Sender: TObject);
   private
     FFirstActivate: boolean;
     FDataFileName: string;
@@ -1893,6 +1902,7 @@ type
     FPageZoom: double;
     FPDFBgFileName: string;
     FTextDocumentName: string;
+
     {----------pro pouziti PDF na pozadi}
 
     procedure SwitchContentWidth;
@@ -1926,6 +1936,7 @@ type
     function StoreMtValuesDef: string;
     function RestoreMtValuesDef(const ADefString: string): boolean;
     procedure FillTestValues(ANew: boolean);
+    procedure FillTestData2;
 
     procedure InitHistTables;
 
@@ -2195,7 +2206,6 @@ type
     procedure GenerujFDR;
     procedure OpenAndSaveFrm(ADoCalculate: boolean);
     function ConvertDesignToTMS(var AMsg: string): integer;
-    function ConvertFDEtoFDEX: string;
     procedure ConvertDefFileToTMS(const AFileName, ALogName: string);
     procedure ConvertDefsToTMS(const AConvertOnlyScript: boolean);
     procedure ConvertDefToTMS(const AFileDef, ALogFileName, AScrErrFileName: string; const AConvertOnlyScript: boolean);
@@ -2242,14 +2252,14 @@ type
     {$IFDEF UCURSOR}
     function LoadCodeFromDB: AnsiString;
     procedure AcceptFormScriptC(const Code: AnsiString);
-    procedure BridgeExternalSave(const Text: AnsiString); // událost z bridge
-    procedure WriteBridgeDebug(const AMessage: string); // bezpečný debug zápis
+    procedure BridgeExternalSave(const Text: AnsiString); // udalost z bridge
+    //procedure WriteBridgeDebug(const AMessage: string); // bezpecny debug zapis
     procedure TimerPollTimer(Sender: TObject);
-    procedure UpdateTimerState; // Nastaví timer podle stavu dxBarButtonUseCursorEditor
+    procedure UpdateTimerState; // Nastavi timer podle stavu dxBarButtonUseCursorEditor
     procedure OpenScriptInCursor;
     procedure ProcessFACommand(const Command: string);
-    function BuildVariablesJson: string; // sestavení JSON s proměnnými ze skriptu
-    function BuildMtValuesCurrentRowJson: string; // sestavení JSON s aktuálním záznamem mtValues
+    function BuildVariablesJson: string; // sestaveni JSON s promennymi ze skriptu
+    function BuildMtValuesCurrentRowJson: string; // sestaveni JSON s aktualnim zaznamem mtValues
     procedure FAToFront;
     {$ENDIF UCURSOR}
 
@@ -2264,6 +2274,10 @@ type
     FIsChangingScript: boolean;
     FIsLoadingData: boolean;
     FStateFormLocked: boolean;
+
+    UseFCommAPI: Boolean;     // True = fcomm API, False = starý CAPICOM - Prepinani mezi starym zpusobem (CAPICOM) a novym (fcomm API)
+    FCommBaseUrl: string;     // BaseUrl pro fcomm server (pro VM testování)
+
     //parametry programu
     FParamShowThousandSeparator: boolean;
     {FParamClearFldAtDisable: boolean;} // nepouziva se
@@ -2338,12 +2352,18 @@ type
     FfodFrmID, FfodFrmDefID, FfodDocId, FfodFiles, FfodGUID: string; //vystup funkce GetFormsOrDocuments
     //----
 
+    procedure EnsureFCommAPIAvailable(ASyncMode: Boolean); //FCOMM API Zajistuje dostupnost fcomm API (spusti pokud nebezi, zkontroluje verzi)
+
     procedure EmptyMemTable(AMt: TkbmMemTable; ADefFormat: TkbmCustomStreamFormat);
     procedure InitFAVars;
 
     procedure ShowHintSb(const Atext: string); //#3305 presunuto z private 
     function GetIniFileName: string;
     function CanWriteToIniFile: boolean;
+    
+    // Pro FTestUtils
+    procedure SetFormCalculationEnabled(AEnabled: Boolean);
+    procedure SetFieldEditingModeEnabled(AEnabled: Boolean);
     procedure ClearDirWork;
     function DirWorkPath: string;
     function DirDefsPath: string;
@@ -2601,6 +2621,7 @@ type
     procedure SaveIncludeScripts;
     procedure AddComponent2WorkScripter(const ALoadLastPage: boolean);
     function IsFDRValid(ADefFileName: string; var AErrExpression: string): boolean;
+    function ConvertFDEtoFDEX: string;
 {$ENDIF FINALBUILD}
     procedure SetOpenPDFEditorFlag(AIsOpen: Boolean);
     procedure SetUserProgressPos(APosition: integer; AMax: Integer = 100);
@@ -2631,7 +2652,7 @@ type
     procedure AppInit;
     procedure AppDoneStart;
     procedure AppDoneFinish;
-    procedure OnMsgCalled(const AMessage: string); // zpracování volání Msg z skriptu (public pro volání z FScriptUtils)
+    procedure OnMsgCalled(const AMessage: string); // zpracovani volani Msg z skriptu (public pro volani z FScriptUtils)
     {$ENDIF UCURSOR}
 
   end;
@@ -2708,6 +2729,7 @@ uses
 {$IFNDEF FINALBUILD}
   EDesign,
   EScriptEditor,
+  FTestUtils,
 {$IFDEF FR3DESIGNER}
   ERepDesigner,
 {$ENDIF FR3DESIGNER}
@@ -2977,7 +2999,7 @@ begin
       end;
       AXMLDoc.XML.Text := hlavicka+#13#10+transformString;
       if GetKeyState(VK_SHIFT) < 0 then //pro ladeni
-        EditRichText(AXMLDoc.XML.Text, 'Transformovaný soubor XML');
+        EditRichText(AXMLDoc.XML.Text, 'Transformovany soubor XML');
       AXMLDoc.Active := TRUE;
     end
     else begin
@@ -3424,7 +3446,7 @@ begin
 	  end;
 	  faOpenStrings.Visible := FALSE;
 
-	  //Pro standalone dáme vždy menu klasické
+	  //Pro standalone dame vzdy menu klasicke
 	  FShowRibbon:=False;
 	  FNewStyle:=False;
 	{$ELSE}
@@ -3652,6 +3674,10 @@ begin
   LoadBarManagerFromIni;
   LoadFormStateFromIni;
   LoadParamsFromIni;
+  
+  // Asynchronni start fcomm API (pokud je povoleno)
+  EnsureFCommAPIAvailable(True);
+  
   LoadFormHistoryFromIni;
   //
   {$IFNDEF STEREONX}
@@ -4813,19 +4839,19 @@ begin
 {$IFNDEF FINALBUILD}
   {$IFDEF UCURSOR}
   if dxBarButtonUseCursorEditor.Down then begin
-    // Pokud je formulář v režimu NESTED (vnořený formulář), neinteraguj s Cursorem
+    // Pokud je formular v rezimu NESTED (vnoreny formular), neinteraguj s Cursorem
     if FNestedState then
       Exit;
       
     if Assigned(FBridge) and (FLastFieldName <> '') then
     begin
-      // Identifikace aktuálního formuláře v FA
+      // Identifikace aktualniho formulare v FA
       FCurrentFormId := mtDefID.Value;
 
-      // Načtení kódu z DB (aktuální stav v FA)
+      // Nacteni kodu z DB (aktualni stav v FA)
       Code := LoadCodeFromDB;
 
-      // Zavolej metodu bridge třídy, která zpracuje celou logiku
+      // Zavolej metodu bridge tridy, ktera zpracuje celou logiku
       if not FBridge.FindFieldInScript(FCurrentFormId, Code, FLastFieldName) then
       begin
         ShowMessage('Nepodařilo se spustit Cursor / VS code. Patrně není otevřený formulář nebo je špatně cesta.');
@@ -5068,7 +5094,6 @@ var
 begin
 
   {$IFDEF UCURSOR}
-  // WriteBridgeDebug('FormCloseQuery: START, FStateFormWasChanged=' + BoolToStr(FStateFormWasChanged)); // ZAKOMENTOVÁNO
   
   // Pokud je formulář v režimu NESTED (vnořený formulář), vynecháme veškeré operace s Cursorem
   // Vnořený formulář se zavře jako modální okno a nemá ovlivňovat Cursor hlavního formuláře
@@ -5230,7 +5255,6 @@ begin
       // Resetuj FStateFormWasChanged jen když byl script úspěšně uložen a zavřen
       if (CloseResult = ccrClosed) and FStateFormWasChanged and FScriptChangedByCursor then
       begin
-        // WriteBridgeDebug('FormCloseQuery: Reset FStateFormWasChanged (změna byla pouze z Cursor synchronizace)'); // ZAKOMENTOVÁNO
         SetChangeFlag(FALSE);
         FScriptChangedByCursor := False;
       end;
@@ -5287,10 +5311,6 @@ begin
   CanClose := FCanClose;
   if not CanClose then
     EXIT;
-  //
-  {$IFDEF UCURSOR}
-  // WriteBridgeDebug('FormCloseQuery: PŘED kontrolou FStateFormWasChanged=' + BoolToStr(FStateFormWasChanged)); // ZAKOMENTOVÁNO
-  {$ENDIF UCURSOR}
   
   //pokud neni soubor ulozen, zeptat se na ulozeni a ulozit
   if FStateFormWasChanged then begin
@@ -5377,7 +5397,6 @@ begin
 {$ENDIF STANDALONE}
   end;
 end; {FormCloseQuery}
-
 //zavreni souboru
 
 procedure TfaMain.dxBarButtonCloseClick(Sender: TObject);
@@ -5488,8 +5507,15 @@ begin
   SetButtonVisible(dxBarButtonLoadScript, dxBarButtonDesignMode.Down);
   SetButtonVisible(dxBarButtonLoadPageTemplate, dxBarButtonDesignMode.Down);
   SetButtonVisible(dxBarButtonSavePageTemplate, dxBarButtonDesignMode.Down);
-  SetButtonVisible(dxBarButtonConvertDesignToTMS, dataopened and dxBarButtonDesignMode.Down and (not FNewScripter));
-  SetButtonVisible(dxBarButtonConvertDefsToTMS, not dxBarButtonDesignMode.Down);
+  //SetButtonVisible(dxBarButtonConvertDesignToTMS, dataopened and dxBarButtonDesignMode.Down and (not FNewScripter));
+  SetButtonVisible(dxBarButtonConvertDesignToTMS, false); // povolit kdyby bylo jeste potreba
+  SetButtonVisible(dxBarButtonConvertScriptToTMSCompatible, false); // povolit kdyby bylo jeste potreba
+
+  //SetButtonVisible(dxBarButtonConvertDefsToTMS, not dxBarButtonDesignMode.Down);
+  SetButtonVisible(dxBarButtonConvertDefsToTMS, false); // povolit kdyby bylo jeste potreba
+  SetButtonVisible(dxBarButtonOpenSaveFrm, false); // povolit kdyby bylo jeste potreba
+  SetButtonVisible(dxBarButtonOpenCalcSaveFrm, false); // povolit kdyby bylo jeste potreba
+
   SetButtonVisible(dxBarButtonZobrazitPDSDesigner, {$IFDEF PDSDESIGNER} TRUE {$ELSE PDSDESIGNER} FALSE {$ENDIF PDSDESIGNER});
   SetButtonVisible(dxBarButtonZobrazitFR3Designer, {$IFDEF FR3DESIGNER} TRUE {$ELSE FR3DESIGNER} FALSE {$ENDIF FR3DESIGNER});
 
@@ -5500,6 +5526,7 @@ begin
   SetButtonVisible(dxBarButtonOpenDesignData, dxBarButtonDesignMode.Down);
   SetButtonVisible(dxBarButtonFillTestValues, not dxBarButtonDesignMode.Down);
   SetButtonVisible(dxBarButtonFillTestValuesNew, not dxBarButtonDesignMode.Down);  
+  SetButtonVisible(dxBarButtonFilllTestValueS, not dxBarButtonDesignMode.Down);  
   //SetButtonVisible(dxBarButtonFillTestValues, dxBarSubItemDesign.Visible = ivAlways); //Marek (6.3.2017) - odstraneno, zlobilo ve FS designeru
   //SetButtonVisible(dxBarButtonFindAndGotoField, dxBarSubItemDesign.Visible = ivAlways); //neni potreba, dxBarSubItemDesign je vzdy v designeru ivAlways
   //SetButtonVisible(dxBarButtonShowDialogFindFieldInScript, dxBarSubItemDesign.Visible = ivAlways);
@@ -5519,6 +5546,7 @@ begin
   dxBarButtonOpenDesignData.Enabled := dataopened;
   dxBarButtonFillTestValues.Enabled := dataopened;
   dxBarButtonFillTestValuesNew.Enabled := dataopened;
+  dxBarButtonFilllTestValueS.Enabled := dataopened;
   dxBarButtonFindAndGotoField.Enabled := dataopened;
   dxBarButtonShowDialogFindFieldInScript.Enabled := dataopened;
   dxBarButtonCopyFildName.Enabled := dataopened;
@@ -5614,6 +5642,12 @@ begin
     dxBarComboWorkState.Text:='';
   dxBarButtonDisableFormCalculation.Down := dataopened and FStateFormDisabledCalc;
   dxBarButtonDisableFormCalculation.Enabled := dataopened and not mtValues.ReadOnly;
+ {$IFNDEF FINALBUILD}
+  dxBarButtonEnableFieldEditAll.Enabled := dataopened and not mtValues.ReadOnly;
+ {$ELSE FINALBUILD}
+  dxBarButtonEnableFieldEditAll.Enabled := false; // ve finalbuild zakazano
+  dxBarButtonEnableFieldEditAll.Down := false;
+ {$ENDIF FINALBUILD}
   dxBarButtonDisableCalcField.Enabled := dataopened and mtFieldsHasCalc.Value and
     not mtValues.ReadOnly and FParamDisableCalcFieldEnabled and
     not IsTableField(mtFieldsName.Value);
@@ -5647,12 +5681,6 @@ end; {SetDesignButtons}
 
 procedure TfaMain.SetChangeFlag(AWasChange: boolean);
 begin
-  {$IFDEF UCURSOR}
-  // WriteBridgeDebug('SetChangeFlag: AWasChange=' + BoolToStr(AWasChange) + 
-  //   ', OLD FStateFormWasChanged=' + BoolToStr(FStateFormWasChanged) + 
-  //   ', FScriptChangedByCursor=' + BoolToStr(FScriptChangedByCursor)); // ZAKOMENTOVÁNO
-  {$ENDIF UCURSOR}
-  
   {if not FIsDesignMode and mtValues.ReadOnly and AWasChange then
     AWasChange := FALSE;}
   FStateFormWasChanged := AWasChange;
@@ -6638,7 +6666,7 @@ begin
         if fdefreadonly then begin
           laPovinnostEPO.Caption := 'DEFINICE JE READ-ONLY';
           laPovinnostEPO.Visible := true;
-          //messagewarn(caption,'definice je read only. nelze ji po úpravě uložit. (pouze uložit jako jinou definici.)',[mbok]);
+          //messagewarn(caption,'definice je read only. nelze ji po uprave ulozit. (pouze ulozit jako jinou definici.)',[mbok]);
           fasaveform.visible := false;
         end;
         if not fshowribbon then begin
@@ -6707,10 +6735,6 @@ procedure TfaMain.SaveDef;
 var
   isDesignMode, mtValReadOnly: boolean;
 begin
-  {$IFDEF UCURSOR}
-  // WriteBridgeDebug('SaveDef: START, FStateFormWasChanged=' + BoolToStr(FStateFormWasChanged)); // ZAKOMENTOVÁNO
-  {$ENDIF UCURSOR}
-  
   if FDefReadOnly then
     MessageWarn(Caption,
       'Nelze uložit definici, soubor je pouze pro čtení. Můžete uložit definici volbou Uložit jako.',
@@ -6745,15 +6769,7 @@ begin
       else begin
         SaveDataDef(FDefFileName);
         
-        {$IFDEF UCURSOR}
-        // WriteBridgeDebug('SaveDef: PŘED SetChangeFlag(FALSE), FStateFormWasChanged=' + BoolToStr(FStateFormWasChanged)); // ZAKOMENTOVÁNO
-        {$ENDIF UCURSOR}
-        
         SetChangeFlag(FALSE);
-        
-        {$IFDEF UCURSOR}
-        // WriteBridgeDebug('SaveDef: PO SetChangeFlag(FALSE), FStateFormWasChanged=' + BoolToStr(FStateFormWasChanged)); // ZAKOMENTOVÁNO
-        {$ENDIF UCURSOR}
       end;
       //
       ApplyMainCaption(FDefFileName);
@@ -6762,10 +6778,6 @@ begin
       mtValues.ReadOnly := mtValReadOnly;
     end;
   end;
-  
-  {$IFDEF UCURSOR}
-  // WriteBridgeDebug('SaveDef: END, FStateFormWasChanged=' + BoolToStr(FStateFormWasChanged)); // ZAKOMENTOVÁNO
-  {$ENDIF UCURSOR}
 end; {SaveDef}
 
 //ulozi definici do jineho souboru
@@ -6818,9 +6830,9 @@ begin
   SetLastFiles;
   
   {$IFDEF UCURSOR}
-  // Vyprázdni FCurrentFile při zavření definice
-  // ZAKOMENTOVÁNO - potřebujeme FCurrentFile pro správné zavření Cursoru při zavírání FA
-  // (bez toho se pro cizí definice nezavře Cursor záložka a nesmaže se dočasná složka)
+  // Vyprazdni FCurrentFile pri zavreni definice
+  // ZAKOMENTOVANO - potrebujeme FCurrentFile pro spravne zavreni Cursoru pri zavirani FA
+  // (bez toho se pro cizi definice nezavre Cursor zalozka a nesmaze se docasna slozka)
   // if Assigned(FBridge) then
   //   FBridge.ClearCurrentFile;
   {$ENDIF UCURSOR}
@@ -7591,7 +7603,7 @@ var
 
       s := s + '}' + cCRLF;
 
-      // Přidání čárky mezi záznamy, ale ne za posledním
+        // Přidání čárky mezi záznamy, ale ne za posledním
       MemTable.Next;
       if not MemTable.Eof then
         s := s + ', ';
@@ -7705,7 +7717,7 @@ var
     // Získání barvy levého horního rohu
     targetColor := bmp.Canvas.Pixels[0, 0];
 
-    // Procházení pixelů a nahrazení odpovídající barvy
+    // Procházení pixelu a nahrazení odpovídající barvy
     for x := 0 to bmp.Width - 1 do
     begin
       for y := 0 to bmp.Height - 1 do
@@ -7724,7 +7736,7 @@ var
     SourcePath := NormalPath(GetExePath) + 'DataPrg\Defs\';
     DestPath := NormalPath(GetExePath) + 'Export\';
 
-    // Hledání souborů: BaseID.fdr nebo BaseID_*.fdr
+    // Hledání souboru: BaseID.fdr nebo BaseID_*.fdr
     if FindFirst(SourcePath + '*.fdr', faAnyFile, SR) = 0 then
     try
       repeat
@@ -7771,7 +7783,7 @@ begin
               sl1:= TStringList.Create;
 
               try
-                //Ulozime všechny controlsy do stringlistu kvuli zjisteni jejich poradi
+                //Ulozime vsechny controlsy do stringlistu kvuli zjisteni jejich poradi
                 for i := 0 to sbForm.ControlCount - 1 do
                 begin
                   c := sbForm.Controls[i];
@@ -10097,10 +10109,6 @@ procedure TfaMain.SetFormData(const AData: string);
 var
   dFldsC, dFldsE: string;
 begin
-  {$IFDEF UCURSOR}
-  // WriteBridgeDebug('SetFormData: START, FStateFormWasChanged=' + BoolToStr(FStateFormWasChanged)); // ZAKOMENTOVÁNO
-  {$ENDIF UCURSOR}
-  
   SetTskpData(AData);
   FIsLoadingData := TRUE; //zakaz calculate
   try
@@ -10127,16 +10135,7 @@ begin
       FocusActuallyControl;
     end;
   end;
-  
-  {$IFDEF UCURSOR}
-  // WriteBridgeDebug('SetFormData: PŘED SetChangeFlag(FALSE), FStateFormWasChanged=' + BoolToStr(FStateFormWasChanged)); // ZAKOMENTOVÁNO
-  {$ENDIF UCURSOR}
-  
   SetChangeFlag(FALSE);
-  
-  {$IFDEF UCURSOR}
-  // WriteBridgeDebug('SetFormData: PO SetChangeFlag(FALSE), FStateFormWasChanged=' + BoolToStr(FStateFormWasChanged)); // ZAKOMENTOVÁNO
-  {$ENDIF UCURSOR}
 end; {SetFormData}
 
 {-----------------------------------------------------------------------------
@@ -10880,6 +10879,10 @@ end; {mtContentBeforePost}
 procedure TfaMain.FormDestroy(Sender: TObject);
 begin
   inherited;
+  
+  // FComm API server je spravovan nezavisle pomoci FCommStarter
+  // Neni potreba zde nic uvolnovat ani ukoncovat
+  
   //
   //ChangeClipboardChain(Handle, hClipboardOwner); // odstraneno pri reseni potizi s clipboardem 21.10.12
   if FPageList <> nil then begin
@@ -11234,6 +11237,10 @@ begin
     FParamSave2DocElPodaniPotvrzeni :=
       iniFile.ReadBool(cMtParamIniSectionName,
       cDefSave2DocElPodaniPotvrzeniIniName, cPrgSave2DocElPodaniPotvrzeni);
+    
+    // Nacist nastaveni pro prepinani mezi CAPICOM a fcomm API
+    UseFCommAPI := iniFile.ReadBool('Certificates', 'UseFCommAPI', False);
+    FCommBaseUrl := iniFile.ReadString('Certificates', 'FCommBaseUrl', '');
   finally
     iniFile.Free;
   end;
@@ -12081,6 +12088,13 @@ begin
   end;
 end; {FillTestValues}
 
+procedure TfaMain.FillTestData2;
+begin
+  {$IFDEF STANDALONE}
+  FTestUtils.FillTestValuesToMtValues;
+  {$ENDIF STANDALONE}
+end;
+
 //posun v obsahu na jiny zaznam
 
 procedure TfaMain.cxContentExit(Sender: TObject);
@@ -12566,7 +12580,7 @@ begin
 end;
 
 //vraci TRUE
-// - pokud je v clipboardu "obyčejný" text - vytvari se HTMLStaticText komponenta
+// - pokud je v clipboardu "oby?ejný" text - vytvari se HTMLStaticText komponenta
 // - pokud je clipboard prazdny
 //vraci FALSE:
 // - pokud je v clipboardu nejaka komponenta - vlozi se systemove z cliboardu do kresleni
@@ -14829,7 +14843,7 @@ var Ctrl: TControl;
     Pt: TPoint;
 begin
   Ctrl:=nil;
-  if GetCursorPos(Pt) then // TControl pod myší:
+  if GetCursorPos(Pt) then // TControl pod mysi:
     Ctrl:=FindDragTarget(Pt,False);
 
   if Ctrl = cxTvContent then
@@ -14845,7 +14859,7 @@ var Ctrl: TControl;
     Pt: TPoint;
 begin
   Ctrl:=nil;
-  if GetCursorPos(Pt) then // TControl pod myší:
+  if GetCursorPos(Pt) then // TControl pod mysi:
     Ctrl:=FindDragTarget(Pt,False);
 
    if Ctrl = cxTvContent then
@@ -15526,7 +15540,7 @@ begin
         mtTskp.Post;
         SaveFormWithoutCheck;
         ok:=true;
-        //MsgBoxInfo(Caption,'Do formuláře byly zapsány informace o podání a formulář byl uložen.',MB_OK);
+        //MsgBoxInfo(Caption,'Do formulare byly zapsany informace o podani a formular byl ulozen.',MB_OK);
         ShowHintSb('Byly zapsány informace o podání a formulář byl uložen.');
       end;
     end
@@ -15540,7 +15554,7 @@ begin
         mtTskp.Post;
         SaveFormWithoutCheck;
         ok:=true;
-        //MsgBoxInfo(Caption,'Do formuláře byly zapsány informace o podání a formulář byl uložen.',MB_OK);
+        //MsgBoxInfo(Caption,'Do formulare byly zapsany informace o podani a formular byl ulozen.',MB_OK);
         ShowHintSb('Byly zapsány informace o podání a formulář byl uložen.');
       end;
     end
@@ -15635,8 +15649,6 @@ begin
   OpenDS(FClientID, FALSE, '', StrToBoolSafe(ClientParam('ISDSTestBox')),
     ClientParam('ISDSUsrId'),ClientParam('ISDSPswd'),ClientParam('ISDSIdCert'));
 end;
-
-{dxBarButtonDisableFormCalculationClick}
 
 procedure TfaMain.SetCalculations(ACalculationDisable, AFromSavedForm: boolean);
 begin
@@ -16125,9 +16137,9 @@ begin
           end
           else begin
             if ASubject='' then
-              FileName := 'Komprimované soubory _důverné'+DefaultExt
+              FileName := 'Komprimované soubory _důvěrné'+DefaultExt
             else
-              FileName := ASubject + '_důverné'+DefaultExt;
+              FileName := ASubject + '_důvěrné'+DefaultExt;
           end;
           if Execute then begin
             if not FileExists(FileName) or
@@ -16770,7 +16782,7 @@ begin
         else begin
           ReopenForm(ParamStr(1));
           if UpperCase(ParamStr(2)) = '/C' then begin
-            // spustit výpočty
+            // spustit výpocty
             DoCalculate;
             SetLiveCheck(True);
             DisplayCheck; //po otevreni
@@ -17314,32 +17326,13 @@ procedure TfaMain.SaveFormScript;
 var
   s: string;
 begin
-  {$IFDEF UCURSOR}
-  // WriteBridgeDebug('SaveFormScript: START, FStateFormWasChanged=' + BoolToStr(FStateFormWasChanged)); // ZAKOMENTOVÁNO
-  {$ENDIF UCURSOR}
-  
   {$IFDEF PROFILER}TimeLog('SaveFormScript'); {$ENDIF PROFILER}
   s := GetFormData;
   {$IFDEF PROFILER}TimeLog('GetFormData'); {$ENDIF PROFILER}
-  
-  {$IFDEF UCURSOR}
-  // WriteBridgeDebug('SaveFormScript: PŘED SaveDef, FStateFormWasChanged=' + BoolToStr(FStateFormWasChanged)); // ZAKOMENTOVÁNO
-  {$ENDIF UCURSOR}
-  
   SaveDef;
   {$IFDEF PROFILER}TimeLog('SaveDef'); {$ENDIF PROFILER}
-  
-  {$IFDEF UCURSOR}
-  // WriteBridgeDebug('SaveFormScript: PO SaveDef, FStateFormWasChanged=' + BoolToStr(FStateFormWasChanged)); // ZAKOMENTOVÁNO
-  {$ENDIF UCURSOR}
-  
   SetFormData(s);
   {$IFDEF PROFILER}TimeLog('SetFormData'); {$ENDIF PROFILER}
-  
-  {$IFDEF UCURSOR}
-  // WriteBridgeDebug('SaveFormScript: PO SetFormData, FStateFormWasChanged=' + BoolToStr(FStateFormWasChanged)); // ZAKOMENTOVÁNO
-  {$ENDIF UCURSOR}
-  
   FocusActuallyControl;
 end; {SaveFormScript}
 
@@ -19371,7 +19364,7 @@ begin
                 'Chyba ve scriptu:' + #13#10 + #13#10 + E.Message, 
                 MB_OK);
             {$ENDIF UCURSOR}
-            raise; // Přehodí výjimku dál
+            raise; // Prehodi vyjimku dal
           end;
         end;
       end
@@ -20741,7 +20734,7 @@ var
     mtTskpFillingPassword.Value:='';
     mtTskp.Post;
     SaveFormWithoutCheck;
-    //MsgBoxInfo(Caption,'Do formuláře byly zapsány informace o podání a formulář byl uložen.',MB_OK);
+    //MsgBoxInfo(Caption,'Do formulare byly zapsany informace o podani a formular byl ulozen.',MB_OK);
     ShowHintSb('Byly zapsány informace o podání a formulář byl uložen.');
   end;
 begin
@@ -21326,7 +21319,7 @@ begin
           DoOnOpen;
         end;
       end
-      //tady otestovat jestli je uvnitř XML, pokud je to vice formularu FS napsat, že to nejde importovat do formulare, pokud je to EPO tam naimportovat, pokud nic z toho tak nahlasit
+      //tady otestovat jestli je uvnitr XML, pokud je to vice formularu FS napsat, ze to nejde importovat do formulare, pokud je to EPO tam naimportovat, pokud nic z toho tak nahlasit
       else if IsXMLEPO(AFileName, XMLDoc) then begin
         if dxBarButtonImportFilling.Enabled and (dxBarButtonImportFilling.Visible = ivAlways) then begin
       {$IFDEF STANDALONE}
@@ -23171,8 +23164,18 @@ begin
       FreeAndNil(fmScriptEditor); // aby se pri dalsim otevreni nacetl script do editoru
   end;
   SetDesignButtons;
+  {$IFDEF UCURSOR}
   UpdateTimerState; // Nastav timer podle nového stavu přepínače
+  {$ENDIF UCURSOR}
 {$ENDIF FINALBUILD}
+end;
+
+procedure TfaMain.dxBarButtonFilllTestValueSClick(Sender: TObject);
+begin
+{$IFDEF FINALBUILD}
+  EXIT;
+{$ENDIF FINALBUILD}
+  FillTestData2;
 end;
 
 procedure TfaMain.mtStoredStringsBeforePost(DataSet: TDataSet);
@@ -23730,7 +23733,7 @@ begin
         end;
       end;
 
-      // odstrani rámečky sekcí
+      // odstrani ramecky sekci
       if c is TShape then begin
         if c<>ClientBorder then
           TShape(c).Visible := not newStyle;
@@ -25719,7 +25722,7 @@ begin
       pdfHeight:=GetListItem(mtDefVersion.Value,1);
     end
     else
-      MessageWarn(Caption,'ChybnÄ› zapsanĂ˝ rozmÄ›r PDF v definici formulĂˇĹ™e (ĹˇĂ­Ĺ™ka,vĂ˝Ĺˇka)',[MBOK]);
+      MessageWarn(Caption,'Chybně zapsaný rozměr PDF v definici formuláře (šířka,výška)',[MBOK]);
   end;
   }
   contentKey:=mtContentKey.Value;
@@ -27092,14 +27095,14 @@ end;
 
 {$IFDEF UCURSOR}
 // Pomocná funkce pro debug zápis - bezpečně zapíše do debug souboru
-procedure TfaMain.WriteBridgeDebug(const AMessage: string);
+//procedure TfaMain.WriteBridgeDebug(const AMessage: string);
 //var
   // Debug logování zakomentováno - může blokovat aktivaci FA
   // DebugFile: string;
   // SL: TStringList;
-begin
+//begin
   // Debug logování zakomentováno - může blokovat aktivaci FA
-  Exit; // Rychlý výstup bez zápisu
+  //Exit; // Rychlý výstup bez zápisu
   
   {try
     // Použij .fsbridge složku pro debug soubor
@@ -27129,7 +27132,8 @@ begin
   except
     // Tiše ignoruj chyby při zápisu debugu
   end;}
-end;
+//end;
+
 
 procedure TfaMain.AppInit;
 begin
@@ -27186,14 +27190,14 @@ end;
 
 procedure TfaMain.TimerPollTimer(Sender: TObject);
 begin
-  // Pokud je formulář v režimu NESTED (vnořený formulář), nepolluj Cursor
-  // Vnořený formulář nemá vlastní script editor a nemá interagovat s Cursorem
+  // Pokud je formular v rezimu NESTED (vnoreny formular), nepolluj Cursor
+  // Vnoreny formular nema vlastni script editor a nema interagovat s Cursorem
   if FNestedState then
     Exit;
     
   if Assigned(FBridge) then
   begin
-    FBridge.PollTick; // detekuje Ctrl+S v Cursoru a případně zavolá BridgeExternalSave
+    FBridge.PollTick; // detekuje Ctrl+S v Cursoru a pripadne zavola BridgeExternalSave
   end;
 end;
 
@@ -27228,16 +27232,6 @@ function TfaMain.LoadCodeFromDB: AnsiString;
 begin
   Result := AnsiToUtf8(mtDefScript.Value);
 end;
-
-procedure TfaMain.AcceptFormScript(const AScript: string);
-begin
-  if mtDef.State = dsBrowse then
-    mtDef.Edit;
-  mtDefScript.Value := '';
-  mtDefScript.Value := AScript;
-  mtDef.Post;
-  SetChangeFlag(TRUE);
-end; {AcceptFormScript}
 
 procedure TfaMain.AcceptFormScriptC(const Code: AnsiString);
 begin
@@ -27277,12 +27271,12 @@ begin
   // Nastav ExportFolder podle toho, odkud je definice
   if IsHomeDef then
   begin
-    // Domácí definice → trvalá složka Scripts
+    // Domácí definice - trvalá složka Scripts
     FBridge.ExportFolder := 'DataPrg\Scripts';
   end
   else
   begin
-    // Cizí definice → dočasná složka DataPrg\Scripts\.fsbridge/{PID}
+    // Cizí definice - dočasná složka DataPrg\Scripts\.fsbridge/{PID}
     FBridge.ExportFolder := 'DataPrg\Scripts\.fsbridge\' + IntToStr(GetCurrentProcessId);
   end;
   
@@ -27292,7 +27286,7 @@ begin
   // načtení kódu z DB (aktuální stav v FA)
   Code := LoadCodeFromDB;
 
-  // volitelně – pozice kurzoru z vašeho editoru (jinak dejte 0,0 a skok se neprovede)
+  // volitelně - pozice kurzoru z vašeho editoru (jinak dejte 0,0 a skok se neprovede)
   //GetEditorCaret(0,JumpLine, JumpCol); // vaše logika; když neřešíte, nastavte obě na 0
  //GetEditorCaret(0, 0); // vaše logika; když neřešíte, nastavte obě na 0
 
@@ -27343,7 +27337,7 @@ begin
       end;
     end;
     
-    // Script není otevřený - předat script a otevřít (přepíše soubor)
+    // Script neni otevreny - predat script a otevrit (prepise soubor)
     if not FBridge.StartEditing(FCurrentFormId, Code, JumpLine, JumpCol) then
       ShowMessage('Nepodařilo se spustit Cursor / VS code. Patrně není otevřený formulář nebo je špatně cesta.');
   end
@@ -27388,7 +27382,7 @@ begin
   
   if Command = 'Aktivovat_formular' then
   begin
-    // Načti aktuální stav souboru z disku a synchronizuj s FA
+    // Nacti aktualni stav souboru z disku a synchronizuj s FA
     if Assigned(FBridge) and Assigned(FBridge.OnExternalSave) and (FCurrentFormId <> '') then
     begin
       s := FBridge.ReadScriptFileContent;
@@ -27400,7 +27394,7 @@ begin
   end
   else if Command = 'Zkompilovat_script' then
   begin
-    // Načti aktuální stav souboru z disku a synchronizuj s FA
+    // Nacti aktualni stav souboru z disku a synchronizuj s FA
     if Assigned(FBridge) and Assigned(FBridge.OnExternalSave) and (FCurrentFormId <> '') then
     begin
       s := FBridge.ReadScriptFileContent;
@@ -27551,7 +27545,7 @@ begin
       begin
         Line := Trim(SourceLines[i]);
         
-        // Skípnout prázdné řádky a komentáře
+        // Přeskočit prázdné řádky a komentáře
         if (Line = '') or (Copy(Line, 1, 2) = '//') or (Copy(Line, 1, 1) = '{') then
         begin
           Inc(i);
@@ -27860,6 +27854,16 @@ begin
 end;
 {$ENDIF UCURSOR}
 
+procedure TfaMain.AcceptFormScript(const AScript: string);
+begin
+  if mtDef.State = dsBrowse then
+    mtDef.Edit;
+  mtDefScript.Value := '';
+  mtDefScript.Value := AScript;
+  mtDef.Post;
+  SetChangeFlag(TRUE);
+end; {AcceptFormScript}
+
 function TfaMain.ReportSettingsToLog(const reportSettings: TReportSettings): string;
 
   function BoolToStr(value: Boolean): string;
@@ -27872,7 +27876,7 @@ function TfaMain.ReportSettingsToLog(const reportSettings: TReportSettings): str
 
   function EscapeValue(const value: string): string;
   begin
-    // Pokud řetězec obsahuje čárku, tečku nebo dvojtečku, dej do uvozovek
+    // Pokud rettzec obsahuje carku, tecku nebo dvojtecku, dej do uvozovek
     if (Pos(',', value) > 0) or (Pos('.', value) > 0) or (Pos(':', value) > 0) then
       Result := '"' + value + '"'
     else
@@ -27884,7 +27888,7 @@ var
   i: Integer;
 begin
   try
-    // Vytvoř pole hodnot v pořadí deklarace
+    // Vytvor pole hodnot v poradi deklarace
     values[1] := BoolToStr(reportSettings.PrintForm);
     values[2] := BoolToStr(reportSettings.PrintValues);
     values[3] := BoolToStr(reportSettings.RemoveBackground);
@@ -27935,6 +27939,73 @@ begin
     end;
   except
   end;  
+end;
+
+// Zajisti dostupnost fcomm API (spusti pokud nebezi, zkontroluje verzi)
+procedure TfaMain.EnsureFCommAPIAvailable(ASyncMode: Boolean);
+var
+  StarterResult: TFCommStartResult;
+  MinVersion: TFCommVersion;
+  StartMode: TFCommStartMode;
+begin
+  if not UseFCommAPI then
+    Exit; // API neni povoleno v konfiguraci
+    
+  // Parsovat pozadovanou verzi
+  MinVersion := TFCommVersion.Parse(FCOMM_MIN_VERSION_BASIC_SIGNING);
+  
+  // Nastavit mod spusteni
+  if ASyncMode then
+    StartMode := smAsync
+  else
+    StartMode := smSync;
+    
+  // Asynchronni mod - pro FormCreate
+  if ASyncMode then
+  begin
+    try
+      FCommStarter.EnsureFCommAPI(MinVersion, '', FCommBaseUrl, StartMode);
+    except
+      // Chyby pri asynchronnim startu ignorujeme
+      // Budou reseny pri prvnim synchronnim volani
+    end;
+  end
+  else
+  begin
+    // Synchronni mod - pro EElPodani a dalsi moduly
+    StarterResult := FCommStarter.EnsureFCommAPI(MinVersion, '', FCommBaseUrl, StartMode);
+    
+    if not StarterResult.Success then
+      raise Exception.Create('Komunikacni modul fcomm.exe neni dostupny: ' + StarterResult.ErrorMessage);
+  end;
+end;
+
+{ TfaMain - Pomocné funkce pro FTestUtils }
+
+procedure TfaMain.SetFormCalculationEnabled(AEnabled: Boolean);
+begin
+  // AEnabled = True -> vypocty zapnuty, button Down = False
+  // AEnabled = False -> vypocty vypnuty, button Down = True
+  if AEnabled then
+  begin
+    // Zapnout výpočty
+    if FStateFormDisabledCalc then
+      SetCalculations(False, False);
+    dxBarButtonDisableFormCalculation.Down := False;
+  end
+  else
+  begin
+    // Vypnout výpočty
+    if not FStateFormDisabledCalc then
+      SetCalculations(True, False);
+    dxBarButtonDisableFormCalculation.Down := True;
+  end;
+end;
+
+procedure TfaMain.SetFieldEditingModeEnabled(AEnabled: Boolean);
+begin
+  // Nastaví stav buttonu pro povolení editace polí
+  dxBarButtonEnableFieldEditAll.Down := not AEnabled;
 end;
 
 initialization

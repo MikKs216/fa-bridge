@@ -1,0 +1,108 @@
+===============================================================================
+ADAPTER PATTERN - STRUČNÝ SOUHRN ZMĚN
+Datum: 2026-01-19
+===============================================================================
+
+IMPLEMENTOVANO: Adapter Pattern pro prepinani mezi CAPICOM a fcomm API
+
+NOVY SOUBOR:
+-----------
+✅ D:\Projekty\FsCursorBridge\fa-bridge\FAdelphi\EPMF\mfcr_certificate_adapter.pas
+   - TCertificatesWrapper (wrapper pro kolekci certifikatu)
+   - TCertificateWrapper (wrapper pro jednotlivy certifikat)
+   - Automaticky deleguje na spravnou implementaci podle konfigurace
+
+UPRAVENE SOUBORY:
+----------------
+✅ EElPodDM.pas (3 radky zmen)
+   - Zmena typu: Certificates: TCertificatesWrapper
+   - Zmena CertificatesLoad: Certificates := TCertificatesWrapper.Create(...)
+   - Odstraneno: Vsechny helper funkce (GetCertificatesCount, atd.)
+
+✅ EElPodani.pas (5 mist zmen)
+   - Uses: +mfcr_certificate_adapter
+   - Typecast: TCertificate → TCertificateWrapper (3 mista)
+   - Vse ostatni STEJNE jako v oldver!
+
+✅ Main.pas (BEZ ZMEN)
+   - Konfigurace se cte z FormStudio.ini
+
+✅ FormStudio.ini
+   - [Certificates] UseFCommAPI=0 (default)
+   - [Certificates] FCommBaseUrl=http://localhost:54321
+
+DOKUMENTACE:
+-----------
+✅ ADAPTER_PATTERN_DOKUMENTACE.md - Detailni popis architektury
+✅ ADAPTER_PATTERN_SOUHRN.txt - Tento soubor
+
+POROVNANI S PREDCHOZIM RESENIM:
+-------------------------------
+Predchozi (helper funkce):
+  - EElPodDM.pas: +80 radku (helper funkce)
+  - EElPodani.pas: ~20 mist zmeneno
+  - Nove soubory: 0
+  
+Nove (Adapter Pattern):
+  - EElPodDM.pas: 3 radky
+  - EElPodani.pas: 5 mist (jen typecast)
+  - Nove soubory: 1 (adapter)
+
+VYHODY ADAPTER PATTERN:
+----------------------
+✅ Minimalni zmeny v produknim kodu (EElPodani, EElPodDM)
+✅ Cisty objektovy design
+✅ Snadna rozsiritelnost pro dalsi moduly (CSSZ, Datove schranky, atd.)
+✅ Lepsi separace zodpovednosti
+✅ Testovani izolovane od business logiky
+
+NAVRHOVAN A ARCHITEKTURA PRO DALSI MODULY:
+-----------------------------------------
+EPMF/
+├── Certificates/ (HOTOVO ✅)
+│   ├── mfcr_certificate.pas
+│   ├── mfcr_certificate_api.pas
+│   └── mfcr_certificate_adapter.pas
+│
+├── Sending/ (BUDOUCI)
+│   ├── MFCR/
+│   │   ├── mfcr_sending.pas
+│   │   ├── mfcr_sending_api.pas
+│   │   └── mfcr_sending_adapter.pas
+│   └── CSSZ/
+│       ├── cssz_sending.pas
+│       ├── cssz_sending_api.pas
+│       └── cssz_sending_adapter.pas
+│
+└── DataBoxes/ (BUDOUCI)
+    ├── databox.pas
+    ├── databox_api.pas
+    └── databox_adapter.pas
+
+KAZDY MODUL MA VLASTNI ADAPTER - jednotny pristup, ale nezavisla implementace
+
+TESTOVANI:
+---------
+1. Test CAPICOM (stary zpusob):
+   - FormStudio.ini: UseFCommAPI=0
+   - Spustit aplikaci
+   - Nacist certifikaty a otestovat podepsani
+
+2. Test fcomm API (novy zpusob):
+   - Spustit fcomm server: cd fcomm && dotnet run
+   - FormStudio.ini: UseFCommAPI=1
+   - Spustit aplikaci
+   - Nacist certifikaty a otestovat podepsani
+
+3. Test prepinani:
+   - Otestovat oba zpusoby
+   - Overit bezproblemouve prepnuti
+
+KOMPILACE:
+---------
+Zkompilovat v Delphi 2007:
+  - EElPodDM.pas
+  - EElPodani.pas
+  - EPMF\mfcr_certificate_adapter.pas
+
+===============================================================================
