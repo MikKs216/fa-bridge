@@ -375,8 +375,8 @@ export async function hledatPodleAktUdaje(facmdPath?: string): Promise<void> {
 	// Krátké zpoždění pro jistotu, aby se hledání stihlo provést
 	await new Promise(resolve => setTimeout(resolve, 100));
 	
-	// 8. Zavřít Find dialog - necháme jen označený výskyt v editoru
-	await vscode.commands.executeCommand('closeFindWidget');
+	// 8. Dialog hledání zůstává otevřený s fokusem pro další použití
+	// Uživatel může stisknout Enter pro další výskyt, nebo Escape pro zavření
 		
 	} catch (error) {
 		const msg = error instanceof Error ? error.message : String(error);
