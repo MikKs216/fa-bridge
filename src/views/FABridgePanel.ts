@@ -67,7 +67,7 @@ export class FABridgeTreeProvider implements vscode.TreeDataProvider<CategoryTre
 		// Urči správné zkratky podle nastavení
 		const activateFAShortcut = faCompatibleHotkeys ? 'Ctrl+Q' : 'Alt+Q';
 		const copyShortcut = faCompatibleHotkeys ? 'Shift+Ctrl+C' : 'Shift+Alt+C';
-		const findShortcut = 'Shift+Alt+L'; // Vždy Shift+Alt+L (bez ohledu na nastavení)
+		const findShortcut = 'Ctrl+U'; // Vždy Ctrl+U (bez ohledu na nastavení)
 		const searchShortcut = faCompatibleHotkeys ? 'Shift+Ctrl+F' : 'Shift+Alt+F';
 
 		// Root level - vrať kategorie

@@ -385,7 +385,7 @@ export async function hledatPodleAktUdaje(facmdPath?: string): Promise<void> {
 }
 
 /**
- * Najde údaj ve formuláři - vezme slovo pod kurzorem, zapíše do fafield.txt a pošle příkaz (Shift+Alt+L)
+ * Najde údaj ve formuláři - vezme slovo pod kurzorem, zapíše do fafield.txt a pošle příkaz (Ctrl+U)
  */
 export async function najitUdaj(): Promise<void> {
 	try {

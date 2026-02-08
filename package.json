@@ -3,7 +3,7 @@
   "displayName": "FA Bridge",
   "publisher": "fa-dev",
   "description": "Propojení Cursor/VS Code s editorem FormStudio (FA)",
-  "version": "0.11.16",
+  "version": "0.11.21",
   "repository": {
     "type": "git",
     "url": "https://github.com/fa-dev/fa-bridge"
@@ -310,9 +310,14 @@
       },
       {
         "command": "faBridge.najitUdaj",
-        "key": "shift+alt+l",
-        "mac": "shift+alt+l",
-        "when": "faBridge.isActive"
+        "key": "ctrl+u",
+        "mac": "cmd+u",
+        "when": "faBridge.isActive && editorTextFocus && editorLangId == 'pascal'"
+      },
+      {
+        "command": "-cursorUndo",
+        "key": "ctrl+u",
+        "when": "faBridge.isActive && editorTextFocus && editorLangId == 'pascal'"
       },
       {
         "command": "faBridge.hledatPodleAktUdaje",
