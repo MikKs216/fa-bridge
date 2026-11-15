@@ -27,7 +27,6 @@ Panel obsahuje čtyři sekce:
 | ------------------------------------- | -------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
 | **Uložit soubor**              | F2                         | Uloží aktuální soubor (triggeruje Local History)                                                         |
 | **Přepnout do FA**         | F1, Alt+Q / Ctrl+Q* | Aktivuje okno FORM asistenta                                                      |
-| **Otevřít FA Bridge**         | Shift+Alt+F | Otevře/zavře sidebar panel                                                      |
 | **Vložit název údaje**       | Alt+X, Ctrl+Shift+V                          | Vloží název aktuálního údaje na kurzor (nebo nahradí označený text)      |
 | **Název údaje do clipboardu** | Shift+Alt+C / Shift+Ctrl+C* | Zkopíruje název údaje do schránky                                             |
 | **Najít údaj ve formuláři** | Shift+Alt+L | Najde údaj podle slova pod kurzorem                                              |
@@ -43,6 +42,8 @@ Panel obsahuje čtyři sekce:
 | **Zobrazit historii verzí** | - | Zobrazí seznam všech verzí souboru v historii |
 
 \* *Hotkeys se mění podle nastavení `faBridge.faCompatibleHotkeys`*
+
+> **Rozsah:** Horké klávesy fungují jen ve fokusovaném Pascal editoru. Panel FA Bridge se otevírá z Activity Bar (ikona), ne zkratkou Shift+Alt+F.
 
 > **Tip na macOS:** Nahraď Ctrl za Cmd
 
@@ -148,6 +149,23 @@ Extension poskytuje několik konfigurovatelných nastavení:
   - Kopírovat název údaje: `Shift+Alt+C` → `Shift+Ctrl+C`
   - Hledat podle akt. údaje: `Shift+Alt+F` → `Shift+Ctrl+F`
 
+### Automatické přepínání barevného schématu
+
+- **Nastavení:** `faBridge.autoSwitchTheme` (výchozí: `false`)
+- **Popis:** Automaticky přepíná mezi FA theme a původním theme podle typu projektu
+- **Jak to funguje:**
+  - Když otevřeš projekt s `.fsbridge` (FA projekt), automaticky se aplikuje FA theme
+  - Když přepneš do projektu bez `.fsbridge` (non-FA projekt), automaticky se obnoví původní theme
+  - Původní theme se ukládá při první aktivaci FA Bridge
+- **Poznámka:** Toto nastavení je užitečné, pokud pracuješ s více projekty (FA i non-FA) a nechceš, aby FA theme bylo aktivní i v non-FA projektech
+
+### Preferované FA barevné schéma
+
+- **Nastavení:** `faBridge.preferredTheme` (výchozí: `"FA Pascal Light"`)
+- **Možnosti:** `"FA Pascal Light"` nebo `"FA Pascal Dark"`
+- **Popis:** Určuje, které FA theme se automaticky aplikuje v FA projektech (pokud je zapnuto `autoSwitchTheme`)
+- **Poznámka:** Toto nastavení se použije pouze pokud je zapnuto automatické přepínání (`autoSwitchTheme: true`)
+
 ### Historie souborů
 
 - **Nastavení:** `local-history.enabled` (výchozí: `true`)
@@ -172,6 +190,8 @@ Nebo přímo v `settings.json`:
   "faBridge.autoOpenPanel": true,
   "faBridge.enableSnippets": true,
   "faBridge.faCompatibleHotkeys": false,
+  "faBridge.autoSwitchTheme": false,
+  "faBridge.preferredTheme": "FA Pascal Light",
   "local-history.enabled": true,
   "faHistory.maxFiles": 50,
   "faHistory.showDates": true
@@ -365,6 +385,19 @@ Extension poskytuje panel **Msg Watch**, který zobrazuje zprávy z běžícího
 - Soubor `famsgstate.json` se automaticky maže při startu extension a při uložení souboru
 
 ## Release Notes
+
+### 0.11.29
+
+- 🔧 Horké klávesy FA Bridge fungují jen v Pascal editoru (kolize s doplňkem FsCode v C# souborech); odstraněna duplicitní zkratka Shift+Alt+F pro otevření panelu
+
+### 0.11.27
+
+- 🎨 **Automatické přepínání theme:** Nová funkce pro automatické přepínání mezi FA theme a původním theme podle typu projektu
+  - Nastavení `faBridge.autoSwitchTheme` (výchozí: `false`) - zapíná/vypíná automatické přepínání
+  - Nastavení `faBridge.preferredTheme` (výchozí: `"FA Pascal Light"`) - určuje preferované FA theme
+  - FA theme se automaticky aplikuje pouze v projektech s `.fsbridge`
+  - V non-FA projektech se automaticky obnoví původní theme
+  - Řeší problém, kdy FA theme bylo aktivní i v non-FA projektech
 
 ### 0.10.9
 

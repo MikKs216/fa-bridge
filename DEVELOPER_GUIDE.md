@@ -34,7 +34,7 @@ FA Bridge komunikuje s FormStudio přes soubor `.fsbridge/facmd.txt`:
 - `Aktivovat_formular` - Aktivuje formulář po uložení souboru
 - `Vlozit_nazev_udaje` - Vloží název aktuálních údajů (Alt+X, Ctrl+Shift+V)
 - `Najit_udaj` - Najde údaj ve formuláři (Shift+Alt+L)
-- **Sidebar Panel:** Ikona v levém panelu s tlačítky pro všechny příkazy (Shift+Alt+F)
+- **Sidebar Panel:** Ikona v levém panelu s tlačítky pro všechny příkazy (otevření z Activity Bar)
 - **Panel obsahuje 4 sekce:** Příkazy, Msg Watch, HISTORIE, NÁPOVĚDA
 - **Otevření FA nápovědy:** Ctrl+Alt+F1 otevře FA.chm ze složky `_source`
 - **Hledání v dokumentaci:** Ctrl+Shift+F1 otevře TextSearch.exe (i bez slova pod kurzorem)
@@ -1241,9 +1241,11 @@ npm run test
 
 #### Keybindings:
 
+Horké klávesy platí jen při `editorTextFocus && editorLangId == 'pascal'` (a `faBridge.isActive`, pokud je v `when`). Panel se otevírá z Activity Bar.
+
 - `F1`, `Alt+Q` / `Ctrl+Q` → Přepnout do FA
 - `F2` → Uložit soubor
-- `Shift+Alt+F` → Otevřít FA Bridge sidebar / Hledat podle akt. údaje (podle kontextu)
+- `Shift+Alt+F` / `Shift+Ctrl+F` → Hledat podle akt. údaje (podle nastavení)
 - `Alt+X`, `Ctrl+Shift+V` → Vložit název údaje
 - `Shift+Alt+C` / `Shift+Ctrl+C` → Kopírovat název do schránky (podle nastavení)
 - `Shift+Alt+L` → Najít údaj ve formuláři

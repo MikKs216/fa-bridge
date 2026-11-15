@@ -3,7 +3,7 @@
   "displayName": "FA Bridge",
   "publisher": "fa-dev",
   "description": "Propojení Cursor/VS Code s editorem FormStudio (FA)",
-  "version": "0.11.21",
+  "version": "0.11.29",
   "repository": {
     "type": "git",
     "url": "https://github.com/fa-dev/fa-bridge"
@@ -44,6 +44,20 @@
           "type": "boolean",
           "default": true,
           "description": "Ukládat historii změn editovaných souborů do složky .history"
+        },
+        "faBridge.autoSwitchTheme": {
+          "type": "boolean",
+          "default": false,
+          "description": "Automaticky přepínat mezi FA theme a původním theme podle typu projektu (FA projekt = automaticky FA theme)"
+        },
+        "faBridge.preferredTheme": {
+          "type": "string",
+          "default": "FA Pascal Light",
+          "enum": [
+            "FA Pascal Light",
+            "FA Pascal Dark"
+          ],
+          "description": "Preferované FA barevné schéma pro FA projekty (použije se při autoSwitchTheme)"
         },
         "local-history.enabled": {
           "type": "boolean",
@@ -255,58 +269,52 @@
     },
     "keybindings": [
       {
-        "command": "workbench.view.extension.faBridgeContainer",
-        "key": "shift+alt+f",
-        "mac": "shift+alt+f",
-        "when": "faBridge.isActive"
-      },
-      {
         "command": "faBridge.ulozitSoubor",
         "key": "f2",
         "mac": "alt+f2",
-        "when": "faBridge.isActive"
+        "when": "faBridge.isActive && editorTextFocus && editorLangId == 'pascal'"
       },
       {
         "command": "faBridge.faDoPopredi",
         "key": "f1",
         "mac": "f1",
-        "when": "faBridge.isActive"
+        "when": "faBridge.isActive && editorTextFocus && editorLangId == 'pascal'"
       },
       {
         "command": "faBridge.faDoPopredi",
         "key": "alt+q",
         "mac": "alt+q",
-        "when": "faBridge.isActive && !config.faBridge.faCompatibleHotkeys"
+        "when": "faBridge.isActive && !config.faBridge.faCompatibleHotkeys && editorTextFocus && editorLangId == 'pascal'"
       },
       {
         "command": "faBridge.faDoPopredi",
         "key": "ctrl+q",
         "mac": "cmd+q",
-        "when": "faBridge.isActive && config.faBridge.faCompatibleHotkeys"
+        "when": "faBridge.isActive && config.faBridge.faCompatibleHotkeys && editorTextFocus && editorLangId == 'pascal'"
       },
       {
         "command": "faBridge.vlozitNazevUdaje",
         "key": "alt+x",
         "mac": "alt+x",
-        "when": "faBridge.isActive"
+        "when": "faBridge.isActive && editorTextFocus && editorLangId == 'pascal'"
       },
       {
         "command": "faBridge.vlozitNazevUdaje",
         "key": "ctrl+shift+v",
         "mac": "cmd+shift+v",
-        "when": "faBridge.isActive"
+        "when": "faBridge.isActive && editorTextFocus && editorLangId == 'pascal'"
       },
       {
         "command": "faBridge.kopirovatNazevUdaje",
         "key": "shift+alt+c",
         "mac": "shift+alt+c",
-        "when": "faBridge.isActive && !config.faBridge.faCompatibleHotkeys"
+        "when": "faBridge.isActive && !config.faBridge.faCompatibleHotkeys && editorTextFocus && editorLangId == 'pascal'"
       },
       {
         "command": "faBridge.kopirovatNazevUdaje",
         "key": "shift+ctrl+c",
         "mac": "shift+cmd+c",
-        "when": "faBridge.isActive && config.faBridge.faCompatibleHotkeys"
+        "when": "faBridge.isActive && config.faBridge.faCompatibleHotkeys && editorTextFocus && editorLangId == 'pascal'"
       },
       {
         "command": "faBridge.najitUdaj",
@@ -323,49 +331,49 @@
         "command": "faBridge.hledatPodleAktUdaje",
         "key": "shift+alt+f",
         "mac": "shift+alt+f",
-        "when": "faBridge.isActive && !config.faBridge.faCompatibleHotkeys"
+        "when": "faBridge.isActive && !config.faBridge.faCompatibleHotkeys && editorTextFocus && editorLangId == 'pascal'"
       },
       {
         "command": "faBridge.hledatPodleAktUdaje",
         "key": "shift+ctrl+f",
         "mac": "shift+cmd+f",
-        "when": "faBridge.isActive && config.faBridge.faCompatibleHotkeys"
+        "when": "faBridge.isActive && config.faBridge.faCompatibleHotkeys && editorTextFocus && editorLangId == 'pascal'"
       },
       {
         "command": "faBridge.toggleMsgv",
         "key": "alt+f9",
         "mac": "alt+f9",
-        "when": "faBridge.isActive"
+        "when": "faBridge.isActive && editorTextFocus && editorLangId == 'pascal'"
       },
       {
         "command": "faBridge.toggleField",
         "key": "alt+a",
         "mac": "alt+a",
-        "when": "faBridge.isActive"
+        "when": "faBridge.isActive && editorTextFocus && editorLangId == 'pascal'"
       },
       {
         "command": "faBridge.vlozitUdajSBody",
         "key": "shift+ctrl+[",
         "mac": "shift+cmd+[",
-        "when": "faBridge.isActive"
+        "when": "faBridge.isActive && editorTextFocus && editorLangId == 'pascal'"
       },
       {
         "command": "faBridge.vlozitUdajSDvojteckami",
         "key": "shift+ctrl+]",
         "mac": "shift+cmd+]",
-        "when": "faBridge.isActive"
+        "when": "faBridge.isActive && editorTextFocus && editorLangId == 'pascal'"
       },
       {
         "command": "faBridge.hledatOdZacatku",
         "key": "alt+l",
         "mac": "alt+l",
-        "when": "faBridge.isActive && !config.faBridge.faCompatibleHotkeys"
+        "when": "faBridge.isActive && !config.faBridge.faCompatibleHotkeys && editorTextFocus && editorLangId == 'pascal'"
       },
       {
         "command": "faBridge.hledatOdZacatku",
         "key": "alt+f",
         "mac": "alt+f",
-        "when": "faBridge.isActive && config.faBridge.faCompatibleHotkeys"
+        "when": "faBridge.isActive && config.faBridge.faCompatibleHotkeys && editorTextFocus && editorLangId == 'pascal'"
       },
       {
         "command": "faBridge.goToDefinition",

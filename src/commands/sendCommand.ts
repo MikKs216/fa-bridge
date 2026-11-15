@@ -64,11 +64,22 @@ export async function ulozitSoubor(): Promise<void> {
 		if (document.isUntitled) {
 			await vscode.commands.executeCommand('workbench.action.files.save');
 			return;
-		}
+	}
 
-		// Zkontroluj, jestli soubor odpovídá nějaké FA instanci
-		const workspaceRoot = getFsBridgeWorkspaceRoot();
-		const hasFAInstance = workspaceRoot ? getFacmdPath(workspaceRoot) !== null : false;
+	// Zkontroluj, jestli je soubor úplně prázdný (0 bytů) - pokud ano, vlož jeden prázdný řádek
+	const fileContent = document.getText();
+	if (fileContent === '') {
+		// Soubor je prázdný - vlož jeden prázdný řádek na začátek
+		await editor.edit(editBuilder => {
+			editBuilder.insert(new vscode.Position(0, 0), '\n');
+		});
+		// Počkej krátce, aby se editace dokončila
+		await new Promise(resolve => setTimeout(resolve, 50));
+	}
+
+	// Zkontroluj, jestli soubor odpovídá nějaké FA instanci
+	const workspaceRoot = getFsBridgeWorkspaceRoot();
+	const hasFAInstance = workspaceRoot ? getFacmdPath(workspaceRoot) !== null : false;
 
 		// Pokud soubor obsahuje změny, ulož ho
 		if (document.isDirty) {
@@ -326,57 +337,35 @@ export async function hledatPodleAktUdaje(facmdPath?: string): Promise<void> {
 			content = content.slice(1);
 		}
 		
-		// Odstraň trailing whitespace
-		const searchText = content.trim();
+	// Odstraň trailing whitespace
+	const searchText = content.trim();
 
-		if (!searchText) {
-			vscode.window.showErrorMessage(`✗ Obsah ${path.basename(faFieldPath)} je prázdný`);
-			return;
-		}
+	if (!searchText) {
+		vscode.window.showErrorMessage(`✗ Obsah ${path.basename(faFieldPath)} je prázdný`);
+		return;
+	}
 
-		// 1. Přesunout kurzor na začátek dokumentu (Ctrl+Home)
-		await vscode.commands.executeCommand('cursorTop');
-		
-		// Malé zpoždění pro jistotu
-		await new Promise(resolve => setTimeout(resolve, 50));
-		
-		// 2. Zavřít případný otevřený Find dialog (Escape)
-		await vscode.commands.executeCommand('closeFindWidget');
-		
-		// Malé zpoždění
-		await new Promise(resolve => setTimeout(resolve, 50));
-		
-		// 3. Vložit text do schránky
-		await vscode.env.clipboard.writeText(searchText);
-		
-	// 4. Otevřít Find dialog (Ctrl+F)
+	// 1. Skočit na konec dokumentu (Find dialog se nepředvyplní slovem)
+	await vscode.commands.executeCommand('cursorBottom');
+	await new Promise(resolve => setTimeout(resolve, 50));
+	
+	// 2. Zavřít případný otevřený Find dialog
+	await vscode.commands.executeCommand('closeFindWidget');
+	await new Promise(resolve => setTimeout(resolve, 50));
+	
+	// 3. Vložit název aktuálního údaje z FA do clipboardu
+	await vscode.env.clipboard.writeText(searchText);
+	
+	// 4. Otevřít dialog hledání
 	await vscode.commands.executeCommand('actions.find');
+	await new Promise(resolve => setTimeout(resolve, 150));
 	
-	// Malé zpoždění pro jistotu, aby se Find dialog stihl otevřít
-	await new Promise(resolve => setTimeout(resolve, 100));
-		
-		// 5. Vyčistit existující text v Find dialogu (Ctrl+A)
-		await vscode.commands.executeCommand('editor.action.selectAll');
-		
-		// Malé zpoždění
-		await new Promise(resolve => setTimeout(resolve, 30));
-		
-		// 6. Vložit text z schránky do Find dialogu (Ctrl+V)
-		// Focus je už ve Find dialogu, takže vložení proběhne tam
-		await vscode.commands.executeCommand('editor.action.clipboardPasteAction');
-		
-		// Malé zpoždění pro jistotu, aby se text stihl vložit
-		await new Promise(resolve => setTimeout(resolve, 50));
-		
-	// 7. Spustit hledání (jako by uživatel stiskl Enter)
-	// Najde první výskyt od začátku dokumentu
-	await vscode.commands.executeCommand('editor.action.nextMatchFindAction');
-	
-	// Krátké zpoždění pro jistotu, aby se hledání stihlo provést
-	await new Promise(resolve => setTimeout(resolve, 100));
-	
-	// 8. Dialog hledání zůstává otevřený s fokusem pro další použití
-	// Uživatel může stisknout Enter pro další výskyt, nebo Escape pro zavření
+	// 5. Vložit název údaje do dialogu (Ctrl+V)
+	await vscode.commands.executeCommand('editor.action.clipboardPasteAction');
+	await new Promise(resolve => setTimeout(resolve, 50));
+
+	// Find dialog automaticky najde první výskyt od začátku (wraparound z konce)
+	// Dialog zůstává otevřený pro další navigaci
 		
 	} catch (error) {
 		const msg = error instanceof Error ? error.message : String(error);

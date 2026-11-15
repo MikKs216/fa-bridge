@@ -43,7 +43,7 @@ code --install-extension fa-bridge-0.5.93.vsix
 
 1. Otevři workspace s FA scripty
 2. Panel FA Bridge se automaticky otevře v levém sidebaru
-3. Používej příkazy z panelu nebo klávesové zkratky:
+3. Používej příkazy z panelu (ikona v Activity Bar) nebo klávesové zkratky v Pascal editoru:
    - **F2** - Uložit soubor
    - **F1, Alt+Q / Ctrl+Q** - Přepnout do FA
    - **Alt+X** - Vložit název údaje

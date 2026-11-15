@@ -1,0 +1,28 @@
+---
+description: FA Bridge extension installation commands for Cursor
+alwaysApply: true
+---
+
+# FA Bridge Installation
+
+## Extension Installation Command
+
+**ALWAYS use `cursor` command for installing extensions in this project, NOT `code`.**
+
+```bash
+# ✅ CORRECT - Install FA Bridge extension in Cursor
+cursor --install-extension fa-bridge-X.X.X.vsix --force
+
+# ❌ WRONG - This installs to VS Code, not Cursor
+code --install-extension fa-bridge-X.X.X.vsix --force
+```
+
+## Build and Install Workflow
+
+When updating the extension:
+
+1. Update version in `package.json`
+2. Build: `npx @vscode/vsce package`
+3. Install: `cursor --install-extension fa-bridge-X.X.X.vsix --force`
+
+**Remember:** This project uses **Cursor**, always use the `cursor` CLI command.

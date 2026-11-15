@@ -33,6 +33,8 @@ import { HistoryPanel } from './historyPanel';
 import { HistoryProvider, HistoryItem } from './historyProvider';
 
 let outputChannel: vscode.OutputChannel | null = null;
+let originalTheme: string | null = null; // Původní theme před přepnutím na FA theme
+let extensionContext: vscode.ExtensionContext | null = null; // Globální context pro deactivate
 
 /**
  * Zkontroluje, jestli je cesta worktree složka (Cursor nebo Git)
@@ -101,7 +103,69 @@ function hasFsBridgeInWorkspace(): boolean {
 	return false;
 }
 
+/**
+ * Automaticky přepne na FA theme pokud jsme v FA projektu
+ */
+async function applyFAThemeIfEnabled(context: vscode.ExtensionContext): Promise<void> {
+	const config = vscode.workspace.getConfiguration('faBridge');
+	const autoSwitchTheme = config.get<boolean>('autoSwitchTheme', false);
+	
+	if (!autoSwitchTheme) {
+		return; // Automatické přepínání je vypnuté
+	}
+
+	const currentTheme = vscode.workspace.getConfiguration('workbench').get<string>('colorTheme', '');
+	const preferredTheme = config.get<string>('preferredTheme', 'FA Pascal Light');
+	
+	// Pokud ještě nemáme uložený původní theme a není to FA theme, ulož ho
+	if (!originalTheme && !currentTheme.includes('FA Pascal')) {
+		originalTheme = currentTheme;
+		await context.globalState.update('faBridge.originalTheme', currentTheme);
+	}
+	
+	// Přepni na FA theme
+	if (currentTheme !== preferredTheme) {
+		await vscode.workspace.getConfiguration('workbench').update(
+			'colorTheme',
+			preferredTheme,
+			vscode.ConfigurationTarget.Global
+		);
+	}
+}
+
+/**
+ * Vrátí původní theme pokud jsme opustili FA projekt
+ */
+async function restoreOriginalThemeIfEnabled(context: vscode.ExtensionContext): Promise<void> {
+	const config = vscode.workspace.getConfiguration('faBridge');
+	const autoSwitchTheme = config.get<boolean>('autoSwitchTheme', false);
+	
+	if (!autoSwitchTheme) {
+		return; // Automatické přepínání je vypnuté
+	}
+
+	// Načti uložený původní theme
+	const savedOriginalTheme = context.globalState.get<string>('faBridge.originalTheme');
+	const themeToRestore = originalTheme || savedOriginalTheme;
+	
+	if (themeToRestore) {
+		const currentTheme = vscode.workspace.getConfiguration('workbench').get<string>('colorTheme', '');
+		
+		// Pokud je aktuální theme FA theme, vrať původní
+		if (currentTheme.includes('FA Pascal')) {
+			await vscode.workspace.getConfiguration('workbench').update(
+				'colorTheme',
+				themeToRestore,
+				vscode.ConfigurationTarget.Global
+			);
+		}
+	}
+}
+
 export function activate(context: vscode.ExtensionContext) {
+	// Ulož context pro použití v deactivate
+	extensionContext = context;
+	
 	// ============================================================================
 	// KÓD PRO PANEL HISTORIE - registruje se vždy (nezávisle na .fsbridge)
 	// ============================================================================
@@ -260,6 +324,12 @@ export function activate(context: vscode.ExtensionContext) {
 		// Nastav kontextovou proměnnou na false, aby keybindings nefungovaly
 		vscode.commands.executeCommand('setContext', 'faBridge.isActive', false);
 		console.log('[FA Bridge] Extension neaktivována - workspace neobsahuje .fsbridge');
+		
+		// Obnov původní theme pokud jsme opustili FA projekt (async)
+		restoreOriginalThemeIfEnabled(context).catch(err => {
+			console.error('[FA Bridge] Chyba při obnově theme:', err);
+		});
+		
 		return;
 	}
 
@@ -271,9 +341,20 @@ export function activate(context: vscode.ExtensionContext) {
 		if (isWorktreePath(activePath)) {
 			vscode.commands.executeCommand('setContext', 'faBridge.isActive', false);
 			console.log('[FA Bridge] Extension neaktivována - aktivní workspace je worktree složka');
+			
+			// Obnov původní theme pokud jsme opustili FA projekt (async)
+			restoreOriginalThemeIfEnabled(context).catch(err => {
+				console.error('[FA Bridge] Chyba při obnově theme:', err);
+			});
+			
 			return;
 		}
 	}
+	
+	// Aplikuj FA theme pokud jsme v FA projektu a je zapnuté automatické přepínání (async)
+	applyFAThemeIfEnabled(context).catch(err => {
+		console.error('[FA Bridge] Chyba při aplikaci theme:', err);
+	});
 
 	// Nastav kontextovou proměnnou pro keybindings (aby fungovaly jen když je doplněk aktivní)
 	vscode.commands.executeCommand('setContext', 'faBridge.isActive', true);
@@ -478,6 +559,29 @@ export function activate(context: vscode.ExtensionContext) {
 
 	context.subscriptions.push(...commands);
 
+	// Sleduj změny workspace folders (přidání/odebrání projektů)
+	const workspaceFoldersListener = vscode.workspace.onDidChangeWorkspaceFolders(() => {
+		// Zkontroluj jestli jsme v FA projektu (async operace)
+		(async () => {
+			if (hasFsBridgeInWorkspace()) {
+				vscode.commands.executeCommand('setContext', 'faBridge.isActive', true);
+				await applyFAThemeIfEnabled(context);
+				if (outputChannel) {
+					outputChannel.appendLine('[FA Bridge] Workspace změněn - FA projekt detekován, aktivuji FA theme');
+				}
+			} else {
+				vscode.commands.executeCommand('setContext', 'faBridge.isActive', false);
+				await restoreOriginalThemeIfEnabled(context);
+				if (outputChannel) {
+					outputChannel.appendLine('[FA Bridge] Workspace změněn - FA projekt nenalezen, obnovuji původní theme');
+				}
+			}
+		})().catch(err => {
+			console.error('[FA Bridge] Chyba při změně workspace:', err);
+		});
+	});
+	context.subscriptions.push(workspaceFoldersListener);
+
 	// Sleduj uložení souborů a maž famsgstate.json při uložení
 	const saveListener = vscode.workspace.onDidSaveTextDocument(async (document) => {
 		deleteFamsgState(outputChannel);
@@ -544,6 +648,11 @@ export function activate(context: vscode.ExtensionContext) {
 	}
 }
 
-export function deactivate() {
+export async function deactivate() {
 	console.log('[FA Bridge] Extension deaktivována');
+	
+	// Obnov původní theme při deaktivaci
+	if (extensionContext) {
+		await restoreOriginalThemeIfEnabled(extensionContext);
+	}
 }
